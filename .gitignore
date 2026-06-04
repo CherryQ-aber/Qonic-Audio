@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local runtime state
+config.json
+logs/
+Music_input/
+Music_Output/
+*.log
+
+# Build and release output
+build/
+dist/
+Release/
+gui.spec
+main.spec
+
+# Large local binaries and audio fixtures
+Tools/ffmpeg/bin/*.exe
+Tools/ncmdump/ncmdump.exe
+Test_Files/*
+!Test_Files/README.md
+
+# Editor and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
