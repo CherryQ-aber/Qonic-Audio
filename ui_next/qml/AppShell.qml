@@ -29,7 +29,6 @@ ApplicationWindow {
     }
 
     property bool logDrawerOpened: false
-    property string logDrawerOpener: "bottom"
     property int minimumWorkspaceWidth: 620
 
     function userFeatureSummary() {
@@ -45,21 +44,15 @@ ApplicationWindow {
         appState.openSettings()
     }
 
-    function openLogDrawer(opener) {
+    function openLogDrawer() {
         if (appState.settingsOverlayOpen)
             appState.closeSettings()
-        logDrawerOpener = opener
         logDrawerOpened = true
     }
 
     function closeLogDrawer() {
         logDrawerOpened = false
-        Qt.callLater(function() {
-            if (logDrawerOpener === "top")
-                topStatusBar.focusLogButton()
-            else
-                bottomStatusBar.focusLogButton()
-        })
+        Qt.callLater(topStatusBar.focusLogButton)
     }
 
     ColumnLayout {
@@ -87,7 +80,7 @@ ApplicationWindow {
                 appState.switchWorkspace(workspaceKey)
             }
             onSettingsRequested: root.openSettingsOverlay()
-            onLogRequested: root.openLogDrawer("top")
+            onLogRequested: root.openLogDrawer()
         }
 
         WorkspaceSubNavigation {
@@ -153,14 +146,17 @@ ApplicationWindow {
             }
         }
 
-        BottomStatusBar {
-            id: bottomStatusBar
+        GlobalPlayerDock {
+            id: globalPlayerDock
             Layout.fillWidth: true
+            Layout.preferredHeight: requestedHeight
+            Layout.minimumHeight: requestedHeight
+            Layout.maximumHeight: requestedHeight
             theme: theme
             typography: typography
-            statusText: appState.statusSummary || "就绪"
-            logSummary: logModel.summary
-            onOpenLogRequested: root.openLogDrawer("bottom")
+            audioPlayer: audioPlayerViewModel
+            compactMode: root.height < 800
+            narrowMode: root.width < 1320
         }
     }
 
@@ -183,6 +179,7 @@ ApplicationWindow {
         theme: theme
         typography: typography
         logModel: logModel
+        globalStatusSummary: appState.statusSummary || "就绪"
         opened: root.logDrawerOpened
         compactLayout: root.width < 1200
         workspaceLeftInset: folderBrowserPane.visible ? folderBrowserPane.width : 0

@@ -26,8 +26,8 @@ class LogDrawerResponsiveLayoutTests(unittest.TestCase):
         self.shell_source = (PROJECT_ROOT / "ui_next/qml/AppShell.qml").read_text(
             encoding="utf-8"
         )
-        self.bottom_source = (
-            PROJECT_ROOT / "ui_next/qml/components/BottomStatusBar.qml"
+        self.top_source = (
+            PROJECT_ROOT / "ui_next/qml/components/TopStatusBar.qml"
         ).read_text(encoding="utf-8")
         self.log_model_source = (
             PROJECT_ROOT / "ui_next/bridge/log_model.py"
@@ -49,6 +49,7 @@ Item {
         anchors.fill: parent
         workspaceLeftInset: 218
         workspaceRightInset: 292
+        globalStatusSummary: "Watcher off / No tasks / Normal"
     }
 }
 ''',
@@ -104,22 +105,37 @@ Item {
             self.shell_source,
         )
         self.assertIn("workspaceRightInset: 0", self.shell_source)
-        self.assertIn('property string logDrawerOpener: "bottom"', self.shell_source)
-        self.assertIn('root.openLogDrawer("top")', self.shell_source)
-        self.assertIn('root.openLogDrawer("bottom")', self.shell_source)
+        self.assertNotIn("logDrawerOpener", self.shell_source)
+        self.assertIn("function openLogDrawer()", self.shell_source)
+        self.assertIn("onLogRequested: root.openLogDrawer()", self.shell_source)
+        self.assertNotIn("BottomStatusBar {", self.shell_source)
+        self.assertIn(
+            'globalStatusSummary: appState.statusSummary || "就绪"',
+            self.shell_source,
+        )
         self.assertNotIn("inspectorPanelVisible", self.shell_source)
 
     def test_log_opener_and_drawer_controls_are_keyboard_focusable(self):
-        self.assertIn('objectName: "openLogButton"', self.bottom_source)
-        self.assertIn("function focusLogButton()", self.bottom_source)
-        self.assertIn("WorkstationButton {", self.bottom_source)
-        self.assertIn('iconName: "log"', self.bottom_source)
+        self.assertIn('objectName: "openGlobalLogButton"', self.top_source)
+        self.assertIn("function focusLogButton()", self.top_source)
+        self.assertIn("Qt.callLater(topStatusBar.focusLogButton)", self.shell_source)
         self.assertIn("component DrawerButton: WorkstationButton", self.drawer_source)
         self.assertIn('objectName: "closeLogDrawerButton"', self.drawer_source)
         self.assertIn("drawerPanel.forceActiveFocus()", self.drawer_source)
 
+    def test_global_status_summary_is_available_in_the_log_drawer(self):
+        status_summary = self.drawer.findChild(
+            QObject, "logDrawerGlobalStatusSummary"
+        )
+        self.assertIsNotNone(status_summary)
+        self.assertEqual(
+            "当前状态：Watcher off / No tasks / Normal",
+            status_summary.property("text"),
+        )
+
     def test_drawer_stays_singleton_and_keeps_long_log_text_non_disruptive(self):
         self.assertEqual(1, self.shell_source.count("LogDrawer {"))
+        self.assertEqual(1, self.shell_source.count("onLogRequested:"))
         self.assertIn("selectByMouse: true", self.drawer_source)
         self.assertIn("textFormat: TextEdit.PlainText", self.drawer_source)
         self.assertNotIn("positionViewAtEnd", self.drawer_source)

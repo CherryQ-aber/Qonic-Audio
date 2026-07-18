@@ -4,6 +4,7 @@ from pathlib import Path
 import uuid
 
 from PySide6.QtCore import Property, QObject, QUrl, Signal, Slot
+from PySide6.QtGui import QGuiApplication
 from PySide6.QtMultimedia import QAudioOutput, QMediaDevices, QMediaPlayer
 
 from ui_next.bridge.base_viewmodel import BaseViewModel
@@ -278,6 +279,17 @@ class AudioPlayerViewModel(BaseViewModel):
         total_seconds, centiseconds = divmod(total_centiseconds, 100)
         minutes, seconds = divmod(total_seconds, 60)
         return f"[{minutes:02d}:{seconds:02d}.{centiseconds:02d}]"
+
+    @Slot(result=str)
+    def copyCurrentTimestamp(self) -> str:
+        timestamp = self.currentTimestampText
+        clipboard = QGuiApplication.clipboard()
+        if clipboard is None:
+            self._emit_state("当前无法访问系统剪贴板。")
+            return ""
+        clipboard.setText(timestamp)
+        self._emit_state(f"已复制当前时间点：{timestamp}")
+        return timestamp
 
     @Property(bool, notify=stateChanged)
     def mediaOperationBusy(self) -> bool:

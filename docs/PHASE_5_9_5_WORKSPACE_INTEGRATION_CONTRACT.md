@@ -4,9 +4,9 @@
 
 - 日期：2026-07-18
 - 项目：CherryQ Audio Converter v5.0 Internal Test
-- 阶段：Phase 5.9.5-B 人工验收修复
-- 状态：Phase B 外壳已提交为 `9a01869`；自动转码显式扫描误报重复缺陷已修复、通过回归并完成 Phase C 前置提交收尾
-- 下一阶段：保持停止，等待用户明确要求继续 Phase 5.9.5-C
+- 阶段：Phase 5.9.5-C 全局播放器 Dock
+- 状态：Phase C 工程实现和回归已完成，当前未暂存、提交或推送
+- 下一阶段：保持停止，等待用户审核；提交收尾或继续 Phase 5.9.5-D1 均须用户明确要求
 - 长期计划：`Codex_memory/PHASE_5_9_5_WORKSPACE_INTEGRATION_PLAN.md`
 
 本文是 Phase 5.9.5 的工程合同。长期计划描述完整方向，本文固定当前代码基线、状态归属、兼容规则、测试迁移和阶段门禁。后续实现如需改变本文合同，必须先更新本文并单独汇报，不得在代码修改中隐式改变语义。
@@ -777,4 +777,62 @@ Phase B 已按精确文件清单提交为 `9a01869`，未推送；`.reasonix/`�
 - 自动转码 offscreen smoke、compileall、diff check 和 `config.json` SHA256 守卫通过。
 - 完整回归曾偶发既有 Legacy 临时假 FLAC `WinError 32`；失败单测立即通过，随后完整复跑全部通过，未修改 Legacy 媒体逻辑。
 - 未修改 `converter.py`、safe publish/no-clobber、源文件保护、配置、播放器或 Phase C 代码。
-- 当前人工验收修复已完成 Phase C 前置提交收尾但未推送。保持停止，等待用户明确开启 Phase C。
+- 该人工验收修复随后已完成 Phase C 前置提交收尾且未推送；用户已明确开启并完成 Phase C，当前进度见第 22 节。
+
+## 22. Phase 5.9.5-C 完成记录
+
+### 22.1 实际修改范围
+
+生产代码：
+
+- `ui_next/bridge/audio_player_viewmodel.py`
+- `ui_next/qml/AppShell.qml`
+- `ui_next/qml/pages/AudioEditorPage.qml`
+- `ui_next/qml/components/PlayerBar.qml`
+- `ui_next/qml/components/GlobalPlayerDock.qml`
+- `ui_next/qml/components/PlayerMediaInfo.qml`
+- `ui_next/qml/components/PlayerControls.qml`
+- `ui_next/qml/components/PlayerTimeline.qml`
+- `ui_next/qml/components/SeekStepControls.qml`
+- `ui_next/qml/components/PlaybackDeviceControl.qml`
+- `ui_next/qml/components/TimestampTools.qml`
+- `ui_next/qml/components/LogDrawer.qml`
+
+测试：
+
+- `tests/test_qml_phase595_global_player_dock.py`
+- `tests/test_qml_audio_player.py`
+- `tests/test_qml_core_page_layouts.py`
+- `tests/test_qml_light_theme.py`
+- `tests/test_qml_phase595_workspace_shell.py`
+- `tests/test_qml_log_drawer_layout.py`
+
+同时更新本合同与 `Codex_memory` 长期记录。未修改 Theme token，因为现有 `Theme.qml`、`Typography.qml`、`WorkstationButton`、`ThemedSlider` 和 `StatusBadge` 已满足 Phase C 需要。
+
+### 22.2 所有权与运行语义
+
+- `main_qml.py` 继续只创建一个 `AudioPlayerViewModel`；`GlobalPlayerDock` 只消费该对象，没有创建 QML 或 Python 第二播放器后端。
+- `AppShell` 在主内容区下方持有唯一生产播放器视图；人工审核后不再实例化 `BottomStatusBar`，`GlobalPlayerDock` 直接成为窗口最底部组件。原全局状态摘要由 `LogDrawer.globalStatusSummary` 显示在日志抽屉顶部，右上角日志按钮是唯一生产入口；`BottomStatusBar.qml` 文件仅作兼容保留。`WorkspaceStack` 仍接收同一 `audioPlayerViewModel` 供 CurrentFileBar 和 Pitch 业务使用，但页面不再实例化播放器视图。
+- `AudioEditorPage` 删除生产 `PlayerBar` 实例；`PlayerBar.qml` 不删除、不改名，只作为 `GlobalPlayerDock` 的兼容包装，生产 AppShell 不加载该包装。
+- 播放、暂停、停止、seek、音量、静音、输出设备、前后 2 秒和时间点复制全部调用同一 ViewModel。停止与 seek 等控制以 `hasPlaybackSource` 为权威，不以 `hasCurrentFile` 推断。
+- `copyCurrentTimestamp()` 从 `currentTimestampText` 复制真实播放器位置到系统剪贴板，精度固定百分之一秒；当前没有时间点快捷键，也没有提前实现歌词插入。
+- 六类 `playbackOrigin` 由媒体信息组件映射为冻结用户文案；未知来源保持“未知来源”。当播放源和 FileSession 当前编辑文件同时存在但路径不一致时，Dock 明确显示“与编辑文件不同”。
+- v5.0 不新增播放器专属封面 reader；Dock 使用占位封面。输出设备刷新继续由既有 Python 逻辑保证当前设备可用时不切换，仅 ComboBox 显式激活调用选择槽。
+
+### 22.3 响应式与验证
+
+- 标准高度 96 px；窗口高度 `<800` 时固定为 82 px。
+- 窗口宽度 `<1320` 时隐藏状态 Badge、设备/音量标签和百分比等非必要文字，保留全部关键控制。
+- 真实 AppShell 在 1536×982 和 1080×760 离屏渲染检查通过；1080 宽度下媒体信息、传输控制、2 秒校对、设备/音量、时间轴和复制工具均位于各自行列内，无重叠。
+- Phase C 状态栏收尾专项 `26 passed, 6 subtests passed`；真实 AppShell 断言不存在 `globalStatusStrip`、播放器底边等于窗口底边，日志抽屉可读取 `appState.statusSummary`。
+- 最终完整回归 `514 passed, 2 warnings, 32 subtests passed`；首次完整回归仅出现一次既有 Legacy 临时文件 `WinError 32`，单项及完整复跑通过；两条 warning 仍为允许的既有 Qt `QMouseEvent` 弃用提示。
+- `audioProcessing`、`lyricsCover`、`autoConvert` offscreen smoke、Legacy import、目标 Python 编译、`git diff --check` 和 `config.json` SHA256 守卫通过。
+- `config.json` SHA256 保持 `EA8BE86CDF7FC7C9351B7F961D9D8B9BC97AD3D414FB7B6A8B8376B8E82CA72B`。
+
+### 22.4 边界与阶段门禁
+
+- 未开放任务源/转码结果播放器动作，未开放文件夹树播放器入口；分别继续属于 Phase E、F。
+- 未实现 D1 的编辑工作区结构收敛或 D2 的歌词时间点插入；AudioEditorPage 的其余过渡浏览器、波形占位和处理内容留待 D1。
+- 未修改 watcher、converter、任务生命周期、FFmpeg/NCM/Pitch、媒体和导出/no-clobber 算法、capability、运行模式、配置持久化、Legacy Widgets 或发行打包。
+- 开始前用户已有 `python.exe main_qml.py` PID 37392；本任务未终止或重启该进程，后续只读复核时该进程已自然退出。
+- `.reasonix/`、`Code_Review_Packages/` 和 `config.json.bak` 等既有未跟踪内容未处理。Phase C 当前未暂存、提交或推送；阶段完成后停止等待用户审核。

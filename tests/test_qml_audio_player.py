@@ -515,6 +515,27 @@ class AudioPlayerViewModelTests(unittest.TestCase):
             player.setVolume(150)
             self.assertEqual(100, player.volume)
 
+    def test_copy_current_timestamp_uses_real_player_position(self):
+        session, player, fake, _output = self._build_player()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            source = Path(temp_dir) / "timestamp.wav"
+            source.write_bytes(b"audio")
+            session.setCurrentFile(str(source), "audio_editor")
+            fake.durationChanged.emit(600_000)
+            fake.mediaStatusChanged.emit(QMediaPlayer.MediaStatus.LoadedMedia)
+            fake.positionChanged.emit(201_450)
+
+            with patch(
+                "ui_next.bridge.audio_player_viewmodel.QGuiApplication"
+            ) as gui_application:
+                copied = player.copyCurrentTimestamp()
+
+        self.assertEqual("[03:21.45]", copied)
+        gui_application.clipboard.return_value.setText.assert_called_once_with(
+            "[03:21.45]"
+        )
+        self.assertIn("[03:21.45]", player.statusMessage)
+
     def test_player_error_is_specific(self):
         _session, player, fake, _output = self._build_player()
         fake.errorOccurred.emit(0, "unsupported codec")

@@ -47,7 +47,8 @@ class QmlLightThemeCoverageTests(unittest.TestCase):
 
         for path in (
             "ui_next/qml/components/PitchShiftCard.qml",
-            "ui_next/qml/components/PlayerBar.qml",
+            "ui_next/qml/components/PlayerTimeline.qml",
+            "ui_next/qml/components/PlaybackDeviceControl.qml",
         ):
             self.assertIn("ThemedSlider", self._source(path), path)
 

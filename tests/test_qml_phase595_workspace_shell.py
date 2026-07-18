@@ -343,7 +343,9 @@ class Phase595RealAppShellTests(unittest.TestCase):
                 "audioProcessingPage",
                 "settingsOverlay",
                 "folderBrowserPane",
+                "globalPlayerDock",
                 "logDrawer",
+                "logDrawerGlobalStatusSummary",
             )
             children = {
                 name: self._require_child(root, name) for name in expected_names
@@ -431,6 +433,10 @@ class Phase595RealAppShellTests(unittest.TestCase):
             root.setProperty("logDrawerOpened", True)
             QTest.qWait(30)
             self.app.processEvents()
+            self.assertEqual(
+                "当前状态：" + app_state.statusSummary,
+                children["logDrawerGlobalStatusSummary"].property("text"),
+            )
             drawer_panel = self._require_child(root, "logDrawerPanel")
             for _index in range(12):
                 QTest.keyClick(root, Qt.Key_Tab)
@@ -464,6 +470,72 @@ class Phase595RealAppShellTests(unittest.TestCase):
             self.assertEqual(0, int(folder.property("width")))
             self.assertIsNone(root.findChild(QObject, "sidebarNavigation"))
             self.assertIsNone(root.findChild(QObject, "rightInspector"))
+            self.assertIsNone(
+                root.findChild(QObject, "audioEditorPlayerCard")
+            )
+
+            player_dock = children["globalPlayerDock"]
+            player_dock_pointer = getCppPointer(player_dock)[0]
+            self.assertEqual(96, int(player_dock.property("requestedHeight")))
+            self.assertEqual(96, round(float(player_dock.property("height"))))
+            self.assertFalse(player_dock.property("compactMode"))
+            self.assertIsNone(root.findChild(QObject, "globalStatusStrip"))
+            self.assertAlmostEqual(
+                float(player_dock.property("y"))
+                + float(player_dock.property("height")),
+                float(root.property("height")),
+                delta=0.5,
+            )
+
+            root.setHeight(760)
+            root.setWidth(1080)
+            QTest.qWait(30)
+            self.app.processEvents()
+            self.assertTrue(player_dock.property("compactMode"))
+            self.assertTrue(player_dock.property("narrowMode"))
+            self.assertEqual(82, int(player_dock.property("requestedHeight")))
+            self.assertEqual(82, round(float(player_dock.property("height"))))
+
+            first_row_items = [
+                self._require_child(root, name)
+                for name in (
+                    "globalPlayerMediaInfo",
+                    "globalPlayerControls",
+                    "globalPlayerSeekStepControls",
+                    "globalPlaybackDeviceControl",
+                )
+            ]
+            for left, right in zip(first_row_items, first_row_items[1:]):
+                self.assertLessEqual(
+                    float(left.property("x")) + float(left.property("width")),
+                    float(right.property("x")) + 0.5,
+                )
+            self.assertLessEqual(
+                float(first_row_items[-1].property("x"))
+                + float(first_row_items[-1].property("width")),
+                float(first_row_items[-1].parent().property("width")) + 0.5,
+            )
+
+            timeline = self._require_child(root, "globalPlayerTimeline")
+            timestamp_tools = self._require_child(
+                root, "globalPlayerTimestampTools"
+            )
+            self.assertLessEqual(
+                float(timeline.property("x"))
+                + float(timeline.property("width")),
+                float(timestamp_tools.property("x")) + 0.5,
+            )
+
+            app_state.setCurrentModule("audioProcessing")
+            self.app.processEvents()
+            self.assertEqual(
+                player_dock_pointer,
+                getCppPointer(
+                    self._require_child(root, "globalPlayerDock")
+                )[0],
+            )
+            app_state.setCurrentModule("autoConvert")
+            self.app.processEvents()
 
             task_row_source = (
                 PROJECT_ROOT

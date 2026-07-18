@@ -173,7 +173,11 @@ Item {{
     def test_audio_editor_uses_one_outer_scroll_and_orders_every_card(self):
         source = self._source("ui_next/qml/pages/AudioEditorPage.qml")
         processing = self._source("ui_next/qml/pages/AudioProcessingPage.qml")
-        player = self._source("ui_next/qml/components/PlayerBar.qml")
+        player = self._source("ui_next/qml/components/GlobalPlayerDock.qml")
+        timeline = self._source("ui_next/qml/components/PlayerTimeline.qml")
+        device = self._source(
+            "ui_next/qml/components/PlaybackDeviceControl.qml"
+        )
         pitch = self._source("ui_next/qml/components/PitchShiftCard.qml")
         browser = self._source("ui_next/qml/components/EditorFileBrowser.qml")
         current_file = self._source("ui_next/qml/components/CurrentFileBar.qml")
@@ -185,13 +189,25 @@ Item {{
         self.assertIn("PitchShiftCard", processing)
         self.assertNotIn("PreviewCachePanel", processing)
         self.assertNotIn("ExportResultPanel", processing)
+        self.assertNotIn("PlayerBar {", source)
+        self.assertNotIn('objectName: "audioEditorPlayerCard"', source)
         self.assertIn("Layout.minimumWidth: 0", player)
-        self.assertIn("refreshOutputDevices()", player)
-        self.assertIn("selectOutputDevice", player)
-        self.assertIn("onPressedChanged", player)
+        self.assertIn("refreshOutputDevices()", device)
+        self.assertIn("selectOutputDevice", device)
+        self.assertIn("onPressedChanged", timeline)
         self.assertIn("载入选中文件", browser)
         self.assertIn("currentPlaybackSourceTypeLabel", current_file)
-        self.assertNotIn("mock", (source + processing + player + current_file).lower())
+        self.assertNotIn(
+            "mock",
+            (
+                source
+                + processing
+                + player
+                + timeline
+                + device
+                + current_file
+            ).lower(),
+        )
         self.assertIn("Flow {", pitch)
 
         view, component, container, scroll, content = self._create_page(
@@ -204,13 +220,15 @@ Item {{
                 for name in (
                     "audioEditorCurrentFileCard",
                     "audioEditorFileBrowser",
-                    "audioEditorPlayerCard",
                     "audioEditorWaveformCard",
                     "audioEditorTabsCard",
                     "audioEditorProcessingStack",
                 )
             ]
             self.assertTrue(all(cards))
+            self.assertIsNone(
+                container.findChild(QObject, "audioEditorPlayerCard")
+            )
             positions = [self._rect(card, container)[1] for card in cards]
             self.assertEqual(positions, sorted(positions))
         finally:

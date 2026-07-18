@@ -10,6 +10,7 @@ Item {
     property QtObject theme: Theme {}
     property QtObject typography: Typography {}
     property var logModel
+    property string globalStatusSummary: ""
     property bool opened: false
     property bool compactLayout: root.width < 1200
     property int workspaceLeftInset: 0
@@ -113,6 +114,19 @@ Item {
                         font.pixelSize: typography.sizeLarge
                         font.weight: typography.weightBold
                         Layout.fillWidth: true
+                    }
+
+                    Text {
+                        objectName: "logDrawerGlobalStatusSummary"
+                        visible: root.globalStatusSummary.length > 0
+                        text: "当前状态：" + root.globalStatusSummary
+                        color: theme.textPrimary
+                        font.family: typography.fontFamily
+                        font.pixelSize: typography.sizeSmall
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        elide: Text.ElideRight
+                        maximumLineCount: 1
                     }
 
                     Text {

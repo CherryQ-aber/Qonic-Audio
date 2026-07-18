@@ -101,15 +101,6 @@ Item {
                 fileSession: root.fileSession
             }
 
-            PlayerBar {
-                objectName: "audioEditorPlayerCard"
-                Layout.fillWidth: true
-                Layout.minimumWidth: 0
-                theme: root.theme
-                typography: root.typography
-                audioPlayer: root.audioPlayer
-            }
-
             WaveformPlaceholder {
                 objectName: "audioEditorWaveformCard"
                 Layout.fillWidth: true
