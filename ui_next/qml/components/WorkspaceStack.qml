@@ -21,6 +21,8 @@ Item {
     property var processingSession: null
     property var settings: null
     property bool editorFileBarExpanded: false
+    property real applicationWidth: width
+    property real applicationHeight: height
 
     signal closeLegacyAnalysisRequested()
     signal editorFileBarCollapseRequested()
@@ -42,6 +44,8 @@ Item {
                 theme: root.theme
                 typography: root.typography
                 pageActive: autoConvertWorkspace.enabled
+                applicationWidth: root.applicationWidth
+                applicationHeight: root.applicationHeight
             }
         }
 

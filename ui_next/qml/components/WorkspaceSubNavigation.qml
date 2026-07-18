@@ -13,14 +13,67 @@ Rectangle {
     property string currentWorkspaceKey: "autoConvert"
     property string currentEditorPageKey: "fileInfo"
     property var editorPages: []
+    property var taskQueueModel: null
+    property string taskFilterKey: "all"
     property bool editorFileBarFloating: false
     property bool editorFileBarExpanded: false
     property int tabStopIndex: currentPageIndex()
+    readonly property int totalTaskCount: taskQueueModel
+        ? Number(taskQueueModel.totalCount)
+        : 0
+    readonly property int waitingTaskCount: taskQueueModel
+        ? Number(taskQueueModel.waitingCount)
+        : 0
+    readonly property int processingTaskCount: taskQueueModel
+        ? Number(taskQueueModel.processingCount)
+        : 0
+    readonly property int excludedTaskCount: taskQueueModel
+        ? Number(taskQueueModel.excludedCount)
+        : 0
+    readonly property int completedTaskCount: taskQueueModel
+        ? Number(taskQueueModel.completedCount)
+        : 0
+    readonly property int failedTaskCount: taskQueueModel
+        ? Number(taskQueueModel.failedCount)
+        : 0
+    readonly property var autoConvertFilters: [
+        {
+            "key": "all",
+            "title": "全部",
+            "preferredWidth": 96
+        },
+        {
+            "key": "waiting",
+            "title": "等待处理",
+            "preferredWidth": 116
+        },
+        {
+            "key": "processing",
+            "title": "处理中",
+            "preferredWidth": 104
+        },
+        {
+            "key": "excluded",
+            "title": "本轮跳过",
+            "preferredWidth": 116
+        },
+        {
+            "key": "completed",
+            "title": "已完成",
+            "preferredWidth": 104
+        },
+        {
+            "key": "failed",
+            "title": "失败",
+            "preferredWidth": 92
+        }
+    ]
     readonly property var currentModel: currentWorkspaceKey === "audioEditor"
         ? editorPages
-        : [{"key": "all", "title": "全部任务"}]
+        : autoConvertFilters
 
     signal editorPageRequested(string pageKey)
+    signal taskFilterRequested(string filterKey)
     signal editorFileBarToggleRequested()
 
     implicitHeight: 44
@@ -31,7 +84,7 @@ Rectangle {
     function selectedKey() {
         return currentWorkspaceKey === "audioEditor"
             ? currentEditorPageKey
-            : "all"
+            : taskFilterKey
     }
 
     function currentPageIndex() {
@@ -68,11 +121,14 @@ Rectangle {
         tabStopIndex = targetIndex
         if (root.currentWorkspaceKey === "audioEditor")
             root.editorPageRequested(item.pageKey)
+        else
+            root.taskFilterRequested(item.pageKey)
         item.forceActiveFocus()
     }
 
     onCurrentWorkspaceKeyChanged: tabStopIndex = currentPageIndex()
     onCurrentEditorPageKeyChanged: tabStopIndex = currentPageIndex()
+    onTaskFilterKeyChanged: tabStopIndex = currentPageIndex()
 
     RowLayout {
         anchors.fill: parent
@@ -106,20 +162,37 @@ Rectangle {
 
                 property string pageKey: modelData.key
                 property bool selected: pageKey === root.selectedKey()
+                property int taskCount: pageKey === "all"
+                    ? root.totalTaskCount
+                    : pageKey === "waiting"
+                        ? root.waitingTaskCount
+                        : pageKey === "processing"
+                            ? root.processingTaskCount
+                            : pageKey === "excluded"
+                                ? root.excludedTaskCount
+                                : pageKey === "completed"
+                                    ? root.completedTaskCount
+                                    : pageKey === "failed"
+                                        ? root.failedTaskCount
+                                        : 0
+                property string navigationTitle:
+                    root.currentWorkspaceKey === "audioEditor"
+                    ? modelData.title
+                    : modelData.title + " " + taskCount
 
                 objectName: "workspaceSubNav_" + pageKey
                 Layout.preferredWidth: root.currentWorkspaceKey === "audioEditor"
-                    ? 116 : 104
+                    ? 116 : modelData.preferredWidth
                 implicitHeight: root.theme.controlHeightSmall
                 theme: root.theme
                 typography: root.typography
-                text: modelData.title
+                text: navigationTitle
                 tone: selected ? "primary" : "ghost"
                 activeFocusOnTab: root.tabStopIndex === index
                 Accessible.checked: selected
                 Accessible.description: selected
-                    ? "当前二级页面：" + modelData.title
-                    : "切换到二级页面：" + modelData.title
+                    ? "当前二级页面：" + navigationTitle
+                    : "切换到二级页面：" + navigationTitle
 
                 onActiveFocusChanged: {
                     if (activeFocus)

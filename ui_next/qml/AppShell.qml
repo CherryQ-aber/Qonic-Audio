@@ -31,6 +31,14 @@ ApplicationWindow {
     property bool logDrawerOpened: false
     property bool editorFileBarExpanded: false
     property int minimumWorkspaceWidth: 620
+    property var taskQueueBridge:
+        typeof taskQueueModel !== "undefined"
+        ? taskQueueModel
+        : null
+    property var taskQueueFilterBridge:
+        typeof taskQueueFilterModel !== "undefined"
+        ? taskQueueFilterModel
+        : null
     readonly property bool editorFileBarFloating:
         settingsViewModel.editorFileBarMode === "floating"
 
@@ -96,10 +104,18 @@ ApplicationWindow {
             currentWorkspaceKey: appState.currentWorkspaceKey
             currentEditorPageKey: appState.currentEditorPageKey
             editorPages: appState.editorPages
+            taskQueueModel: root.taskQueueBridge
+            taskFilterKey: root.taskQueueFilterBridge
+                ? root.taskQueueFilterBridge.filterKey
+                : "all"
             editorFileBarFloating: root.editorFileBarFloating
             editorFileBarExpanded: root.editorFileBarExpanded
             onEditorPageRequested: function(pageKey) {
                 appState.switchEditorPage(pageKey)
+            }
+            onTaskFilterRequested: function(filterKey) {
+                if (root.taskQueueFilterBridge)
+                    root.taskQueueFilterBridge.setFilterKey(filterKey)
             }
             onEditorFileBarToggleRequested:
                 root.editorFileBarExpanded = !root.editorFileBarExpanded
@@ -149,6 +165,8 @@ ApplicationWindow {
                     processingSession: processingSessionViewModel
                     settings: settingsViewModel
                     editorFileBarExpanded: root.editorFileBarExpanded
+                    applicationWidth: root.width
+                    applicationHeight: root.height
                     onEditorFileBarCollapseRequested:
                         root.editorFileBarExpanded = false
                     onCloseLegacyAnalysisRequested: {

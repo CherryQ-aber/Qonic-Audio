@@ -24,6 +24,7 @@ from formats import (
     DEFAULT_TARGET_FORMAT,
     get_target_extension,
     get_target_label,
+    is_supported_editor_audio_file,
     normalize_target_format,
 )
 from ui_next.bridge.capabilities import (
@@ -65,6 +66,10 @@ class TaskQueueModel(QAbstractListModel):
     plannedOutputPathRole = Qt.ItemDataRole.UserRole + 28
     outputNameConflictRole = Qt.ItemDataRole.UserRole + 29
     queueWarningTextRole = Qt.ItemDataRole.UserRole + 30
+    canLoadSourceRole = Qt.ItemDataRole.UserRole + 31
+    sourcePlaybackDisabledReasonRole = Qt.ItemDataRole.UserRole + 32
+    canLoadOutputRole = Qt.ItemDataRole.UserRole + 33
+    outputPlaybackDisabledReasonRole = Qt.ItemDataRole.UserRole + 34
 
     countChanged = Signal()
     summaryChanged = Signal()
@@ -102,6 +107,10 @@ class TaskQueueModel(QAbstractListModel):
         plannedOutputPathRole: b"plannedOutputPath",
         outputNameConflictRole: b"outputNameConflict",
         queueWarningTextRole: b"queueWarningText",
+        canLoadSourceRole: b"canLoadSource",
+        sourcePlaybackDisabledReasonRole: b"sourcePlaybackDisabledReason",
+        canLoadOutputRole: b"canLoadOutput",
+        outputPlaybackDisabledReasonRole: b"outputPlaybackDisabledReason",
     }
 
     def __init__(
@@ -218,6 +227,14 @@ class TaskQueueModel(QAbstractListModel):
             return bool(task.get("_output_name_conflict", False))
         if role == self.queueWarningTextRole:
             return task.get("_queue_warning_text", "")
+        if role == self.canLoadSourceRole:
+            return not bool(self._source_playback_disabled_reason(task))
+        if role == self.sourcePlaybackDisabledReasonRole:
+            return self._source_playback_disabled_reason(task)
+        if role == self.canLoadOutputRole:
+            return not bool(self._output_playback_disabled_reason(task))
+        if role == self.outputPlaybackDisabledReasonRole:
+            return self._output_playback_disabled_reason(task)
 
         return None
 
@@ -305,8 +322,69 @@ class TaskQueueModel(QAbstractListModel):
 
     @Slot(str, result=bool)
     def containsPath(self, file_path: str) -> bool:
-        identity = str(file_path or "")
-        return any(str(task.get("path") or "") == identity for task in self._tasks)
+        identity = self._normalized_path_identity(file_path)
+        return bool(identity) and any(
+            self._normalized_path_identity(task.get("path")) == identity
+            for task in self._tasks
+        )
+
+    @Slot(str, result="QVariantMap")
+    def taskDetails(self, file_path: str) -> dict[str, object]:
+        identity = self._normalized_path_identity(file_path)
+        task = next(
+            (
+                item
+                for item in self._tasks
+                if self._normalized_path_identity(item.get("path")) == identity
+            ),
+            None,
+        )
+        if task is None:
+            return {}
+
+        output_directory = str(
+            task.get("output_directory_override")
+            or get_output_folder()
+            or task.get("output_directory")
+            or ""
+        )
+        output_strategy = (
+            "指定目录"
+            if task.get("output_directory_override")
+            else "默认目录"
+        )
+        return {
+            "path": str(task.get("path") or ""),
+            "filename": str(task.get("filename") or ""),
+            "inputFormat": str(
+                task.get("source_type")
+                or task.get("format")
+                or ""
+            ),
+            "targetFormat": self._format_target_display(task),
+            "status": self._status_display(task).get("label", ""),
+            "stage": str(
+                task.get("stage")
+                or self._status_display(task).get("detail", "")
+            ),
+            "participation": (
+                "参与本轮转换"
+                if task.get("enabled_for_run", True)
+                else "本轮跳过"
+            ),
+            "outputStrategy": output_strategy,
+            "outputDirectory": output_directory,
+            "errorDetails": str(task.get("error_summary") or ""),
+            "outputPath": str(task.get("output_path") or ""),
+            "lyricsResult": self._lyrics_result_summary(task),
+            "sourceType": str(
+                task.get("source_type")
+                or task.get("format")
+                or ""
+            ),
+            "sourceOrigin": self._source_note(task),
+            "sourceOriginKey": str(task.get("source") or "watcher"),
+        }
 
     def _refresh(self, force: bool = False) -> None:
         try:
@@ -327,13 +405,31 @@ class TaskQueueModel(QAbstractListModel):
         if not force and signature == self._last_signature:
             return
 
-        self.beginResetModel()
-        self._tasks = tasks
-        self.endResetModel()
+        same_task_order = (
+            len(tasks) == len(self._tasks)
+            and all(
+                self._normalized_path_identity(previous.get("path"))
+                == self._normalized_path_identity(current.get("path"))
+                for previous, current in zip(self._tasks, tasks)
+            )
+        )
+        if same_task_order:
+            self._tasks = tasks
+            if self._tasks:
+                self.dataChanged.emit(
+                    self.index(0, 0),
+                    self.index(len(self._tasks) - 1, 0),
+                    list(self._ROLE_NAMES),
+                )
+        else:
+            self.beginResetModel()
+            self._tasks = tasks
+            self.endResetModel()
         self._last_signature = signature
 
         self._summary = self._build_summary(self._tasks)
-        self.countChanged.emit()
+        if not same_task_order:
+            self.countChanged.emit()
         self.summaryChanged.emit()
 
     def _build_signature(
@@ -370,11 +466,26 @@ class TaskQueueModel(QAbstractListModel):
                     task.get("stage", ""),
                     task.get("output_path", ""),
                     task.get("error_summary", ""),
+                    task.get("source_type", ""),
+                    task.get("source", ""),
+                    tuple(
+                        sorted(
+                            (
+                                str(key),
+                                str(value),
+                            )
+                            for key, value in dict(
+                                task.get("lyrics_result") or {}
+                            ).items()
+                        )
+                    ),
                     task.get("_effective_target_format", ""),
                     bool(task.get("_same_format_warning", False)),
                     task.get("_planned_output_path", ""),
                     bool(task.get("_output_name_conflict", False)),
                     task.get("_queue_warning_text", ""),
+                    self._source_playback_disabled_reason(task),
+                    self._output_playback_disabled_reason(task),
                 )
                 for task in tasks
             ),
@@ -538,7 +649,17 @@ class TaskQueueModel(QAbstractListModel):
     def _build_summary(self, tasks: list[dict]) -> dict[str, int]:
         return {
             "total": len(tasks),
-            "waiting": sum(1 for task in tasks if task.get("status") == watcher.WAITING_STATUS),
+            "waiting": sum(
+                1
+                for task in tasks
+                if task.get("enabled_for_run", True)
+                and task.get("status")
+                in (
+                    watcher.QUEUED_STATUS,
+                    watcher.READING_STATUS,
+                    watcher.WAITING_STATUS,
+                )
+            ),
             "reading": sum(
                 1
                 for task in tasks
@@ -609,3 +730,56 @@ class TaskQueueModel(QAbstractListModel):
             return "普通音频"
         suffix = Path(source_path).suffix.lower().lstrip(".")
         return f"{suffix.upper()} 源文件" if suffix else "普通音频"
+
+    def _source_playback_disabled_reason(self, task: dict) -> str:
+        source_path = str(task.get("path") or "")
+        if not source_path or not os.path.isfile(source_path):
+            return "源文件不存在，无法载入播放器"
+        if bool(task.get("is_ncm_task")) or Path(source_path).suffix.lower() == ".ncm":
+            return "NCM 源文件需先完成转换，再载入正式输出"
+        if not is_supported_editor_audio_file(source_path):
+            return "当前源格式不能由播放器直接载入"
+        return ""
+
+    def _output_playback_disabled_reason(self, task: dict) -> str:
+        if task.get("status") != watcher.COMPLETED_STATUS:
+            return "转换完成后可用"
+        output_path = str(task.get("output_path") or "")
+        if not output_path:
+            return "任务尚未记录正式输出"
+        if not os.path.isfile(output_path):
+            return "正式输出文件不存在"
+        if not is_supported_editor_audio_file(output_path):
+            return "当前输出格式不能由播放器直接载入"
+        return ""
+
+    def _lyrics_result_summary(self, task: dict) -> str:
+        result = dict(task.get("lyrics_result") or {})
+        if not result:
+            return "尚无歌词处理结果"
+        error = str(result.get("error") or "")
+        if error:
+            return f"歌词处理失败：{error}"
+        embedded = bool(result.get("embedded"))
+        copied = bool(result.get("copied"))
+        if embedded and copied:
+            return "已写入内嵌歌词并复制外置 .lrc"
+        if embedded:
+            return "已写入内嵌歌词"
+        if copied:
+            return "已复制外置 .lrc"
+        reason_labels = {
+            "not_found": "未找到可处理歌词",
+            "options_disabled": "歌词处理选项未启用",
+            "read_failed": "歌词文件读取失败",
+            "same_file_exists": "输出目录已有同名歌词文件",
+        }
+        skipped_reason = str(result.get("skipped_reason") or "")
+        if skipped_reason:
+            return reason_labels.get(
+                skipped_reason,
+                f"歌词处理已跳过：{skipped_reason}",
+            )
+        if result.get("found"):
+            return "已找到歌词，但未写入或复制"
+        return "未处理歌词"

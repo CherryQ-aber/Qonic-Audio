@@ -217,6 +217,7 @@ def _build_pending_file(file_path, status, task_snapshot=None):
         "stage": str(snapshot.get("stage") or "等待读取验证"),
         "output_path": "",
         "error_summary": "",
+        "lyrics_result": {},
     }
 
 
@@ -349,6 +350,7 @@ def set_pending_file_runtime_data(
     stage=RUNTIME_UNSET,
     output_path=RUNTIME_UNSET,
     error_summary=RUNTIME_UNSET,
+    lyrics_result=RUNTIME_UNSET,
 ):
     with pending_files_lock:
         file_info = _find_pending_file_unlocked(file_path)
@@ -377,6 +379,9 @@ def set_pending_file_runtime_data(
 
         if error_summary is not RUNTIME_UNSET:
             file_info["error_summary"] = str(error_summary or "")
+
+        if lyrics_result is not RUNTIME_UNSET:
+            file_info["lyrics_result"] = dict(lyrics_result or {})
 
     return True
 
@@ -606,6 +611,7 @@ def get_pending_files_snapshot():
 
 def _build_task_snapshot(file_info):
     task = dict(file_info)
+    task["lyrics_result"] = dict(task.get("lyrics_result") or {})
     input_path = task.get("decoded_path") or task["path"]
 
     task["input_path"] = input_path

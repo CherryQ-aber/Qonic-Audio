@@ -4,9 +4,9 @@
 
 - 日期：2026-07-19
 - 项目：CherryQ Audio Converter v5.0 Internal Test
-- 阶段：Phase 5.9.5-D2 歌词时间点闭环
-- 状态：Phase C 已提交为 `9b4ac07`，Phase D1 已提交为 `0d5a317`，均未推送；Phase D2 工程实现、精度设置补充、回归和人工审核已完成，本记录随精确提交收尾归档
-- 下一阶段：D2 提交后停止；继续 Phase E 须用户再次明确要求
+- 阶段：Phase 5.9.5-E 自动转码筛选、播放动作与任务检查器
+- 状态：Phase D2 已随 `926e32a` 完成提交收尾且未推送；Phase E 工程实现与完整回归已完成，当前未暂存、未提交、未推送，等待人工审核
+- 下一阶段：Phase E 审核与提交收尾前保持停止；继续 Phase F 须用户再次明确要求
 - 长期计划：`Codex_memory/PHASE_5_9_5_WORKSPACE_INTEGRATION_PLAN.md`
 
 本文是 Phase 5.9.5 的工程合同。长期计划描述完整方向，本文固定当前代码基线、状态归属、兼容规则、测试迁移和阶段门禁。后续实现如需改变本文合同，必须先更新本文并单独汇报，不得在代码修改中隐式改变语义。
@@ -943,3 +943,64 @@ Phase B 已按精确文件清单提交为 `9a01869`，未推送；`.reasonix/`�
 - 未开放 Phase E 的任务筛选、任务源/结果播放器动作和任务检查器，也未实现 Phase F 真实文件夹树。
 - `.reasonix/`、`Code_Review_Packages/` 和 `config.json.bak` 等既有未跟踪内容未处理。
 - D2 人工审核已通过并执行精确提交收尾，不推送；阶段结束后停止等待后续明确授权。
+
+## 25. Phase 5.9.5-E 完成记录
+
+### 25.1 实际修改范围
+
+生产 Python：
+
+- 新增 `ui_next/bridge/task_queue_filter_proxy_model.py`
+- `ui_next/bridge/task_queue_model.py`
+- `ui_next/bridge/auto_convert_viewmodel.py`
+- `main_qml.py`
+- `watcher.py`
+
+生产 QML：
+
+- 新增 `ui_next/qml/components/TaskInspectorDrawer.qml`
+- `ui_next/qml/AppShell.qml`
+- `ui_next/qml/components/WorkspaceSubNavigation.qml`
+- `ui_next/qml/components/WorkspaceStack.qml`
+- `ui_next/qml/pages/AutoConvertPage.qml`
+- `ui_next/qml/components/TaskQueueView.qml`
+- `ui_next/qml/components/TaskRowDelegate.qml`
+
+测试：
+
+- 新增 `tests/test_qml_phase595_task_filters_and_inspector.py`
+
+同时更新本合同与 `Codex_memory` 长期记录。watcher 只增加检查器所需的只读歌词处理结果字段，没有修改调度、生命周期或转换状态机。
+
+### 25.2 单一任务模型与筛选语义
+
+- `TaskQueueModel` 继续是唯一 QML 队列源；`TaskQueueFilterProxyModel` 只使用 `QSortFilterProxyModel` 投影源行，不保存任务副本、不调用 watcher、不创建第二套计数或状态。
+- 六类筛选固定为“全部 / 等待处理 / 处理中 / 本轮跳过 / 已完成 / 失败”。等待处理是已启用且状态为 `QUEUED / READING / WAITING`；处理中、已完成、失败按各自状态；本轮跳过只读取 `enabled_for_run=false`。`SKIPPED / CANCELLED` 只显示在全部。
+- `AppShell` 必须通过不同名桥接属性将源 `TaskQueueModel` 传入导航，禁止 `taskQueueModel: taskQueueModel` 这类 QML 同名自绑定。导航的六个可见按钮直接通过显式响应属性读取源计数，不得依赖 `Repeater.modelData` 中初始化时生成的动态标题；`summaryChanged` 后按钮文本立即更新。各计数允许交叠，不要求相加等于全部。切换筛选只更新 proxy 并按规范化路径清理不可见选择。
+- 同路径、同顺序任务的状态、阶段和详情刷新只更新源行并发出 `dataChanged`，不得 reset 整个模型或改变队列当前滚动位置。确有任务增删、移除或重排时允许结构性 reset，但视图必须保存并在更新后恢复受内容边界约束的 `contentY`。
+
+### 25.3 任务播放器与编辑器语义
+
+- 双击任务请求载入源文件到唯一 PlayerSession，固定 `autoplay=false`、位置归零，不改变 EditorSession。
+- 右键明确区分“载入源文件到播放器 / 载入转换结果到播放器 / 在音频编辑中打开”。源文件必须真实存在且属于播放器直接支持格式；NCM 源文件明确提示先转换，不静默解码。
+- 正式输出只有在任务状态为完成、`output_path` 非空、真实文件存在且格式可直接播放时可用；该判断独立于原有“打开输出位置”能力。
+- 任务动作由 `AutoConvertViewModel` 发出路径与来源信号，应用组合层调用唯一 `AudioPlayerViewModel.setPlaybackSourceWithOrigin()`。加入队列或转换完成均不发出播放器请求。
+- “在音频编辑中打开”继续调用 `FileSessionViewModel.setCurrentFile(path, "audio_editor")`；未导出草稿仍进入原统一 dirty guard，成功或待确认时才切到文件信息页。
+
+### 25.4 检查器与响应式
+
+- `TaskInspectorDrawer` 不缓存任务对象；选中路径或源模型刷新时调用 `TaskQueueModel.taskDetails(path)`，显示源路径、输入/目标格式、参与状态、输出目录策略、错误详情、正式输出路径、歌词处理结果、来源和来源类型。
+- 检查器同时响应源模型 `dataChanged`，确保增量状态刷新后详情同步更新，不依赖模型 reset。
+- `source_type` 只表示输入格式；`source` 单独映射添加文件、目录扫描、拖入、监听或重试来源，不混用。
+- watcher 的 `lyrics_result` 只保存转换返回的只读摘要供检查器显示；失败、取消、领取和状态流均保持原逻辑。
+- 自动展开严格以整个应用窗口 `width >= 1900 && height >= 1200` 判断。宽屏打开时主队列为检查器预留空间；任一尺寸低于阈值默认收起，用户手动展开时覆盖内容，不永久挤压队列。手动状态仅存在 QML 会话，不写配置。
+
+### 25.5 验证与边界
+
+- Phase E 专项：`9 passed, 9 subtests passed`，包含同序状态增量刷新、结构性 reset 滚动位置恢复、生产 AppShell 源模型接线和可见按钮文本动态更新。
+- Phase 5.9.5 工作区、Phase 5.9.2 队列、运行模式和核心页面组合回归：`44 passed, 15 subtests passed`。
+- 最终完整回归：`538 passed, 2 warnings, 41 subtests passed`；两条 warning 仍是既有 Qt `QMouseEvent` 构造弃用提示。
+- `autoConvert` offscreen smoke、目标 Python 编译和 `git diff --check` 通过；无新增 QML ReferenceError、binding loop、类型或运行时 warning。
+- `config.json` SHA256 前后均为 `EA8BE86CDF7FC7C9351B7F961D9D8B9BC97AD3D414FB7B6A8B8376B8E82CA72B`。
+- 未创建第二套播放器、TaskQueueModel、FileSession 或 EditSession；未修改 `converter.py`、FFmpeg/NCM/Pitch、导出/no-clobber、capability、配置语义、Legacy Widgets 或真实文件夹树。
+- `.reasonix/`、`Code_Review_Packages/` 和 `config.json.bak` 等既有未跟踪内容未处理。Phase E 当前未暂存、未提交、未推送；阶段结束后停止等待人工审核，不自动进入 Phase F。

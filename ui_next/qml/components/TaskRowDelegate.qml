@@ -38,6 +38,10 @@ Rectangle {
     property bool canRetry: false
     property bool canRemove: false
     property bool canOpenOutput: false
+    property bool canLoadSource: false
+    property string sourcePlaybackDisabledReason: ""
+    property bool canLoadOutput: false
+    property string outputPlaybackDisabledReason: ""
     property bool readOnly: true
     property bool interactionEnabled: true
     property var formatOptions: []
@@ -68,6 +72,9 @@ Rectangle {
     signal removeRequested(var paths)
     signal openSourceRequested(string path)
     signal openOutputRequested(string path)
+    signal loadSourceToPlayerRequested(string path)
+    signal loadOutputToPlayerRequested(string path)
+    signal openInEditorRequested(string path)
 
     implicitHeight: 54
     color: root.selected
@@ -90,6 +97,10 @@ Rectangle {
         acceptedButtons: Qt.LeftButton
         onClicked: function(mouse) {
             root.selectionRequested(root.path, root.rowIndex, mouse.modifiers, false)
+        }
+        onDoubleClicked: function(mouse) {
+            root.selectionRequested(root.path, root.rowIndex, mouse.modifiers, false)
+            root.loadSourceToPlayerRequested(root.path)
         }
     }
 
@@ -135,6 +146,10 @@ Rectangle {
                 acceptedButtons: Qt.LeftButton
                 onClicked: function(mouse) {
                     root.selectionRequested(root.path, root.rowIndex, mouse.modifiers, false)
+                }
+                onDoubleClicked: function(mouse) {
+                    root.selectionRequested(root.path, root.rowIndex, mouse.modifiers, false)
+                    root.loadSourceToPlayerRequested(root.path)
                 }
             }
         }
@@ -236,6 +251,32 @@ Rectangle {
 
     Menu {
         id: taskMenu
+
+        MenuItem {
+            text: "载入源文件到播放器"
+            enabled: root.canLoadSource
+            ToolTip.visible: hovered && !enabled
+            ToolTip.text: root.sourcePlaybackDisabledReason
+            onTriggered: root.loadSourceToPlayerRequested(root.path)
+        }
+
+        MenuItem {
+            text: "载入转换结果到播放器"
+            enabled: root.canLoadOutput
+            ToolTip.visible: hovered && !enabled
+            ToolTip.text: root.outputPlaybackDisabledReason
+            onTriggered: root.loadOutputToPlayerRequested(root.path)
+        }
+
+        MenuItem {
+            text: "在音频编辑中打开"
+            enabled: root.canLoadSource
+            ToolTip.visible: hovered && !enabled
+            ToolTip.text: root.sourcePlaybackDisabledReason
+            onTriggered: root.openInEditorRequested(root.path)
+        }
+
+        MenuSeparator {}
 
         MenuItem {
             text: "转换此文件"

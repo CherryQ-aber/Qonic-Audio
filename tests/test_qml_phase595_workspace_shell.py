@@ -352,6 +352,14 @@ class Phase595RealAppShellTests(unittest.TestCase):
             children = {
                 name: self._require_child(root, name) for name in expected_names
             }
+            bound_task_queue = children["workspaceSubNavigation"].property(
+                "taskQueueModel"
+            )
+            self.assertIsNotNone(bound_task_queue)
+            self.assertEqual(
+                getCppPointer(objects["taskQueueModel"])[0],
+                getCppPointer(bound_task_queue)[0],
+            )
             identity_before = {
                 name: getCppPointer(children[name])[0]
                 for name in (

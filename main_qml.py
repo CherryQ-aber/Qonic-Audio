@@ -20,6 +20,9 @@ from ui_next.bridge.lyrics_viewmodel import LyricsViewModel
 from ui_next.bridge.log_model import LogModel, install_log_model_handler
 from ui_next.bridge.metadata_viewmodel import MetadataViewModel
 from ui_next.bridge.settings_viewmodel import SettingsViewModel
+from ui_next.bridge.task_queue_filter_proxy_model import (
+    TaskQueueFilterProxyModel,
+)
 from ui_next.bridge.task_queue_model import TaskQueueModel
 
 try:
@@ -98,6 +101,7 @@ def main(argv: list[str] | None = None) -> int:
         app_state.openSettings()
 
     task_queue_model = TaskQueueModel(capability_gate=capability_gate)
+    task_queue_filter_model = TaskQueueFilterProxyModel(task_queue_model)
     auto_convert_view_model = AutoConvertViewModel(
         task_queue_model,
         capability_gate=capability_gate,
@@ -176,6 +180,34 @@ def main(argv: list[str] | None = None) -> int:
         settings_view_model.lyricsTimestampPrecision
     )
 
+    def load_task_source_in_player(
+        path: str,
+        label: str,
+        source_type: str,
+        origin: str,
+    ) -> None:
+        audio_player_view_model.setPlaybackSourceWithOrigin(
+            path,
+            label,
+            source_type,
+            origin,
+            False,
+            0,
+        )
+
+    auto_convert_view_model.playbackSourceRequested.connect(
+        load_task_source_in_player
+    )
+
+    def open_task_source_in_editor(path: str) -> None:
+        result = file_session_view_model.setCurrentFile(path, "audio_editor")
+        if result not in {"blocked", "rejected"}:
+            app_state.switchEditorPage("fileInfo")
+
+    auto_convert_view_model.editorFileRequested.connect(
+        open_task_source_in_editor
+    )
+
     app.aboutToQuit.connect(auto_convert_view_model.shutdown)
     app.aboutToQuit.connect(editor_file_browser_view_model.shutdown)
     app.aboutToQuit.connect(processing_session_view_model.shutdown)
@@ -185,6 +217,10 @@ def main(argv: list[str] | None = None) -> int:
 
     engine.rootContext().setContextProperty("appState", app_state)
     engine.rootContext().setContextProperty("taskQueueModel", task_queue_model)
+    engine.rootContext().setContextProperty(
+        "taskQueueFilterModel",
+        task_queue_filter_model,
+    )
     engine.rootContext().setContextProperty("autoConvertViewModel", auto_convert_view_model)
     engine.rootContext().setContextProperty("fileSessionViewModel", file_session_view_model)
     engine.rootContext().setContextProperty(

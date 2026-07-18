@@ -21,6 +21,7 @@ from config import (
 from formats import (
     get_target_format_options,
     get_target_label,
+    is_supported_editor_audio_file,
     is_supported_input_file,
     normalize_target_format,
 )
@@ -259,6 +260,7 @@ class ConvertThread(QThread):
                         stage="已发布输出",
                         output_path=str(result.get("output_path") or ""),
                         error_summary="",
+                        lyrics_result=dict(result.get("lyrics") or {}),
                     )
                     self.taskUpdated.emit(file_path, "已完成")
                 elif isinstance(result, dict) and result.get("cancelled"):
@@ -469,6 +471,8 @@ class AutoConvertViewModel(BaseViewModel):
     backgroundTaskLabelChanged = Signal()
     scanSummaryChanged = Signal()
     scanQueueAccepted = Signal(object)
+    playbackSourceRequested = Signal(str, str, str, str)
+    editorFileRequested = Signal(str)
     _PREVIEW_SAFETY_MESSAGE = (
         "预览模式：自动转码页当前只用于查看任务队列和状态，"
         "不会执行真实监听或转换。"
@@ -1209,6 +1213,66 @@ class AutoConvertViewModel(BaseViewModel):
             return
         self._open_folder(os.path.dirname(task["path"]), "源文件位置")
 
+    @Slot(str)
+    def load_task_source_to_player(self, file_path: str) -> None:
+        task = self._find_task(file_path)
+        if task is None:
+            self._set_error("任务不存在，无法载入源文件。")
+            return
+        source_path = str(task.get("path") or "")
+        disabled_reason = self._source_playback_disabled_reason(task)
+        if disabled_reason:
+            self._set_last_operation(disabled_reason)
+            return
+        self.playbackSourceRequested.emit(
+            source_path,
+            "转码源文件",
+            "original",
+            "transcode_source",
+        )
+        self._set_last_operation(
+            f"已将源文件交给播放器载入，不会自动播放："
+            f"{task.get('filename') or os.path.basename(source_path)}"
+        )
+
+    @Slot(str)
+    def load_task_output_to_player(self, file_path: str) -> None:
+        task = self._find_task(file_path)
+        if task is None:
+            self._set_error("任务不存在，无法载入转换结果。")
+            return
+        disabled_reason = self._output_playback_disabled_reason(task)
+        if disabled_reason:
+            self._set_last_operation(disabled_reason)
+            return
+        output_path = str(task.get("output_path") or "")
+        self.playbackSourceRequested.emit(
+            output_path,
+            "转码输出结果",
+            "export_result",
+            "transcode_output",
+        )
+        self._set_last_operation(
+            f"已将正式输出交给播放器载入，不会自动播放："
+            f"{os.path.basename(output_path)}"
+        )
+
+    @Slot(str)
+    def open_task_in_editor(self, file_path: str) -> None:
+        task = self._find_task(file_path)
+        if task is None:
+            self._set_error("任务不存在，无法在音频编辑中打开。")
+            return
+        disabled_reason = self._source_playback_disabled_reason(task)
+        if disabled_reason:
+            self._set_last_operation(disabled_reason)
+            return
+        source_path = str(task.get("path") or "")
+        self.editorFileRequested.emit(source_path)
+        self._set_last_operation(
+            "已请求在音频编辑中打开；如存在未导出草稿，将先等待确认。"
+        )
+
     @Slot()
     def choose_watch_folder(self) -> None:
         self._set_last_operation("请在“设置”页面修改监听目录草稿，并点击“保存设置”确认写入。")
@@ -1436,6 +1500,28 @@ class AutoConvertViewModel(BaseViewModel):
             or get_output_folder()
             or ""
         )
+
+    def _source_playback_disabled_reason(self, task: dict) -> str:
+        source_path = str(task.get("path") or "")
+        if not source_path or not os.path.isfile(source_path):
+            return "源文件不存在，无法载入播放器。"
+        if bool(task.get("is_ncm_task")) or Path(source_path).suffix.lower() == ".ncm":
+            return "NCM 源文件需先完成转换，再载入正式输出。"
+        if not is_supported_editor_audio_file(source_path):
+            return "当前源格式不能由播放器直接载入。"
+        return ""
+
+    def _output_playback_disabled_reason(self, task: dict) -> str:
+        if task.get("status") != watcher.COMPLETED_STATUS:
+            return "转换完成后可载入正式输出。"
+        output_path = str(task.get("output_path") or "")
+        if not output_path:
+            return "任务尚未记录正式输出。"
+        if not os.path.isfile(output_path):
+            return "正式输出文件不存在。"
+        if not is_supported_editor_audio_file(output_path):
+            return "当前输出格式不能由播放器直接载入。"
+        return ""
 
     def _first_task_with_invalid_output(self, tasks: list[dict]) -> dict | None:
         return next(

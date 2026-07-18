@@ -10,12 +10,18 @@ SectionCard {
     property QtObject theme: Theme {}
     property QtObject typography: Typography {}
     property var queueModel
+    property var sourceModel: queueModel
     property var autoConvertViewModel
     property bool previewMode: autoConvertViewModel ? autoConvertViewModel.previewMode : true
     property bool pageActive: true
     property bool interactionEnabled: pageActive
+    property bool inspectorOpened: false
     property var selectedPaths: []
     property int selectionAnchorIndex: -1
+    property real preservedQueueContentY: 0
+    property bool queueViewRestorePending: false
+
+    signal inspectorToggleRequested()
 
     implicitHeight: 260
     Layout.minimumWidth: 0
@@ -44,8 +50,10 @@ SectionCard {
             StatusBadge {
                 theme: root.theme
                 typography: root.typography
-                label: queueModel.count + " 个任务"
-                tone: queueModel.failedCount > 0 ? "danger" : "muted"
+                label: queueModel.count + " 个当前任务"
+                tone: root.sourceModel && root.sourceModel.failedCount > 0
+                    ? "danger"
+                    : "muted"
             }
 
             StatusBadge {
@@ -53,6 +61,20 @@ SectionCard {
                 typography: root.typography
                 label: root.selectedPaths.length + " 个已选"
                 tone: root.selectedPaths.length > 0 ? "accent" : "muted"
+            }
+
+            WorkstationButton {
+                objectName: "toggleTaskInspectorButton"
+                Layout.preferredWidth: 98
+                implicitHeight: root.theme.controlHeightSmall
+                theme: root.theme
+                typography: root.typography
+                text: root.inspectorOpened ? "收起检查器" : "任务检查器"
+                tone: root.inspectorOpened ? "primary" : "ghost"
+                toolTipText: root.inspectorOpened
+                    ? "收起当前任务检查器"
+                    : "查看选中任务的路径、输出、错误和来源详情"
+                onClicked: root.inspectorToggleRequested()
             }
         }
 
@@ -90,6 +112,7 @@ SectionCard {
 
             ListView {
                 id: queueList
+                objectName: "taskQueueListView"
 
                 anchors.fill: parent
                 anchors.margins: 8
@@ -136,6 +159,10 @@ SectionCard {
                     canRetry: model.canRetry && root.autoConvertViewModel && root.autoConvertViewModel.canMutateQueue
                     canRemove: model.canRemove && root.autoConvertViewModel && root.autoConvertViewModel.canMutateQueue
                     canOpenOutput: model.canOpenOutput
+                    canLoadSource: model.canLoadSource
+                    sourcePlaybackDisabledReason: model.sourcePlaybackDisabledReason
+                    canLoadOutput: model.canLoadOutput
+                    outputPlaybackDisabledReason: model.outputPlaybackDisabledReason
                     canChangeRunPolicy: model.canChangeRunPolicy && !root.previewMode && root.autoConvertViewModel && root.autoConvertViewModel.canMutateQueue
                     canChangeOutputDirectory: model.canChangeOutputDirectory && !root.previewMode && root.autoConvertViewModel && root.autoConvertViewModel.canMutateQueue
                     canChangeTargetFormat: model.canChangeTargetFormat && !root.previewMode && root.autoConvertViewModel && root.autoConvertViewModel.canMutateQueue
@@ -169,6 +196,15 @@ SectionCard {
                     onOpenOutputRequested: function(filePath) {
                         root.autoConvertViewModel.open_task_output(filePath)
                     }
+                    onLoadSourceToPlayerRequested: function(filePath) {
+                        root.autoConvertViewModel.load_task_source_to_player(filePath)
+                    }
+                    onLoadOutputToPlayerRequested: function(filePath) {
+                        root.autoConvertViewModel.load_task_output_to_player(filePath)
+                    }
+                    onOpenInEditorRequested: function(filePath) {
+                        root.autoConvertViewModel.open_task_in_editor(filePath)
+                    }
                     onConvertRequested: function(filePath) {
                         root.autoConvertViewModel.start_convert_item(filePath)
                     }
@@ -184,8 +220,14 @@ SectionCard {
                 visible: queueModel.count === 0
                 theme: root.theme
                 typography: root.typography
-                title: "当前没有任务"
-                detail: root.previewMode ? "预览模式下不能加入任务队列。" : "添加文件、拖入文件或扫描目录后，任务会显示在这里。"
+                title: root.sourceModel && root.sourceModel.totalCount > 0
+                    ? "当前筛选下没有任务"
+                    : "当前没有任务"
+                detail: root.sourceModel && root.sourceModel.totalCount > 0
+                    ? "可以切换顶部任务视图查看其他状态的任务。"
+                    : root.previewMode
+                        ? "预览模式下不能加入任务队列。"
+                        : "添加文件、拖入文件或扫描目录后，任务会显示在这里。"
             }
 
             DropArea {
@@ -223,10 +265,61 @@ SectionCard {
 
     Connections {
         target: root.queueModel
+        ignoreUnknownSignals: true
+
+        function onModelAboutToBeReset() {
+            root.rememberQueueViewPosition()
+        }
 
         function onModelReset() {
             root.pruneSelection()
+            root.restoreQueueViewPosition()
         }
+
+        function onRowsAboutToBeRemoved() {
+            root.rememberQueueViewPosition()
+        }
+
+        function onRowsRemoved() {
+            root.pruneSelection()
+            root.restoreQueueViewPosition()
+        }
+
+        function onLayoutAboutToBeChanged() {
+            root.rememberQueueViewPosition()
+        }
+
+        function onLayoutChanged() {
+            root.pruneSelection()
+            root.restoreQueueViewPosition()
+        }
+
+        function onFilterChanged() {
+            root.pruneSelection()
+        }
+    }
+
+    function rememberQueueViewPosition() {
+        if (!queueList)
+            return
+        root.preservedQueueContentY = queueList.contentY
+        root.queueViewRestorePending = true
+    }
+
+    function restoreQueueViewPosition() {
+        if (!root.queueViewRestorePending)
+            return
+        Qt.callLater(function() {
+            var maximumContentY = Math.max(
+                0,
+                queueList.contentHeight - queueList.height
+            )
+            queueList.contentY = Math.max(
+                0,
+                Math.min(root.preservedQueueContentY, maximumContentY)
+            )
+            root.queueViewRestorePending = false
+        })
     }
 
     function isPathSelected(filePath) {

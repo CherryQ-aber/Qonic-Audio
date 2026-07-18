@@ -11,6 +11,8 @@ Item {
     property QtObject theme: Theme {}
     property QtObject typography: Typography {}
     property bool pageActive: true
+    property real applicationWidth: width
+    property real applicationHeight: height
     enabled: pageActive
 
     // Keep the context objects under page-local names before passing them to
@@ -19,11 +21,18 @@ Item {
     // self-reference inside the child component and the action controls see
     // a null ViewModel.
     property var autoConvertBridge: autoConvertViewModel
-    property var taskQueueBridge: taskQueueModel
+    property var sourceTaskQueueBridge: taskQueueModel
+    property var taskQueueFilterBridge:
+        typeof taskQueueFilterModel !== "undefined"
+        ? taskQueueFilterModel
+        : sourceTaskQueueBridge
 
     ColumnLayout {
         id: workspaceLayout
         anchors.fill: parent
+        anchors.rightMargin: taskInspector.opened && taskInspector.wideViewport
+            ? taskInspector.panelWidth + theme.spacing
+            : 0
         spacing: theme.spacing
 
         Rectangle {
@@ -157,9 +166,12 @@ Item {
             Layout.minimumWidth: 0
             theme: root.theme
             typography: root.typography
-            queueModel: root.taskQueueBridge
+            queueModel: root.taskQueueFilterBridge
+            sourceModel: root.sourceTaskQueueBridge
             autoConvertViewModel: root.autoConvertBridge
             pageActive: root.pageActive
+            inspectorOpened: taskInspector.opened
+            onInspectorToggleRequested: taskInspector.toggle()
         }
 
         ScanSummaryBar {
@@ -176,9 +188,22 @@ Item {
             theme: root.theme
             typography: root.typography
             autoConvertViewModel: root.autoConvertBridge
-            taskQueueModel: root.taskQueueBridge
+            taskQueueModel: root.sourceTaskQueueBridge
             selectedPaths: taskQueue.selectedPaths
         }
+    }
+
+    TaskInspectorDrawer {
+        id: taskInspector
+        anchors.fill: parent
+        theme: root.theme
+        typography: root.typography
+        taskQueueModel: root.sourceTaskQueueBridge
+        selectedPath: taskQueue.selectedPaths.length > 0
+            ? taskQueue.selectedPaths[0]
+            : ""
+        viewportWidth: root.applicationWidth
+        viewportHeight: root.applicationHeight
     }
 
     component CompactSummary: Rectangle {
