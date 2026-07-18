@@ -90,6 +90,7 @@ def _enqueue_paths_to_watcher(
         "added_count": 0,
         "duplicate_count": 0,
         "unsupported_count": 0,
+        "excluded_count": 0,
     }
     seen: set[str] = set()
     for file_path in file_paths:
@@ -113,17 +114,25 @@ def _enqueue_paths_to_watcher(
             source_root=source_root,
             request_generation=request_generation,
         )
-        if watcher.handle_detected_file(
+        enqueue_result = watcher.handle_detected_file_with_reason(
             normalized_path,
             source=source,
             task_snapshot=snapshot,
-        ):
+        )
+        if bool(enqueue_result.get("added")):
             added_paths = summary["added_paths"]
             if isinstance(added_paths, list):
                 added_paths.append(normalized_path)
             summary["added_count"] = int(summary["added_count"]) + 1
-        else:
+        elif enqueue_result.get("reason") == watcher.DETECTED_FILE_DUPLICATE:
             summary["duplicate_count"] = int(summary["duplicate_count"]) + 1
+        elif enqueue_result.get("reason") in (
+            watcher.DETECTED_FILE_IGNORED,
+            watcher.DETECTED_FILE_UNSUPPORTED,
+        ):
+            summary["unsupported_count"] = int(summary["unsupported_count"]) + 1
+        else:
+            summary["excluded_count"] = int(summary["excluded_count"]) + 1
     return summary
 
 
@@ -373,6 +382,7 @@ class DirectoryScanThread(QThread):
             "added_count": 0,
             "duplicate_count": 0,
             "unsupported_count": 0,
+            "excluded_count": 0,
             "cancelled": False,
             "completed": False,
             "current_file": "",
@@ -423,6 +433,9 @@ class DirectoryScanThread(QThread):
             )
             summary["duplicate_count"] = int(summary["duplicate_count"]) + int(
                 enqueue_summary["duplicate_count"]
+            )
+            summary["excluded_count"] = int(summary["excluded_count"]) + int(
+                enqueue_summary["excluded_count"]
             )
             summary["unsupported_count"] = int(summary["unsupported_count"]) + int(
                 result.get("unsupported_count") or 0
@@ -481,6 +494,7 @@ class AutoConvertViewModel(BaseViewModel):
         self._scan_added_count = 0
         self._scan_duplicate_count = 0
         self._scan_unsupported_count = 0
+        self._scan_excluded_count = 0
         self._scan_status_label = "尚未扫描"
         self._scan_was_cancelled = False
         self._scan_request_generation = 0
@@ -614,6 +628,10 @@ class AutoConvertViewModel(BaseViewModel):
     @Property(int, notify=scanSummaryChanged)
     def scanUnsupportedCount(self) -> int:
         return self._scan_unsupported_count
+
+    @Property(int, notify=scanSummaryChanged)
+    def scanExcludedCount(self) -> int:
+        return self._scan_excluded_count
 
     @Property(str, notify=scanSummaryChanged)
     def scanStatusLabel(self) -> str:
@@ -768,6 +786,7 @@ class AutoConvertViewModel(BaseViewModel):
         self._scan_added_count = 0
         self._scan_duplicate_count = 0
         self._scan_unsupported_count = 0
+        self._scan_excluded_count = 0
         self._scan_status_label = "扫描中"
         self._scan_was_cancelled = False
         generation = self._next_scan_generation()
@@ -817,6 +836,7 @@ class AutoConvertViewModel(BaseViewModel):
         added_count = 0
         duplicate_count = 0
         unsupported_count = missing_count + len(skipped_reasons)
+        excluded_count = 0
         if file_paths:
             summary = _enqueue_paths_to_watcher(
                 file_paths,
@@ -827,6 +847,7 @@ class AutoConvertViewModel(BaseViewModel):
             added_count = int(summary["added_count"])
             duplicate_count = int(summary["duplicate_count"])
             unsupported_count += int(summary["unsupported_count"])
+            excluded_count = int(summary["excluded_count"])
             if added_count:
                 self._start_prepare_thread()
                 self._task_queue_model.manualRefresh()
@@ -844,7 +865,8 @@ class AutoConvertViewModel(BaseViewModel):
         if not folder_paths:
             self._set_last_operation(
                 f"拖入处理完成：新增 {added_count} 项，重复跳过 {duplicate_count} 项，"
-                f"不支持或无效 {unsupported_count} 项；不会自动开始转换。"
+                f"安全排除 {excluded_count} 项，不支持或无效 {unsupported_count} 项；"
+                "不会自动开始转换。"
             )
         self._emit_runtime_state()
 
@@ -1313,46 +1335,25 @@ class AutoConvertViewModel(BaseViewModel):
             self._set_last_operation("没有可交接的扫描结果")
             return
 
-        config_data = load_config()
-        output_directory = str(config_data.get("output_folder") or "")
-        target_format = normalize_target_format(config_data.get("target_format"))
-        create_subfolder = bool(config_data.get("create_format_subfolder", True))
-        added_paths: list[str] = []
-        duplicate_count = 0
-        normalized_root = os.path.abspath(os.path.normpath(source_root)) if source_root else ""
-        for candidate in candidates:
-            normalized_path = os.path.abspath(os.path.normpath(candidate))
-            try:
-                relative_path = os.path.relpath(normalized_path, normalized_root)
-            except ValueError:
-                relative_path = os.path.basename(normalized_path)
-            snapshot = {
-                "target_format": target_format,
-                "output_directory": output_directory,
-                "relative_output_path": relative_path,
-                "preserve_relative_structure": bool(config_data.get("preserve_relative_structure", False)),
-                "source_action": "保留源文件",
-                "request_generation": int(request_generation),
-                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "source_root": normalized_root,
-                "source": "qml_scan",
-                "create_format_subfolder": create_subfolder,
-            }
-            if watcher.handle_detected_file(
-                normalized_path,
-                source="qml_scan",
-                task_snapshot=snapshot,
-            ):
-                added_paths.append(normalized_path)
-            else:
-                duplicate_count += 1
+        summary = _enqueue_paths_to_watcher(
+            candidates,
+            config_data=load_config(),
+            source="qml_scan",
+            source_root=source_root,
+            request_generation=request_generation,
+        )
+        added_paths = list(summary["added_paths"])
 
         if added_paths:
             self._start_prepare_thread()
             self._task_queue_model.manualRefresh()
             self.scanQueueAccepted.emit(added_paths)
         self._set_last_operation(
-            f"扫描结果交接完成：新增 {len(added_paths)} 项，重复或不可加入 {duplicate_count} 项；不会自动开始转换。"
+            f"扫描结果交接完成：新增 {len(added_paths)} 项，"
+            f"重复跳过 {int(summary['duplicate_count'])} 项，"
+            f"安全排除 {int(summary['excluded_count'])} 项，"
+            f"不支持或无效 {int(summary['unsupported_count'])} 项；"
+            "不会自动开始转换。"
         )
         self._emit_runtime_state()
 
@@ -1515,12 +1516,14 @@ class AutoConvertViewModel(BaseViewModel):
         added_count = int(summary.get("added_count") or 0)
         duplicate_count = int(summary.get("duplicate_count") or 0)
         unsupported_count = int(summary.get("unsupported_count") or 0)
+        excluded_count = int(summary.get("excluded_count") or 0)
         if added_count:
             self._start_prepare_thread()
             self._task_queue_model.manualRefresh()
         self._set_last_operation(
             f"{label}完成：新增 {added_count} 项，重复跳过 {duplicate_count} 项，"
-            f"不支持或无效 {unsupported_count} 项；不会自动开始转换。"
+            f"安全排除 {excluded_count} 项，不支持或无效 {unsupported_count} 项；"
+            "不会自动开始转换。"
         )
         self._emit_runtime_state()
 
@@ -1558,6 +1561,7 @@ class AutoConvertViewModel(BaseViewModel):
         self._scan_added_count = int(summary.get("added_count") or 0)
         self._scan_duplicate_count = int(summary.get("duplicate_count") or 0)
         self._scan_unsupported_count = int(summary.get("unsupported_count") or 0)
+        self._scan_excluded_count = int(summary.get("excluded_count") or 0)
         self._scan_status_label = "正在取消" if self._scan_was_cancelled else "扫描中"
         self.scanSummaryChanged.emit()
         self._task_queue_model.manualRefresh()
@@ -1567,6 +1571,7 @@ class AutoConvertViewModel(BaseViewModel):
         self._scan_added_count = int(summary.get("added_count") or 0)
         self._scan_duplicate_count = int(summary.get("duplicate_count") or 0)
         self._scan_unsupported_count = int(summary.get("unsupported_count") or 0)
+        self._scan_excluded_count = int(summary.get("excluded_count") or 0)
         self._scan_was_cancelled = bool(summary.get("cancelled"))
         error = str(summary.get("error") or "")
         if self._scan_was_cancelled:
@@ -1582,6 +1587,7 @@ class AutoConvertViewModel(BaseViewModel):
         self._set_last_operation(
             f"目录扫描{self._scan_status_label}：扫描 {self._scan_total_count} 个文件，"
             f"新增 {self._scan_added_count} 项，重复跳过 {self._scan_duplicate_count} 项，"
+            f"安全排除 {self._scan_excluded_count} 项，"
             f"不支持格式 {self._scan_unsupported_count} 项；不会自动开始转换。"
         )
         if error and not self._scan_was_cancelled:

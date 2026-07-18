@@ -4,9 +4,9 @@
 
 - 日期：2026-07-18
 - 项目：CherryQ Audio Converter v5.0 Internal Test
-- 阶段：Phase 5.9.5-B
-- 状态：持久化工作区外壳与两级导航已实现并通过回归，尚未提交
-- 下一阶段：先完成 Phase B 提交收尾；其后等待用户明确要求继续 Phase 5.9.5-C
+- 阶段：Phase 5.9.5-B 人工验收修复
+- 状态：Phase B 外壳已提交为 `9a01869`；自动转码显式扫描误报重复缺陷已修复、通过回归并完成 Phase C 前置提交收尾
+- 下一阶段：保持停止，等待用户明确要求继续 Phase 5.9.5-C
 - 长期计划：`Codex_memory/PHASE_5_9_5_WORKSPACE_INTEGRATION_PLAN.md`
 
 本文是 Phase 5.9.5 的工程合同。长期计划描述完整方向，本文固定当前代码基线、状态归属、兼容规则、测试迁移和阶段门禁。后续实现如需改变本文合同，必须先更新本文并单独汇报，不得在代码修改中隐式改变语义。
@@ -741,4 +741,40 @@ Phase B 未实现、未修改：
 - converter、watcher、任务生命周期、FFmpeg/NCM/Pitch、媒体和导出/no-clobber 算法；
 - capability 默认授权、运行模式、`config.json` 持久化、Legacy Widgets 或发行打包。
 
-Phase B 当前尚未暂存、提交或推送；`.reasonix/`、`Code_Review_Packages/` 和 `config.json.bak` 等既有未跟踪内容未处理。完成本阶段汇报后必须停止；先完成用户认可的 Phase B 提交收尾，并再次得到明确指令后，才能进入 Phase C。
+Phase B 已按精确文件清单提交为 `9a01869`，未推送；`.reasonix/`、`Code_Review_Packages/` 和 `config.json.bak` 等既有未跟踪内容未处理。未自动进入 Phase C。
+
+## 21. Phase B 人工验收：自动转码准入修复
+
+### 21.1 缺陷与用户合同
+
+- 此缺陷早于 Phase B：`watcher.handle_detected_file()` 对全部来源统一排除输出目录范围，QML 又把所有 `False` 统一累计为重复。
+- 只有同一规范化源路径的非终态任务属于真实重复。同磁盘、位于输出目录范围、源格式等于目标格式、基础输出已存在都不是重复。
+- 用户显式添加、拖入和扫描必须保留入队、目标格式和输出目录设置权限；风险以预警表达，不得自动取消参与或改写生命周期状态。
+
+### 21.2 来源感知与安全边界
+
+| 来源 | 输出目录范围 | Temp / Cache / suppressed NCM |
+|---|---|---|
+| `qml_file / qml_drop / qml_scan / manual_drop / retry` | 允许普通音频显式入队 | 始终拒绝 |
+| `watcher / scan` | 继续拒绝，防止结果回灌 | 始终拒绝 |
+
+- watcher 新增结构化原因入口并保留旧布尔接口，自动调度、任务生命周期和转换状态机不变。
+- QML 摘要分别统计真实重复、安全排除和不支持，不能再用“重复”概括全部拒绝。
+
+### 21.3 队列预警
+
+- 源格式等于当前实际目标格式：按用户确认的最终文案，“当前阶段 / 错误”栏直接显示“根目录下已有相同文件”；仅改变展示文案，不改变安全复制、源文件保留或目标格式修改权限。
+- 基础计划输出已存在：“当前阶段 / 错误”栏优先显示“根目录下已有相同文件”，并说明转换时会自动使用新名称、不覆盖已有文件；同格式说明排在其后，底层继续使用 no-clobber。
+- 多个可调整任务计划输出到同一规范化路径：同时标记并提示 no-clobber 将分配不同名称。
+- 预警使用琥珀色目标格式、输出策略、详情文字和浅色行背景；选中态优先于预警背景，错误态优先于预警详情。
+- `status / enabled_for_run / can_convert / can_change_target_format / can_change_output_directory` 不因预警改变。
+- 预警只服务于转换前可调整状态；读取中、处理中和已完成任务优先显示真实阶段，完成任务自己的正式 `output_path` 不得被视为预先存在的冲突。
+
+### 21.4 验证与门禁
+
+- 联合专项：`47 passed, 6 subtests passed`。
+- 最终完整无缓存回归：`507 passed, 2 warnings, 32 subtests passed`。
+- 自动转码 offscreen smoke、compileall、diff check 和 `config.json` SHA256 守卫通过。
+- 完整回归曾偶发既有 Legacy 临时假 FLAC `WinError 32`；失败单测立即通过，随后完整复跑全部通过，未修改 Legacy 媒体逻辑。
+- 未修改 `converter.py`、safe publish/no-clobber、源文件保护、配置、播放器或 Phase C 代码。
+- 当前人工验收修复已完成 Phase C 前置提交收尾但未推送。保持停止，等待用户明确开启 Phase C。

@@ -41,6 +41,27 @@ FAILED_STATUS = "失败"
 SKIPPED_STATUS = "已跳过"
 CANCELLED_STATUS = "已取消"
 
+DETECTED_FILE_ADDED = "added"
+DETECTED_FILE_DUPLICATE = "duplicate"
+DETECTED_FILE_IGNORED = "ignored"
+DETECTED_FILE_UNSUPPORTED = "unsupported"
+DETECTED_FILE_SUPPRESSED = "suppressed"
+DETECTED_FILE_OUTPUT_PATH = "output_path"
+DETECTED_FILE_RUNTIME_PATH = "runtime_path"
+
+# Explicit user actions may intentionally use an existing output tree as input.
+# Automatic discovery must still reject it to prevent converted files feeding
+# back into the watcher.
+OUTPUT_ROOT_ALLOWED_SOURCES = frozenset(
+    {
+        "qml_file",
+        "qml_drop",
+        "qml_scan",
+        "manual_drop",
+        "retry",
+    }
+)
+
 TERMINAL_STATUSES = (
     COMPLETED_STATUS,
     FAILED_STATUS,
@@ -769,28 +790,46 @@ def _is_file_supported(file_path):
     return is_supported_input_file(file_path)
 
 
-def handle_detected_file(file_path, source="watcher", task_snapshot=None):
+def _enqueue_result(added, reason):
+    return {
+        "added": bool(added),
+        "reason": str(reason),
+    }
+
+
+def handle_detected_file_with_reason(
+    file_path,
+    source="watcher",
+    task_snapshot=None,
+):
     file_path = _normalize_file_path(file_path)
 
     if is_ignored_file(file_path):
         logger.info(f"忽略非音频辅助文件: {file_path}")
-        return False
+        return _enqueue_result(False, DETECTED_FILE_IGNORED)
 
     if not _is_file_supported(file_path):
         logger.warning(f"不支持的文件格式: {file_path}")
-        return False
+        return _enqueue_result(False, DETECTED_FILE_UNSUPPORTED)
 
     if _is_suppressed_generated_path(file_path):
         logger.info(f"忽略 NCM 解码产物监听事件: {file_path}")
-        return False
+        return _enqueue_result(False, DETECTED_FILE_SUPPRESSED)
 
-    if _is_generated_output_or_runtime_path(file_path):
-        logger.info(f"忽略程序输出或运行时文件: {file_path}")
-        return False
+    if _is_runtime_path(file_path):
+        logger.info(f"忽略程序运行时文件: {file_path}")
+        return _enqueue_result(False, DETECTED_FILE_RUNTIME_PATH)
+
+    if (
+        _is_output_path(file_path)
+        and _normalize_source(source) not in OUTPUT_ROOT_ALLOWED_SOURCES
+    ):
+        logger.info(f"忽略程序输出文件: {file_path}")
+        return _enqueue_result(False, DETECTED_FILE_OUTPUT_PATH)
 
     if has_processed_file(file_path):
         logger.warning(f"重复文件，已跳过: {file_path}")
-        return False
+        return _enqueue_result(False, DETECTED_FILE_DUPLICATE)
 
     snapshot = dict(task_snapshot or {})
     snapshot.setdefault("source_type", get_source_format(file_path))
@@ -800,29 +839,56 @@ def handle_detected_file(file_path, source="watcher", task_snapshot=None):
     snapshot.setdefault("source", source)
 
     if not add_pending_file(file_path, status=QUEUED_STATUS, task_snapshot=snapshot):
-        return False
+        return _enqueue_result(False, DETECTED_FILE_DUPLICATE)
 
     if not mark_processed_file(file_path):
         logger.warning(f"重复文件，已跳过: {file_path}")
-        return False
+        return _enqueue_result(False, DETECTED_FILE_DUPLICATE)
 
     logger.info(f"检测到文件并已入队: {file_path} - 来源: {source} - 状态: {QUEUED_STATUS}")
-    return True
+    return _enqueue_result(True, DETECTED_FILE_ADDED)
+
+
+def handle_detected_file(file_path, source="watcher", task_snapshot=None):
+    """Compatibility wrapper for callers that only need success or failure."""
+    result = handle_detected_file_with_reason(
+        file_path,
+        source=source,
+        task_snapshot=task_snapshot,
+    )
+    return bool(result["added"])
+
+
+def _normalize_source(source):
+    return str(source or "watcher").strip().lower()
+
+
+def _is_path_within_root(file_path, root):
+    if not root:
+        return False
+
+    try:
+        normalized_root = os.path.normcase(os.path.abspath(root))
+        normalized_path = os.path.normcase(os.path.abspath(file_path))
+        return os.path.commonpath([normalized_root, normalized_path]) == normalized_root
+    except (OSError, ValueError):
+        return False
+
+
+def _is_output_path(file_path):
+    return _is_path_within_root(file_path, get_output_folder())
+
+
+def _is_runtime_path(file_path):
+    return any(
+        _is_path_within_root(file_path, root)
+        for root in (get_temp_folder(), get_cache_folder())
+    )
 
 
 def _is_generated_output_or_runtime_path(file_path):
     """Prevent QML watcher runs from re-enqueueing outputs and cache files."""
-    for root in (get_output_folder(), get_temp_folder(), get_cache_folder()):
-        if not root:
-            continue
-        try:
-            normalized_root = os.path.normcase(os.path.abspath(root))
-            normalized_path = os.path.normcase(os.path.abspath(file_path))
-            if os.path.commonpath([normalized_root, normalized_path]) == normalized_root:
-                return True
-        except (OSError, ValueError):
-            continue
-    return False
+    return _is_output_path(file_path) or _is_runtime_path(file_path)
 
 
 def _get_prepare_task_paths():

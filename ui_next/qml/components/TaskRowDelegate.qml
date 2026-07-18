@@ -13,9 +13,14 @@ Rectangle {
     property string fileName: ""
     property string sourceFormat: ""
     property string targetFormat: ""
+    property string effectiveTargetFormat: ""
     property string targetFormatLabel: ""
     property string outputStrategyLabel: ""
     property string outputDirectoryOverride: ""
+    property bool sameFormatWarning: false
+    property string plannedOutputPath: ""
+    property bool outputNameConflict: false
+    property string queueWarningText: ""
     property string statusLabel: ""
     property string statusDetail: ""
     property color statusColor: theme.textMuted
@@ -36,6 +41,14 @@ Rectangle {
     property bool readOnly: true
     property bool interactionEnabled: true
     property var formatOptions: []
+    readonly property bool hasQueueWarning: sameFormatWarning || outputNameConflict
+    readonly property bool stageTakesDetailPriority: statusTone === "warning"
+        || statusTone === "success"
+    readonly property string primaryDetailText: errorSummary
+        || (stageTakesDetailPriority ? stage : queueWarningText)
+        || stage
+        || statusDetail
+        || "无附加说明"
 
     enabled: interactionEnabled
 
@@ -59,10 +72,16 @@ Rectangle {
     implicitHeight: 54
     color: root.selected
         ? Qt.rgba(theme.accent.r, theme.accent.g, theme.accent.b, 0.14)
-        : rowIndex % 2 === 0
-            ? theme.surface
-            : Qt.rgba(theme.panel.r, theme.panel.g, theme.panel.b, 0.64)
-    border.color: root.selected ? theme.accent : Qt.rgba(theme.border.r, theme.border.g, theme.border.b, 0.65)
+        : root.hasQueueWarning
+            ? Qt.rgba(theme.warning.r, theme.warning.g, theme.warning.b, 0.08)
+            : rowIndex % 2 === 0
+                ? theme.surface
+                : Qt.rgba(theme.panel.r, theme.panel.g, theme.panel.b, 0.64)
+    border.color: root.selected
+        ? theme.accent
+        : root.hasQueueWarning
+            ? Qt.rgba(theme.warning.r, theme.warning.g, theme.warning.b, 0.52)
+            : Qt.rgba(theme.border.r, theme.border.g, theme.border.b, 0.65)
     border.width: 1
     radius: theme.radiusSmall
 
@@ -133,7 +152,11 @@ Rectangle {
 
         Text {
             text: root.targetFormatLabel
-            color: root.targetFormat.length > 0 ? theme.textPrimary : theme.textSecondary
+            color: root.sameFormatWarning
+                ? theme.warning
+                : root.targetFormat.length > 0
+                    ? theme.textPrimary
+                    : theme.textSecondary
             font.family: typography.fontFamily
             font.pixelSize: typography.sizeSmall
             Layout.preferredWidth: 170
@@ -143,7 +166,11 @@ Rectangle {
 
         Text {
             text: root.outputStrategyLabel
-            color: root.outputDirectoryOverride.length > 0 ? theme.textPrimary : theme.textSecondary
+            color: root.outputNameConflict
+                ? theme.warning
+                : root.outputDirectoryOverride.length > 0
+                    ? theme.textPrimary
+                    : theme.textSecondary
             font.family: typography.fontFamily
             font.pixelSize: typography.sizeSmall
             Layout.preferredWidth: 104
@@ -151,9 +178,11 @@ Rectangle {
             maximumLineCount: 1
 
             ToolTip.visible: outputMouse.containsMouse
-            ToolTip.text: root.outputDirectoryOverride.length > 0
-                ? root.outputDirectoryOverride
-                : "跟随全局默认输出目录"
+            ToolTip.text: root.outputNameConflict
+                ? root.queueWarningText + "\n基础计划路径：" + root.plannedOutputPath
+                : root.outputDirectoryOverride.length > 0
+                    ? root.outputDirectoryOverride
+                    : "跟随全局默认输出目录"
 
             MouseArea {
                 id: outputMouse
@@ -172,13 +201,27 @@ Rectangle {
         }
 
         Text {
-            text: root.errorSummary || root.stage || root.statusDetail || "无附加说明"
-            color: theme.textSecondary
+            text: root.primaryDetailText
+            color: root.errorSummary
+                ? theme.danger
+                : root.queueWarningText && !root.stageTakesDetailPriority
+                    ? theme.warning
+                    : theme.textSecondary
             font.family: typography.fontFamily
             font.pixelSize: typography.sizeSmall
             Layout.preferredWidth: 150
             elide: Text.ElideRight
             maximumLineCount: 1
+
+            ToolTip.visible: detailMouse.containsMouse
+            ToolTip.text: root.primaryDetailText
+
+            MouseArea {
+                id: detailMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                acceptedButtons: Qt.NoButton
+            }
         }
     }
 

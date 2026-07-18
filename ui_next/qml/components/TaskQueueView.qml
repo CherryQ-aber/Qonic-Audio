@@ -111,9 +111,14 @@ SectionCard {
                     fileName: model.filename
                     sourceFormat: model.format
                     targetFormat: model.targetFormat
+                    effectiveTargetFormat: model.effectiveTargetFormat
                     targetFormatLabel: model.targetFormatLabel
                     outputStrategyLabel: model.outputStrategyLabel
                     outputDirectoryOverride: model.outputDirectoryOverride
+                    sameFormatWarning: model.sameFormatWarning
+                    plannedOutputPath: model.plannedOutputPath
+                    outputNameConflict: model.outputNameConflict
+                    queueWarningText: model.queueWarningText
                     statusLabel: model.statusLabel
                     statusDetail: model.statusDetail
                     statusColor: model.statusColor

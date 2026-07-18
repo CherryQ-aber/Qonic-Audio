@@ -111,7 +111,8 @@ class Phase57WorkflowTests(unittest.TestCase):
                     auto.add_scan_candidates([str(source)], temp_dir, 1)
                     auto.add_scan_candidates([str(source)], temp_dir, 1)
                 self.assertEqual(len(watcher.get_task_snapshots()), 1)
-                self.assertIn("重复或不可加入 1 项", auto.lastOperation)
+                self.assertIn("重复跳过 1 项", auto.lastOperation)
+                self.assertIn("安全排除 0 项", auto.lastOperation)
                 auto.shutdown()
 
     def test_real_wav_batch_conversion_keeps_source_and_publishes_new_output(self):

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from PySide6.QtCore import (
@@ -14,8 +15,17 @@ from PySide6.QtCore import (
 )
 
 import watcher
-from config import get_target_format
-from formats import get_target_label
+from config import (
+    get_create_format_subfolder,
+    get_output_folder,
+    get_target_format,
+)
+from formats import (
+    DEFAULT_TARGET_FORMAT,
+    get_target_extension,
+    get_target_label,
+    normalize_target_format,
+)
 from ui_next.bridge.capabilities import (
     BATCH_CONVERT,
     QUEUE_MUTATION,
@@ -50,6 +60,11 @@ class TaskQueueModel(QAbstractListModel):
     outputDirectoryOverrideRole = Qt.ItemDataRole.UserRole + 23
     canChangeRunPolicyRole = Qt.ItemDataRole.UserRole + 24
     canChangeOutputDirectoryRole = Qt.ItemDataRole.UserRole + 25
+    effectiveTargetFormatRole = Qt.ItemDataRole.UserRole + 26
+    sameFormatWarningRole = Qt.ItemDataRole.UserRole + 27
+    plannedOutputPathRole = Qt.ItemDataRole.UserRole + 28
+    outputNameConflictRole = Qt.ItemDataRole.UserRole + 29
+    queueWarningTextRole = Qt.ItemDataRole.UserRole + 30
 
     countChanged = Signal()
     summaryChanged = Signal()
@@ -82,6 +97,11 @@ class TaskQueueModel(QAbstractListModel):
         outputDirectoryOverrideRole: b"outputDirectoryOverride",
         canChangeRunPolicyRole: b"canChangeRunPolicy",
         canChangeOutputDirectoryRole: b"canChangeOutputDirectory",
+        effectiveTargetFormatRole: b"effectiveTargetFormat",
+        sameFormatWarningRole: b"sameFormatWarning",
+        plannedOutputPathRole: b"plannedOutputPath",
+        outputNameConflictRole: b"outputNameConflict",
+        queueWarningTextRole: b"queueWarningText",
     }
 
     def __init__(
@@ -188,6 +208,16 @@ class TaskQueueModel(QAbstractListModel):
             return bool(task.get("can_change_run_policy", False))
         if role == self.canChangeOutputDirectoryRole:
             return bool(task.get("can_change_output_directory", False))
+        if role == self.effectiveTargetFormatRole:
+            return task.get("_effective_target_format", "")
+        if role == self.sameFormatWarningRole:
+            return bool(task.get("_same_format_warning", False))
+        if role == self.plannedOutputPathRole:
+            return task.get("_planned_output_path", "")
+        if role == self.outputNameConflictRole:
+            return bool(task.get("_output_name_conflict", False))
+        if role == self.queueWarningTextRole:
+            return task.get("_queue_warning_text", "")
 
         return None
 
@@ -285,10 +315,15 @@ class TaskQueueModel(QAbstractListModel):
             self.errorOccurred.emit(f"刷新队列失败: {exc}")
             return
 
-        tasks = list(tasks)
+        global_settings = self._queue_derivation_settings()
+        tasks = [
+            self._with_queue_warnings(task, global_settings)
+            for task in tasks
+        ]
+        tasks = self._with_queue_path_collisions(tasks)
         self._last_refresh_time = QDateTime.currentDateTime().toString("HH:mm:ss")
         self.lastRefreshChanged.emit()
-        signature = self._build_signature(tasks)
+        signature = self._build_signature(tasks, global_settings)
         if not force and signature == self._last_signature:
             return
 
@@ -301,10 +336,20 @@ class TaskQueueModel(QAbstractListModel):
         self.countChanged.emit()
         self.summaryChanged.emit()
 
-    def _build_signature(self, tasks: list[dict]) -> tuple:
-        global_target_format = get_target_format()
+    def _build_signature(
+        self,
+        tasks: list[dict],
+        global_settings: tuple[str, str, bool] | None = None,
+    ) -> tuple:
+        if global_settings is None:
+            global_settings = self._queue_derivation_settings()
+            tasks = [
+                self._with_queue_warnings(task, global_settings)
+                for task in tasks
+            ]
+            tasks = self._with_queue_path_collisions(tasks)
         return (
-            global_target_format,
+            global_settings,
             tuple(
                 (
                     task.get("path", ""),
@@ -314,6 +359,9 @@ class TaskQueueModel(QAbstractListModel):
                     task.get("target_format_override") or "",
                     bool(task.get("enabled_for_run", True)),
                     task.get("output_directory_override") or "",
+                    task.get("relative_output_path") or "",
+                    bool(task.get("preserve_relative_structure", False)),
+                    task.get("create_format_subfolder"),
                     task.get("status", ""),
                     bool(task.get("can_convert", False)),
                     bool(task.get("can_retry", False)),
@@ -322,10 +370,170 @@ class TaskQueueModel(QAbstractListModel):
                     task.get("stage", ""),
                     task.get("output_path", ""),
                     task.get("error_summary", ""),
+                    task.get("_effective_target_format", ""),
+                    bool(task.get("_same_format_warning", False)),
+                    task.get("_planned_output_path", ""),
+                    bool(task.get("_output_name_conflict", False)),
+                    task.get("_queue_warning_text", ""),
                 )
                 for task in tasks
             ),
         )
+
+    def _queue_derivation_settings(self) -> tuple[str, str, bool]:
+        return (
+            normalize_target_format(
+                get_target_format(),
+                DEFAULT_TARGET_FORMAT,
+            ),
+            str(get_output_folder() or ""),
+            bool(get_create_format_subfolder()),
+        )
+
+    def _with_queue_warnings(
+        self,
+        task: dict,
+        global_settings: tuple[str, str, bool],
+    ) -> dict:
+        global_target_format, global_output_folder, global_create_subfolder = (
+            global_settings
+        )
+        decorated = dict(task)
+        effective_target = normalize_target_format(
+            task.get("target_format_override") or global_target_format,
+            global_target_format,
+        )
+        source_extension = Path(str(task.get("path") or "")).suffix.lower()
+        target_extension = get_target_extension(effective_target).lower()
+        planned_output_path = self._planned_output_path(
+            task,
+            effective_target,
+            global_output_folder,
+            global_create_subfolder,
+        )
+        warning_actionable = self._queue_warning_actionable(task)
+        output_name_conflict = bool(
+            warning_actionable
+            and planned_output_path
+            and Path(planned_output_path).exists()
+        )
+        same_format_warning = bool(
+            warning_actionable
+            and source_extension
+            and source_extension == target_extension
+        )
+
+        warnings: list[str] = []
+        if output_name_conflict:
+            warnings.append(
+                "根目录下已有相同文件：转换时会自动使用新名称，不会覆盖已有文件"
+            )
+        elif same_format_warning:
+            warnings.append("根目录下已有相同文件")
+
+        decorated["_effective_target_format"] = effective_target
+        decorated["_same_format_warning"] = same_format_warning
+        decorated["_planned_output_path"] = planned_output_path
+        decorated["_output_name_conflict"] = output_name_conflict
+        decorated["_queue_warning_text"] = "；".join(warnings)
+        return decorated
+
+    def _with_queue_path_collisions(self, tasks: list[dict]) -> list[dict]:
+        planned_groups: dict[str, list[int]] = {}
+        for index, task in enumerate(tasks):
+            if task.get("status") not in (
+                watcher.QUEUED_STATUS,
+                watcher.READING_STATUS,
+                watcher.WAITING_STATUS,
+                watcher.PROCESSING_STATUS,
+                watcher.FAILED_STATUS,
+            ):
+                continue
+            identity = self._normalized_path_identity(
+                task.get("_planned_output_path")
+            )
+            if identity:
+                planned_groups.setdefault(identity, []).append(index)
+
+        collision_indexes = {
+            index
+            for indexes in planned_groups.values()
+            if len(indexes) > 1
+            for index in indexes
+            if self._queue_warning_actionable(tasks[index])
+        }
+        if not collision_indexes:
+            return tasks
+
+        decorated_tasks = list(tasks)
+        collision_warning = (
+            "队列中多个任务计划输出到同一路径：no-clobber 会自动使用不同名称"
+        )
+        for index in collision_indexes:
+            decorated = dict(tasks[index])
+            warnings = [
+                warning
+                for warning in str(
+                    decorated.get("_queue_warning_text") or ""
+                ).split("；")
+                if warning
+            ]
+            if collision_warning not in warnings:
+                warnings.append(collision_warning)
+            decorated["_output_name_conflict"] = True
+            decorated["_queue_warning_text"] = "；".join(warnings)
+            decorated_tasks[index] = decorated
+        return decorated_tasks
+
+    def _queue_warning_actionable(self, task: dict) -> bool:
+        return task.get("status") in (
+            watcher.QUEUED_STATUS,
+            watcher.WAITING_STATUS,
+            watcher.FAILED_STATUS,
+        )
+
+    def _normalized_path_identity(self, file_path: object) -> str:
+        value = str(file_path or "")
+        if not value:
+            return ""
+        return os.path.normcase(
+            os.path.abspath(os.path.normpath(value))
+        )
+
+    def _planned_output_path(
+        self,
+        task: dict,
+        effective_target: str,
+        global_output_folder: str,
+        global_create_subfolder: bool,
+    ) -> str:
+        source_path = str(task.get("path") or "")
+        output_root = str(
+            task.get("output_directory_override")
+            or global_output_folder
+            or ""
+        )
+        if not source_path or not output_root:
+            return ""
+
+        output_directory = Path(output_root)
+        if bool(task.get("preserve_relative_structure", False)):
+            relative_parent = Path(
+                str(task.get("relative_output_path") or "")
+            ).parent
+            if str(relative_parent) not in {"", "."}:
+                output_directory = output_directory / relative_parent
+
+        create_format_subfolder = task.get("create_format_subfolder")
+        if create_format_subfolder is None:
+            create_format_subfolder = global_create_subfolder
+        if bool(create_format_subfolder):
+            output_directory = output_directory / get_target_label(
+                effective_target
+            )
+
+        filename = f"{Path(source_path).stem}{get_target_extension(effective_target)}"
+        return str(output_directory / filename)
 
     def _build_summary(self, tasks: list[dict]) -> dict[str, int]:
         return {
@@ -363,7 +571,11 @@ class TaskQueueModel(QAbstractListModel):
         )
         if selected_format:
             return f"单独指定：{get_target_label(selected_format)}"
-        return f"跟随全局：{get_target_label(get_target_format())}"
+        effective_target = (
+            task.get("_effective_target_format")
+            or get_target_format()
+        )
+        return f"跟随全局：{get_target_label(effective_target)}"
 
     def _status_display(self, task: dict) -> dict:
         return watcher.get_status_display(task.get("status", ""))

@@ -337,6 +337,363 @@ class Phase592QueueControlCenterTests(unittest.TestCase):
             self.assertIn('text: "转换选中文件"', row_qml)
             self.assertIn('text: "打开源文件位置"', row_qml)
             self.assertIn("model: root.formatOptions", row_qml)
+            self.assertIn("effectiveTargetFormat: model.effectiveTargetFormat", queue_qml)
+            self.assertIn("sameFormatWarning: model.sameFormatWarning", queue_qml)
+            self.assertIn("plannedOutputPath: model.plannedOutputPath", queue_qml)
+            self.assertIn("outputNameConflict: model.outputNameConflict", queue_qml)
+            self.assertIn("queueWarningText: model.queueWarningText", queue_qml)
+            self.assertIn("root.sameFormatWarning", row_qml)
+            self.assertIn("root.outputNameConflict", row_qml)
+            self.assertIn("stageTakesDetailPriority", row_qml)
+            self.assertIn(
+                "(stageTakesDetailPriority ? stage : queueWarningText)",
+                row_qml,
+            )
+            self.assertIn("text: root.primaryDetailText", row_qml)
+            self.assertNotIn("ComboBox {", row_qml)
+
+    def test_queue_warnings_are_derived_without_changing_task_permissions(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source = root / "song.flac"
+            source.write_bytes(b"audio")
+            watcher.add_pending_file(
+                str(source),
+                status=watcher.WAITING_STATUS,
+                task_snapshot={
+                    "target_format": "flac",
+                    "target_format_override": None,
+                    "output_directory": str(root),
+                    "output_directory_override": None,
+                    "enabled_for_run": True,
+                    "create_format_subfolder": False,
+                },
+            )
+
+            with (
+                patch(
+                    "ui_next.bridge.task_queue_model.get_target_format",
+                    return_value="flac",
+                ),
+                patch(
+                    "ui_next.bridge.task_queue_model.get_output_folder",
+                    return_value=str(root),
+                ),
+                patch(
+                    "ui_next.bridge.task_queue_model.get_create_format_subfolder",
+                    return_value=True,
+                ),
+            ):
+                model = TaskQueueModel(
+                    capability_gate=CapabilityGate((QUEUE_MUTATION,))
+                )
+                index = model.index(0, 0, QModelIndex())
+                role_names = set(model.roleNames().values())
+
+                self.assertIn(b"effectiveTargetFormat", role_names)
+                self.assertIn(b"sameFormatWarning", role_names)
+                self.assertIn(b"plannedOutputPath", role_names)
+                self.assertIn(b"outputNameConflict", role_names)
+                self.assertIn(b"queueWarningText", role_names)
+                self.assertEqual(
+                    "flac",
+                    model.data(index, model.effectiveTargetFormatRole),
+                )
+                self.assertTrue(model.data(index, model.sameFormatWarningRole))
+                self.assertEqual(
+                    str(source),
+                    model.data(index, model.plannedOutputPathRole),
+                )
+                self.assertTrue(model.data(index, model.outputNameConflictRole))
+                warning = model.data(index, model.queueWarningTextRole)
+                self.assertTrue(
+                    warning.startswith("根目录下已有相同文件")
+                )
+                self.assertIn("根目录下已有相同文件", warning)
+                self.assertTrue(model.data(index, model.canConvertRole))
+                self.assertTrue(model.data(index, model.enabledForRunRole))
+                self.assertTrue(
+                    model.data(index, model.canChangeTargetFormatRole)
+                )
+
+                self.assertTrue(
+                    watcher.set_pending_file_target_format(str(source), "mp3")
+                )
+                model.manualRefresh()
+                index = model.index(0, 0, QModelIndex())
+
+                self.assertEqual(
+                    "mp3",
+                    model.data(index, model.effectiveTargetFormatRole),
+                )
+                self.assertFalse(model.data(index, model.sameFormatWarningRole))
+                self.assertEqual(
+                    str(root / "song.mp3"),
+                    model.data(index, model.plannedOutputPathRole),
+                )
+                self.assertFalse(model.data(index, model.outputNameConflictRole))
+                self.assertEqual("", model.data(index, model.queueWarningTextRole))
+                self.assertEqual(
+                    watcher.WAITING_STATUS,
+                    model.data(index, model.statusRole),
+                )
+                self.assertTrue(model.data(index, model.canConvertRole))
+                self.assertTrue(model.data(index, model.enabledForRunRole))
+                self.assertTrue(
+                    model.data(index, model.canChangeTargetFormatRole)
+                )
+
+    def test_same_format_stage_warning_uses_requested_plain_label(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source = root / "source" / "song.flac"
+            output = root / "empty-output"
+            source.parent.mkdir()
+            source.write_bytes(b"audio")
+            watcher.add_pending_file(
+                str(source),
+                status=watcher.WAITING_STATUS,
+                task_snapshot={
+                    "target_format_override": "flac",
+                    "output_directory_override": str(output),
+                    "enabled_for_run": True,
+                    "create_format_subfolder": False,
+                },
+            )
+
+            model = TaskQueueModel(
+                capability_gate=CapabilityGate((QUEUE_MUTATION,))
+            )
+            index = model.index(0, 0, QModelIndex())
+
+            self.assertTrue(model.data(index, model.sameFormatWarningRole))
+            self.assertFalse(model.data(index, model.outputNameConflictRole))
+            self.assertEqual(
+                "根目录下已有相同文件",
+                model.data(index, model.queueWarningTextRole),
+            )
+            self.assertTrue(model.data(index, model.canConvertRole))
+            self.assertTrue(
+                model.data(index, model.canChangeTargetFormatRole)
+            )
+
+    def test_planned_output_path_preserves_relative_and_format_directories(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source = root / "source" / "album" / "song.wav"
+            source.parent.mkdir(parents=True)
+            output = root / "output"
+            source.write_bytes(b"audio")
+            watcher.add_pending_file(
+                str(source),
+                status=watcher.WAITING_STATUS,
+                task_snapshot={
+                    "target_format": "flac",
+                    "target_format_override": "mp3",
+                    "output_directory": str(root / "snapshot"),
+                    "output_directory_override": str(output),
+                    "relative_output_path": str(Path("album") / source.name),
+                    "preserve_relative_structure": True,
+                    "create_format_subfolder": True,
+                },
+            )
+
+            with patch(
+                "ui_next.bridge.task_queue_model.get_target_format",
+                return_value="flac",
+            ):
+                model = TaskQueueModel()
+                index = model.index(0, 0, QModelIndex())
+
+            self.assertEqual(
+                str(output / "album" / "MP3" / "song.mp3"),
+                model.data(index, model.plannedOutputPathRole),
+            )
+            self.assertFalse(output.exists())
+            self.assertFalse(model.data(index, model.sameFormatWarningRole))
+            self.assertFalse(model.data(index, model.outputNameConflictRole))
+
+    def test_global_output_change_refreshes_planned_conflict_warning(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source = root / "source" / "song.wav"
+            source.parent.mkdir()
+            source.write_bytes(b"audio")
+            first_output = root / "first"
+            second_output = root / "second"
+            second_output.mkdir()
+            (second_output / "song.mp3").write_bytes(b"existing")
+            watcher.add_pending_file(
+                str(source),
+                status=watcher.WAITING_STATUS,
+                task_snapshot={
+                    "target_format": "flac",
+                    "target_format_override": "mp3",
+                    "output_directory": str(root / "stale snapshot"),
+                    "output_directory_override": None,
+                    "create_format_subfolder": False,
+                },
+            )
+            current_output = {"path": str(first_output)}
+
+            with (
+                patch(
+                    "ui_next.bridge.task_queue_model.get_target_format",
+                    return_value="flac",
+                ),
+                patch(
+                    "ui_next.bridge.task_queue_model.get_output_folder",
+                    side_effect=lambda: current_output["path"],
+                ),
+                patch(
+                    "ui_next.bridge.task_queue_model.get_create_format_subfolder",
+                    return_value=False,
+                ),
+            ):
+                model = TaskQueueModel()
+                index = model.index(0, 0, QModelIndex())
+                self.assertEqual(
+                    str(first_output / "song.mp3"),
+                    model.data(index, model.plannedOutputPathRole),
+                )
+                self.assertFalse(model.data(index, model.outputNameConflictRole))
+
+                current_output["path"] = str(second_output)
+                model.manualRefresh()
+                index = model.index(0, 0, QModelIndex())
+
+            self.assertEqual(
+                str(second_output / "song.mp3"),
+                model.data(index, model.plannedOutputPathRole),
+            )
+            self.assertTrue(model.data(index, model.outputNameConflictRole))
+            self.assertIn(
+                "根目录下已有相同文件",
+                model.data(index, model.queueWarningTextRole),
+            )
+            self.assertEqual(
+                watcher.WAITING_STATUS,
+                model.data(index, model.statusRole),
+            )
+
+    def test_completed_own_output_is_not_reported_as_name_conflict(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source = root / "source.flac"
+            output = root / "output"
+            output.mkdir()
+            source.write_bytes(b"audio")
+            planned_output = output / "source.flac"
+            planned_output.write_bytes(b"converted")
+            watcher.add_pending_file(
+                str(source),
+                status=watcher.COMPLETED_STATUS,
+                task_snapshot={
+                    "target_format": "flac",
+                    "target_format_override": "flac",
+                    "output_directory_override": str(output),
+                    "create_format_subfolder": False,
+                },
+            )
+            self.assertTrue(
+                watcher.set_pending_file_runtime_data(
+                    str(source),
+                    output_path=str(planned_output),
+                    stage="转换完成，正式输出已发布",
+                )
+            )
+
+            model = TaskQueueModel()
+            index = model.index(0, 0, QModelIndex())
+
+            self.assertEqual(
+                str(planned_output),
+                model.data(index, model.plannedOutputPathRole),
+            )
+            self.assertFalse(model.data(index, model.outputNameConflictRole))
+            self.assertFalse(model.data(index, model.sameFormatWarningRole))
+            self.assertEqual("", model.data(index, model.queueWarningTextRole))
+            self.assertEqual(
+                "转换完成，正式输出已发布",
+                model.data(index, model.stageRole),
+            )
+            self.assertFalse(
+                model.data(index, model.canChangeTargetFormatRole)
+            )
+
+    def test_queue_tasks_with_same_planned_output_are_warned_without_state_change(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            output = root / "output"
+            first = root / "one" / "same.wav"
+            second = root / "two" / "same.wav"
+            first.parent.mkdir()
+            second.parent.mkdir()
+            first.write_bytes(b"first")
+            second.write_bytes(b"second")
+            for source in (first, second):
+                watcher.add_pending_file(
+                    str(source),
+                    status=watcher.WAITING_STATUS,
+                    task_snapshot={
+                        "target_format_override": "mp3",
+                        "output_directory_override": str(output),
+                        "enabled_for_run": True,
+                        "create_format_subfolder": False,
+                    },
+                )
+
+            model = TaskQueueModel(
+                capability_gate=CapabilityGate((QUEUE_MUTATION,))
+            )
+            expected_path = str(output / "same.mp3")
+            self.assertFalse(output.exists())
+            for row in range(model.rowCount()):
+                index = model.index(row, 0, QModelIndex())
+                self.assertEqual(
+                    expected_path,
+                    model.data(index, model.plannedOutputPathRole),
+                )
+                self.assertTrue(
+                    model.data(index, model.outputNameConflictRole)
+                )
+                self.assertIn(
+                    "多个任务计划输出到同一路径",
+                    model.data(index, model.queueWarningTextRole),
+                )
+                self.assertEqual(
+                    watcher.WAITING_STATUS,
+                    model.data(index, model.statusRole),
+                )
+                self.assertTrue(model.data(index, model.enabledForRunRole))
+                self.assertTrue(model.data(index, model.canConvertRole))
+                self.assertTrue(
+                    model.data(index, model.canChangeTargetFormatRole)
+                )
+
+            self.assertTrue(
+                watcher.set_pending_file_status(
+                    str(first),
+                    watcher.PROCESSING_STATUS,
+                )
+            )
+            model.manualRefresh()
+            processing_index = model.index(0, 0, QModelIndex())
+            waiting_index = model.index(1, 0, QModelIndex())
+            self.assertFalse(
+                model.data(processing_index, model.outputNameConflictRole)
+            )
+            self.assertEqual(
+                "",
+                model.data(processing_index, model.queueWarningTextRole),
+            )
+            self.assertTrue(
+                model.data(waiting_index, model.outputNameConflictRole)
+            )
+            self.assertIn(
+                "多个任务计划输出到同一路径",
+                model.data(waiting_index, model.queueWarningTextRole),
+            )
 
 
 if __name__ == "__main__":

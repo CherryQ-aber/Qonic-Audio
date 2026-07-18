@@ -31,12 +31,16 @@ class Phase591AutoConvertTests(unittest.TestCase):
             watcher.pending_files.clear()
         with watcher.processed_files_lock:
             watcher.processed_files.clear()
+        with watcher.suppressed_generated_paths_lock:
+            watcher.suppressed_generated_paths.clear()
 
     def tearDown(self):
         with watcher.pending_files_lock:
             watcher.pending_files.clear()
         with watcher.processed_files_lock:
             watcher.processed_files.clear()
+        with watcher.suppressed_generated_paths_lock:
+            watcher.suppressed_generated_paths.clear()
 
     def _wait_for_scan(self, view_model: AutoConvertViewModel) -> None:
         deadline = time.monotonic() + 5
@@ -78,13 +82,16 @@ class Phase591AutoConvertTests(unittest.TestCase):
             first.write_bytes(b"one")
             second.write_bytes(b"two")
             lrc.write_bytes(b"lyrics")
-            with patch(
-                "ui_next.bridge.auto_convert_viewmodel.load_config",
-                return_value={
-                    "output_folder": temp_dir,
-                    "target_format": "flac",
-                    "create_format_subfolder": False,
-                },
+            with (
+                patch(
+                    "ui_next.bridge.auto_convert_viewmodel.load_config",
+                    return_value={
+                        "output_folder": temp_dir,
+                        "target_format": "flac",
+                        "create_format_subfolder": False,
+                    },
+                ),
+                patch("watcher.get_output_folder", return_value=temp_dir),
             ):
                 view_model = AutoConvertViewModel(queue_model, capability_gate=gate)
                 with patch.object(view_model, "_start_prepare_thread"):
@@ -114,13 +121,16 @@ class Phase591AutoConvertTests(unittest.TestCase):
             (root / "song.wav").write_bytes(b"audio")
             (root / "song.LRC").write_bytes(b"lyrics")
             (root / "cover.jpg").write_bytes(b"image")
-            with patch(
-                "ui_next.bridge.auto_convert_viewmodel.load_config",
-                return_value={
-                    "output_folder": temp_dir,
-                    "target_format": "flac",
-                    "create_format_subfolder": False,
-                },
+            with (
+                patch(
+                    "ui_next.bridge.auto_convert_viewmodel.load_config",
+                    return_value={
+                        "output_folder": temp_dir,
+                        "target_format": "flac",
+                        "create_format_subfolder": False,
+                    },
+                ),
+                patch("watcher.get_output_folder", return_value=temp_dir),
             ):
                 view_model = AutoConvertViewModel(queue_model, capability_gate=gate)
                 with patch.object(view_model, "_start_prepare_thread"):
@@ -134,6 +144,7 @@ class Phase591AutoConvertTests(unittest.TestCase):
             self.assertEqual(1, view_model.scanAddedCount)
             self.assertEqual(0, view_model.scanDuplicateCount)
             self.assertEqual(2, view_model.scanUnsupportedCount)
+            self.assertEqual(0, view_model.scanExcludedCount)
             self.assertEqual("已完成", view_model.scanStatusLabel)
             self.assertFalse(hasattr(view_model, "items"))
             self.assertIsNone(view_model._convert_thread)
@@ -145,9 +156,12 @@ class Phase591AutoConvertTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             source = Path(temp_dir) / "song.wav"
             source.write_bytes(b"audio")
-            with patch(
-                "ui_next.bridge.auto_convert_viewmodel.load_config",
-                return_value={"output_folder": temp_dir, "target_format": "flac"},
+            with (
+                patch(
+                    "ui_next.bridge.auto_convert_viewmodel.load_config",
+                    return_value={"output_folder": temp_dir, "target_format": "flac"},
+                ),
+                patch("watcher.get_output_folder", return_value=temp_dir),
             ):
                 view_model = AutoConvertViewModel(queue_model, capability_gate=gate)
                 with patch.object(view_model, "_start_prepare_thread"):
@@ -159,6 +173,98 @@ class Phase591AutoConvertTests(unittest.TestCase):
             self.assertEqual(1, len(watcher.get_task_snapshots()))
             self.assertEqual(0, view_model.scanAddedCount)
             self.assertEqual(1, view_model.scanDuplicateCount)
+            view_model.shutdown()
+
+    def test_same_format_source_is_queued_and_target_remains_user_editable(self):
+        gate = CapabilityGate((QUEUE_MUTATION,))
+        queue_model = MagicMock()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            source = Path(temp_dir) / "song.flac"
+            source.write_bytes(b"audio")
+            config_data = {
+                "output_folder": temp_dir,
+                "target_format": "flac",
+                "create_format_subfolder": False,
+            }
+            with (
+                patch(
+                    "ui_next.bridge.auto_convert_viewmodel.load_config",
+                    return_value=config_data,
+                ),
+                patch("watcher.get_output_folder", return_value=temp_dir),
+            ):
+                view_model = AutoConvertViewModel(queue_model, capability_gate=gate)
+                with patch.object(view_model, "_start_prepare_thread"):
+                    view_model.enqueue_files([str(source)])
+                enqueue_operation = view_model.lastOperation
+                view_model.set_tasks_target_format([str(source)], "mp3")
+
+            task = watcher.get_task_snapshots()[0]
+            self.assertEqual(watcher.QUEUED_STATUS, task["status"])
+            self.assertTrue(task["enabled_for_run"])
+            self.assertTrue(task["can_change_target_format"])
+            self.assertEqual("mp3", task["target_format_override"])
+            self.assertIn("新增 1 项", enqueue_operation)
+            view_model.shutdown()
+
+    def test_same_filename_in_different_directories_is_not_a_duplicate(self):
+        gate = CapabilityGate((QUEUE_MUTATION,))
+        queue_model = MagicMock()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            first = root / "first" / "song.wav"
+            second = root / "second" / "song.wav"
+            first.parent.mkdir()
+            second.parent.mkdir()
+            first.write_bytes(b"first")
+            second.write_bytes(b"second")
+            with (
+                patch(
+                    "ui_next.bridge.auto_convert_viewmodel.load_config",
+                    return_value={
+                        "output_folder": temp_dir,
+                        "target_format": "flac",
+                        "create_format_subfolder": False,
+                    },
+                ),
+                patch("watcher.get_output_folder", return_value=temp_dir),
+            ):
+                view_model = AutoConvertViewModel(queue_model, capability_gate=gate)
+                with patch.object(view_model, "_start_prepare_thread"):
+                    view_model.enqueue_files([str(first), str(second)])
+
+            self.assertEqual(2, len(watcher.get_task_snapshots()))
+            self.assertIn("新增 2 项", view_model.lastOperation)
+            self.assertIn("重复跳过 0 项", view_model.lastOperation)
+            view_model.shutdown()
+
+    def test_runtime_path_exclusion_is_not_reported_as_duplicate(self):
+        gate = CapabilityGate((QUEUE_MUTATION,))
+        queue_model = MagicMock()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            runtime_root = root / "Temp"
+            runtime_root.mkdir()
+            source = runtime_root / "preview.flac"
+            source.write_bytes(b"runtime")
+            with (
+                patch(
+                    "ui_next.bridge.auto_convert_viewmodel.load_config",
+                    return_value={
+                        "output_folder": str(root / "output"),
+                        "target_format": "flac",
+                    },
+                ),
+                patch("watcher.get_output_folder", return_value=str(root / "output")),
+                patch("watcher.get_temp_folder", return_value=str(runtime_root)),
+                patch("watcher.get_cache_folder", return_value=str(root / "Cache")),
+            ):
+                view_model = AutoConvertViewModel(queue_model, capability_gate=gate)
+                view_model.enqueue_files([str(source)])
+
+            self.assertEqual([], watcher.get_task_snapshots())
+            self.assertIn("重复跳过 0 项", view_model.lastOperation)
+            self.assertIn("安全排除 1 项", view_model.lastOperation)
             view_model.shutdown()
 
     def test_file_drop_folder_drop_and_watcher_share_one_queue(self):

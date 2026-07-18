@@ -51,6 +51,11 @@ Rectangle {
             value: root.viewModel ? root.viewModel.scanUnsupportedCount : 0
         }
 
+        SummaryItem {
+            label: "安全排除"
+            value: root.viewModel ? root.viewModel.scanExcludedCount : 0
+        }
+
         Item {
             Layout.fillWidth: true
         }

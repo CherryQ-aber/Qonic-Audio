@@ -749,6 +749,189 @@ class WatcherTaskTests(unittest.TestCase):
             mock_wait.assert_not_called()
             mock_ncm.assert_not_called()
 
+    def test_qml_scan_can_queue_file_inside_configured_output_root(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            output_root = root / "output"
+            source_path = output_root / "library" / "sample.flac"
+            source_path.parent.mkdir(parents=True)
+            source_path.write_bytes(b"fake audio")
+
+            with (
+                patch("watcher.get_output_folder", return_value=str(output_root)),
+                patch("watcher.get_temp_folder", return_value=str(root / "Temp")),
+                patch("watcher.get_cache_folder", return_value=str(root / "Cache")),
+            ):
+                result = watcher.handle_detected_file_with_reason(
+                    str(source_path),
+                    source="qml_scan",
+                )
+                duplicate = watcher.handle_detected_file_with_reason(
+                    str(source_path),
+                    source="qml_scan",
+                )
+
+            self.assertEqual(
+                result,
+                {
+                    "added": True,
+                    "reason": watcher.DETECTED_FILE_ADDED,
+                },
+            )
+            self.assertEqual(
+                duplicate,
+                {
+                    "added": False,
+                    "reason": watcher.DETECTED_FILE_DUPLICATE,
+                },
+            )
+            self.assertTrue(watcher.has_pending_file(str(source_path)))
+            self.assertTrue(watcher.has_processed_file(str(source_path)))
+
+    def test_other_explicit_sources_can_queue_files_inside_output_root(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            output_root = root / "output"
+            output_root.mkdir()
+
+            with (
+                patch("watcher.get_output_folder", return_value=str(output_root)),
+                patch("watcher.get_temp_folder", return_value=str(root / "Temp")),
+                patch("watcher.get_cache_folder", return_value=str(root / "Cache")),
+            ):
+                for source in ("qml_file", "qml_drop", "manual_drop", "retry"):
+                    with self.subTest(source=source):
+                        source_path = output_root / f"{source}.flac"
+                        source_path.write_bytes(b"fake audio")
+                        result = watcher.handle_detected_file_with_reason(
+                            str(source_path),
+                            source=source,
+                        )
+                        self.assertEqual(
+                            result,
+                            {
+                                "added": True,
+                                "reason": watcher.DETECTED_FILE_ADDED,
+                            },
+                        )
+
+    def test_watcher_rejects_file_inside_configured_output_root(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            output_root = root / "output"
+            source_path = output_root / "sample.flac"
+            output_root.mkdir()
+            source_path.write_bytes(b"fake audio")
+
+            with (
+                patch("watcher.get_output_folder", return_value=str(output_root)),
+                patch("watcher.get_temp_folder", return_value=str(root / "Temp")),
+                patch("watcher.get_cache_folder", return_value=str(root / "Cache")),
+            ):
+                result = watcher.handle_detected_file_with_reason(
+                    str(source_path),
+                    source="watcher",
+                )
+                bool_result = watcher.handle_detected_file(
+                    str(source_path),
+                    source="watcher",
+                )
+
+            self.assertEqual(
+                result,
+                {
+                    "added": False,
+                    "reason": watcher.DETECTED_FILE_OUTPUT_PATH,
+                },
+            )
+            self.assertFalse(bool_result)
+            self.assertFalse(watcher.has_pending_file(str(source_path)))
+            self.assertFalse(watcher.has_processed_file(str(source_path)))
+
+    def test_manual_sources_still_reject_temp_and_cache_paths(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            output_root = root / "output"
+            temp_root = root / "Temp"
+            cache_root = root / "Cache"
+            cases = (
+                ("qml_scan", temp_root / "scan.flac"),
+                ("manual_drop", cache_root / "drop.flac"),
+            )
+
+            with (
+                patch("watcher.get_output_folder", return_value=str(output_root)),
+                patch("watcher.get_temp_folder", return_value=str(temp_root)),
+                patch("watcher.get_cache_folder", return_value=str(cache_root)),
+            ):
+                for source, source_path in cases:
+                    with self.subTest(source=source):
+                        source_path.parent.mkdir(parents=True, exist_ok=True)
+                        source_path.write_bytes(b"fake audio")
+                        result = watcher.handle_detected_file_with_reason(
+                            str(source_path),
+                            source=source,
+                        )
+                        self.assertEqual(
+                            result,
+                            {
+                                "added": False,
+                                "reason": watcher.DETECTED_FILE_RUNTIME_PATH,
+                            },
+                        )
+                        self.assertFalse(watcher.has_pending_file(str(source_path)))
+                        self.assertFalse(watcher.has_processed_file(str(source_path)))
+
+    def test_structured_reasons_cover_ignored_unsupported_and_suppressed(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            ignored_path = root / "lyrics.lrc"
+            unsupported_path = root / "notes.bin"
+            suppressed_path = root / "decoded.flac"
+            ignored_path.write_text("[00:00.00]lyrics", encoding="utf-8")
+            unsupported_path.write_bytes(b"not audio")
+            suppressed_path.write_bytes(b"decoded audio")
+            normalized_suppressed = watcher._normalize_file_path(suppressed_path)
+
+            with (
+                patch("watcher.get_output_folder", return_value=str(root / "output")),
+                patch("watcher.get_temp_folder", return_value=str(root / "Temp")),
+                patch("watcher.get_cache_folder", return_value=str(root / "Cache")),
+            ):
+                watcher._register_suppressed_generated_paths([normalized_suppressed])
+                results = {
+                    "ignored": watcher.handle_detected_file_with_reason(
+                        str(ignored_path),
+                        source="qml_file",
+                    ),
+                    "unsupported": watcher.handle_detected_file_with_reason(
+                        str(unsupported_path),
+                        source="qml_file",
+                    ),
+                    "suppressed": watcher.handle_detected_file_with_reason(
+                        str(suppressed_path),
+                        source="qml_file",
+                    ),
+                }
+
+            self.assertEqual(
+                results,
+                {
+                    "ignored": {
+                        "added": False,
+                        "reason": watcher.DETECTED_FILE_IGNORED,
+                    },
+                    "unsupported": {
+                        "added": False,
+                        "reason": watcher.DETECTED_FILE_UNSUPPORTED,
+                    },
+                    "suppressed": {
+                        "added": False,
+                        "reason": watcher.DETECTED_FILE_SUPPRESSED,
+                    },
+                },
+            )
+
     def test_prepare_pending_file_marks_regular_audio_waiting(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             path = str(Path(temp_dir) / "sample.flac")
