@@ -8,6 +8,7 @@ import "theme"
 
 ApplicationWindow {
     id: root
+    objectName: "appShell"
 
     // Daily native baseline: 2K display at 125% DPI, windowed rather than maximized.
     width: 1536
@@ -27,62 +28,48 @@ ApplicationWindow {
         id: typography
     }
 
-    property var modules: appState.modules
-    property var currentModule: moduleByKey(appState.currentModuleKey)
-    property string currentPageSource: pageForKey(appState.currentModuleKey)
     property bool logDrawerOpened: false
-    property int sidebarWidth: theme.sidebarWidth
-    property int inspectorWidth: theme.inspectorWidth
+    property string logDrawerOpener: "bottom"
     property int minimumWorkspaceWidth: 620
-    // Inspector visibility is session-only. It never writes config.json.
-    property bool inspectorUserCollapsed: false
-    readonly property int inspectorRequiredWidth: sidebarWidth + inspectorWidth
-        + minimumWorkspaceWidth + 2
-    readonly property bool inspectorSpaceCollapsed: width < inspectorRequiredWidth
-    readonly property bool inspectorDrawerCollapsed: logDrawerOpened
-        && width < inspectorRequiredWidth
-    readonly property bool inspectorTemporarilyCollapsed: inspectorSpaceCollapsed
-        || inspectorDrawerCollapsed
-    readonly property bool inspectorPanelVisible: !inspectorUserCollapsed
-        && !inspectorTemporarilyCollapsed
 
     function userFeatureSummary() {
         return capabilityGate.enabledFeatureSummary
     }
 
-    function moduleByKey(moduleKey) {
-        for (var index = 0; index < modules.length; index += 1) {
-            if (modules[index].key === moduleKey) {
-                return modules[index]
-            }
-        }
-        return modules.length > 0 ? modules[0] : {}
+    function focusCurrentSubNavigation() {
+        workspaceSubNavigation.focusCurrentItem()
     }
 
-    function pageForKey(moduleKey) {
-        switch (moduleKey) {
-        case "autoConvert":
-            return "pages/AutoConvertPage.qml"
-        case "audioEditor":
-            return "pages/AudioEditorPage.qml"
-        case "metadata":
-            return "pages/MetadataPage.qml"
-        case "lyricsCover":
-            return "pages/LyricsCoverPage.qml"
-        case "analysis":
-            return "pages/AnalysisPage.qml"
-        case "settings":
-            return "pages/SettingsPage.qml"
-        default:
-            return "pages/AutoConvertPage.qml"
-        }
+    function openSettingsOverlay() {
+        logDrawerOpened = false
+        appState.openSettings()
+    }
+
+    function openLogDrawer(opener) {
+        if (appState.settingsOverlayOpen)
+            appState.closeSettings()
+        logDrawerOpener = opener
+        logDrawerOpened = true
+    }
+
+    function closeLogDrawer() {
+        logDrawerOpened = false
+        Qt.callLater(function() {
+            if (logDrawerOpener === "top")
+                topStatusBar.focusLogButton()
+            else
+                bottomStatusBar.focusLogButton()
+        })
     }
 
     ColumnLayout {
+        id: shellContent
         anchors.fill: parent
         spacing: 0
+        enabled: !root.logDrawerOpened && !appState.settingsOverlayOpen
 
         TopStatusBar {
+            id: topStatusBar
             Layout.fillWidth: true
             theme: theme
             typography: typography
@@ -90,37 +77,53 @@ ApplicationWindow {
             moduleName: appState.currentModuleName
             statusSummary: appState.statusSummary
             modeLabel: capabilityGate.previewMode ? "预览模式" : "正常运行"
-            capabilityLabel: capabilityGate.previewMode ? "" : root.userFeatureSummary()
+            capabilityLabel: capabilityGate.previewMode
+                ? ""
+                : root.userFeatureSummary()
             versionLabel: appState.versionLabel
-            inspectorVisible: root.inspectorPanelVisible
-            inspectorCanToggle: !root.inspectorTemporarilyCollapsed
-            onInspectorToggleRequested: {
-                if (root.inspectorPanelVisible) {
-                    root.inspectorUserCollapsed = true
-                } else if (!root.inspectorTemporarilyCollapsed) {
-                    root.inspectorUserCollapsed = false
-                }
+            workspaces: appState.workspaces
+            currentWorkspaceKey: appState.currentWorkspaceKey
+            onWorkspaceRequested: function(workspaceKey) {
+                appState.switchWorkspace(workspaceKey)
+            }
+            onSettingsRequested: root.openSettingsOverlay()
+            onLogRequested: root.openLogDrawer("top")
+        }
+
+        WorkspaceSubNavigation {
+            id: workspaceSubNavigation
+            Layout.fillWidth: true
+            theme: theme
+            typography: typography
+            currentWorkspaceKey: appState.currentWorkspaceKey
+            currentEditorPageKey: appState.currentEditorPageKey
+            editorPages: appState.editorPages
+            onEditorPageRequested: function(pageKey) {
+                appState.switchEditorPage(pageKey)
             }
         }
 
         RowLayout {
+            id: mainArea
+            objectName: "mainArea"
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.minimumWidth: 0
             spacing: 0
 
-            SidebarNavigation {
-                id: sidebarNavigation
+            FolderBrowserPane {
+                id: folderBrowserPane
                 Layout.fillHeight: true
-                theme: theme
-                typography: typography
-                modules: root.modules
-                currentModuleKey: appState.currentModuleKey
-                onModuleRequested: function(moduleKey) {
-                    appState.switchModule(moduleKey)
-                }
+                Layout.minimumWidth: 0
+                Layout.preferredWidth: visible ? defaultPaneWidth : 0
+                Layout.maximumWidth: visible ? maximumPaneWidth : 0
+                visible: false
+                enabled: false
             }
 
             Rectangle {
+                id: workspaceSurface
+                objectName: "mainWorkspaceSurface"
                 Layout.minimumWidth: 0
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -128,59 +131,25 @@ ApplicationWindow {
                 border.color: theme.border
                 border.width: 1
 
-                Loader {
-                    id: pageLoader
+                WorkspaceStack {
+                    id: workspaceStack
                     anchors.fill: parent
                     anchors.margins: theme.spacing
-                    source: root.currentPageSource
-                    opacity: status === Loader.Ready ? 1.0 : 0.0
-
-                    Behavior on opacity {
-                        NumberAnimation { duration: theme.durationNormal }
-                    }
-
-                    onLoaded: {
-                        item.theme = theme
-                        item.typography = typography
-                        if (item.hasOwnProperty("fileSession")) {
-                            item.fileSession = fileSessionViewModel
-                        }
-                        if (item.hasOwnProperty("fileBrowser")) {
-                            item.fileBrowser = editorFileBrowserViewModel
-                        }
-                        if (item.hasOwnProperty("audioPlayer")) {
-                            item.audioPlayer = audioPlayerViewModel
-                        }
-                        if (item.hasOwnProperty("editSession")) {
-                            item.editSession = editSessionViewModel
-                        }
-                        if (item.hasOwnProperty("processingSession")) {
-                            item.processingSession = processingSessionViewModel
-                        }
+                    theme: theme
+                    typography: typography
+                    currentWorkspaceKey: appState.currentWorkspaceKey
+                    currentEditorPageKey: appState.currentEditorPageKey
+                    legacyAnalysisOpen: appState.legacyAnalysisOpen
+                    fileSession: fileSessionViewModel
+                    fileBrowser: editorFileBrowserViewModel
+                    audioPlayer: audioPlayerViewModel
+                    editSession: editSessionViewModel
+                    processingSession: processingSessionViewModel
+                    onCloseLegacyAnalysisRequested: {
+                        appState.closeLegacyAnalysis()
+                        Qt.callLater(root.focusCurrentSubNavigation)
                     }
                 }
-            }
-
-            RightInspector {
-                id: rightInspector
-                Layout.fillHeight: true
-                Layout.fillWidth: false
-                Layout.minimumWidth: visible ? theme.inspectorMinimumWidth : 0
-                Layout.preferredWidth: visible ? root.inspectorWidth : 0
-                Layout.maximumWidth: visible ? theme.inspectorMaximumWidth : 0
-                visible: root.inspectorPanelVisible
-                theme: theme
-                typography: typography
-                moduleName: appState.currentModuleName
-                moduleDescription: appState.currentModuleDescription
-                runtimeLabel: capabilityGate.userModeLabel
-                enabledFeatures: capabilityGate.enabledFeatureSummary
-                safetySummary: capabilityGate.safetySummary
-                actionHint: capabilityGate.previewMode ? "预览模式不会执行文件操作。" : "操作需由您手动发起。"
-                fileSession: fileSessionViewModel
-                audioPlayer: audioPlayerViewModel
-                editSession: editSessionViewModel
-                processingSession: processingSessionViewModel
             }
         }
 
@@ -191,24 +160,45 @@ ApplicationWindow {
             typography: typography
             statusText: appState.statusSummary || "就绪"
             logSummary: logModel.summary
-            onOpenLogRequested: root.logDrawerOpened = true
+            onOpenLogRequested: root.openLogDrawer("bottom")
+        }
+    }
+
+    Connections {
+        target: appState
+
+        function onCurrentWorkspaceKeyChanged() {
+            Qt.callLater(root.focusCurrentSubNavigation)
+        }
+
+        function onCurrentEditorPageKeyChanged() {
+            Qt.callLater(root.focusCurrentSubNavigation)
         }
     }
 
     LogDrawer {
         id: logDrawer
+        objectName: "logDrawer"
         anchors.fill: parent
         theme: theme
         typography: typography
         logModel: logModel
         opened: root.logDrawerOpened
         compactLayout: root.width < 1200
-        workspaceLeftInset: sidebarNavigation.width
-        workspaceRightInset: root.inspectorPanelVisible ? rightInspector.width : 0
+        workspaceLeftInset: folderBrowserPane.visible ? folderBrowserPane.width : 0
+        workspaceRightInset: 0
         minimumWorkspaceWidth: root.minimumWorkspaceWidth
+        onCloseRequested: root.closeLogDrawer()
+    }
+
+    SettingsOverlay {
+        id: settingsOverlay
+        theme: theme
+        typography: typography
+        openRequested: appState.settingsOverlayOpen
         onCloseRequested: {
-            root.logDrawerOpened = false
-            bottomStatusBar.focusLogButton()
+            appState.closeSettings()
+            Qt.callLater(topStatusBar.focusSettingsButton)
         }
     }
 
@@ -230,10 +220,24 @@ ApplicationWindow {
         width: Math.min(480, parent.width - theme.spacing * 4)
         contentItem: ColumnLayout {
             spacing: theme.spacing
-            Text { text: "当前存在未导出的文件信息草稿。本次 Pitch Shift 将基于磁盘上的源文件生成，不会包含这些草稿。"; color: theme.textPrimary; font.family: typography.fontFamily; wrapMode: Text.WordWrap; Layout.fillWidth: true }
-            RowLayout { Layout.fillWidth: true; Item { Layout.fillWidth: true }
-                Button { text: "取消"; onClicked: processingSessionViewModel.confirmDraftWarning(false) }
-                Button { text: "继续导出"; onClicked: processingSessionViewModel.confirmDraftWarning(true) }
+            Text {
+                text: "当前存在未导出的文件信息草稿。本次 Pitch Shift 将基于磁盘上的源文件生成，不会包含这些草稿。"
+                color: theme.textPrimary
+                font.family: typography.fontFamily
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                Item { Layout.fillWidth: true }
+                Button {
+                    text: "取消"
+                    onClicked: processingSessionViewModel.confirmDraftWarning(false)
+                }
+                Button {
+                    text: "继续导出"
+                    onClicked: processingSessionViewModel.confirmDraftWarning(true)
+                }
             }
         }
     }
@@ -253,8 +257,13 @@ ApplicationWindow {
             spacing: theme.spacing
             Text {
                 text: fileSessionViewModel.pendingFileName.length > 0
-                    ? "当前文件存在未导出的编辑草稿（" + editSessionViewModel.unsavedDraftLabels.join("、") + "）。是否放弃草稿并载入 “" + fileSessionViewModel.pendingFileName + "”？"
-                    : "当前文件存在未导出的编辑草稿（" + editSessionViewModel.unsavedDraftLabels.join("、") + "）。是否放弃草稿并清除当前文件？"
+                    ? "当前文件存在未导出的编辑草稿（"
+                        + editSessionViewModel.unsavedDraftLabels.join("、")
+                        + "）。是否放弃草稿并载入 “"
+                        + fileSessionViewModel.pendingFileName + "”？"
+                    : "当前文件存在未导出的编辑草稿（"
+                        + editSessionViewModel.unsavedDraftLabels.join("、")
+                        + "）。是否放弃草稿并清除当前文件？"
                 color: theme.textPrimary
                 font.family: typography.fontFamily
                 font.pixelSize: typography.sizeBody

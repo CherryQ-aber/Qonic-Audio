@@ -11,7 +11,13 @@ Item {
     property QtObject typography: Typography {}
     property var audioPlayer: null
     property var editSession: null
+    property bool pageActive: true
     property bool splitLyricsWorkspace: pageScroll.width >= 720
+
+    onPageActiveChanged: {
+        if (!pageActive && sourceDiscardDialog.visible)
+            sourceDiscardDialog.close()
+    }
 
     function requestSource(source) {
         if (!editSession)

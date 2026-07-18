@@ -25,15 +25,26 @@ Item {
 
     signal closeRequested()
 
+    Shortcut {
+        enabled: root.opened
+        sequence: "Escape"
+        context: Qt.ApplicationShortcut
+        onActivated: root.closeRequested()
+    }
+
     onOpenedChanged: {
         if (opened) {
             drawerPanel.forceActiveFocus()
+            Qt.callLater(function() {
+                closeButton.forceActiveFocus(Qt.TabFocusReason)
+            })
         }
     }
 
     Rectangle {
         anchors.fill: parent
         visible: root.opened
+        enabled: visible
         color: theme.overlayBackground
 
         MouseArea {
@@ -63,6 +74,7 @@ Item {
         focus: root.opened
         activeFocusOnTab: root.opened
         focusPolicy: Qt.TabFocus
+        enabled: root.opened
         color: theme.drawerBackground
         border.color: theme.border
         border.width: 1
@@ -79,11 +91,6 @@ Item {
                 duration: theme.durationNormal
                 easing.type: Easing.OutCubic
             }
-        }
-
-        Keys.onEscapePressed: function(event) {
-            root.closeRequested()
-            event.accepted = true
         }
 
         ColumnLayout {
@@ -125,6 +132,8 @@ Item {
                     theme: root.theme
                     typography: root.typography
                     label: "关闭"
+                    KeyNavigation.tab: filterRepeater.itemAt(0)
+                    KeyNavigation.backtab: clearLogButton
                     onClicked: root.closeRequested()
                 }
             }
@@ -134,6 +143,8 @@ Item {
                 spacing: 8
 
                 Repeater {
+                    id: filterRepeater
+
                     model: [
                         {"value": "all", "label": "全部"},
                         {"value": "info", "label": "Info"},
@@ -142,6 +153,7 @@ Item {
                     ]
 
                     delegate: WorkstationButton {
+                        required property int index
                         required property var modelData
 
                         Layout.preferredWidth: 86
@@ -151,6 +163,10 @@ Item {
                         tone: root.logModel && root.logModel.filterLevel === modelData.value
                             ? "primary" : "ghost"
                         text: modelData.label
+                        KeyNavigation.tab: index < filterRepeater.count - 1
+                            ? filterRepeater.itemAt(index + 1) : copyAllButton
+                        KeyNavigation.backtab: index > 0
+                            ? filterRepeater.itemAt(index - 1) : closeButton
                         onClicked: {
                             if (root.logModel) {
                                 root.logModel.setFilterLevel(modelData.value)
@@ -222,6 +238,7 @@ Item {
                             textFormat: TextEdit.PlainText
                             readOnly: true
                             selectByMouse: true
+                            activeFocusOnTab: false
                         }
                     }
                 }
@@ -241,9 +258,13 @@ Item {
                 spacing: 8
 
                 DrawerButton {
+                    id: copyAllButton
+
                     theme: root.theme
                     typography: root.typography
                     label: "复制全部"
+                    KeyNavigation.tab: clearLogButton
+                    KeyNavigation.backtab: filterRepeater.itemAt(filterRepeater.count - 1)
                     onClicked: {
                         if (root.logModel) {
                             root.logModel.copyAllText()
@@ -252,10 +273,14 @@ Item {
                 }
 
                 DrawerButton {
+                    id: clearLogButton
+
                     theme: root.theme
                     typography: root.typography
                     label: "清空内存日志"
                     tone: "error"
+                    KeyNavigation.tab: closeButton
+                    KeyNavigation.backtab: copyAllButton
                     onClicked: {
                         if (root.logModel) {
                             root.logModel.clear()

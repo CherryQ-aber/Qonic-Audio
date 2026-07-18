@@ -17,7 +17,10 @@ class QmlNative2kWindowLayoutTests(unittest.TestCase):
         header = self._source("ui_next/qml/components/TopStatusBar.qml")
 
         self.assertIn("Layout.minimumWidth: 0", shell)
-        self.assertIn("capabilityGate.previewMode ? \"\"", shell)
+        self.assertIn("capabilityLabel: capabilityGate.previewMode", shell)
+        self.assertIn("WorkspaceSubNavigation {", shell)
+        self.assertIn("WorkspaceStack {", shell)
+        self.assertIn("FolderBrowserPane {", shell)
         self.assertIn("root.capabilityLabel.length > 0", header)
         self.assertIn("ScrollView", self._source("ui_next/qml/components/RightInspector.qml"))
 
@@ -69,7 +72,15 @@ class QmlNative2kWindowLayoutTests(unittest.TestCase):
     def test_offscreen_geometry_smoke_loads_all_repaired_pages(self):
         env = os.environ.copy()
         env["QT_QPA_PLATFORM"] = "offscreen"
-        for module in ("audioEditor", "metadata", "lyricsCover", "settings"):
+        for module in (
+            "autoConvert",
+            "audioEditor",
+            "metadata",
+            "lyricsCover",
+            "audioProcessing",
+            "analysis",
+            "settings",
+        ):
             completed = subprocess.run(
                 [sys.executable, "-B", "main_qml.py", "--qml-smoke-test", f"--qml-open-module={module}"],
                 cwd=PROJECT_ROOT,
@@ -81,6 +92,30 @@ class QmlNative2kWindowLayoutTests(unittest.TestCase):
             self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
             self.assertNotIn("Unexpected token", completed.stdout + completed.stderr)
             self.assertNotIn("ReferenceError", completed.stdout + completed.stderr)
+
+        settings_overlay = subprocess.run(
+            [
+                sys.executable,
+                "-B",
+                "main_qml.py",
+                "--qml-smoke-test",
+                "--qml-open-settings",
+            ],
+            cwd=PROJECT_ROOT,
+            env=env,
+            text=True,
+            capture_output=True,
+            timeout=20,
+        )
+        self.assertEqual(
+            settings_overlay.returncode,
+            0,
+            settings_overlay.stdout + settings_overlay.stderr,
+        )
+        self.assertNotIn(
+            "ReferenceError",
+            settings_overlay.stdout + settings_overlay.stderr,
+        )
 
 
 if __name__ == "__main__":

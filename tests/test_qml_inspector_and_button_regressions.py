@@ -11,6 +11,8 @@ from PySide6.QtQuick import QQuickItem, QQuickView
 from PySide6.QtWidgets import QApplication
 
 from ui_next.bridge.settings_viewmodel import SettingsViewModel
+from ui_next.bridge.capabilities import DEFAULT_USER_CAPABILITIES, CapabilityGate
+from ui_next.bridge.runtime_mode import DEFAULT_USER_MODE
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -94,12 +96,12 @@ Item {
         finally:
             self._dispose_probe(view, container)
 
-    def test_runtime_preview_header_has_no_empty_badge_and_toggle_has_content(self):
+    def test_runtime_preview_header_has_no_empty_badge_and_global_actions_have_content(self):
         source = '''import QtQuick
 import "ui_next/qml/components"
 
 Item {
-    width: 1000
+    width: 1200
     height: 58
 
     TopStatusBar {
@@ -107,8 +109,11 @@ Item {
         anchors.fill: parent
         modeLabel: "预览模式"
         capabilityLabel: ""
-        inspectorVisible: true
-        inspectorCanToggle: true
+        workspaces: [
+            { "key": "autoConvert", "title": "自动转码", "description": "任务" },
+            { "key": "audioEditor", "title": "音频编辑", "description": "编辑" }
+        ]
+        currentWorkspaceKey: "autoConvert"
     }
 }
 '''.encode("utf-8")
@@ -118,14 +123,22 @@ Item {
         try:
             mode_badge = container.findChild(QObject, "modeStatusBadge")
             capability_badge = container.findChild(QObject, "capabilityStatusBadge")
-            toggle = container.findChild(QObject, "inspectorToggleButton")
+            workspace = container.findChild(QObject, "workspaceSwitcher")
+            settings = container.findChild(QObject, "openSettingsButton")
+            log = container.findChild(QObject, "openGlobalLogButton")
             self.assertTrue(mode_badge.property("visible"))
             self.assertEqual("预览模式", mode_badge.property("label"))
             self.assertFalse(capability_badge.property("visible"))
             self.assertEqual("", capability_badge.property("label"))
-            self.assertTrue(str(toggle.property("text")).strip())
-            self.assertTrue(str(toggle.property("iconName")).strip())
-            self.assertTrue(str(toggle.property("toolTipText")).strip())
+            self.assertEqual(
+                "autoConvert",
+                workspace.property("currentWorkspaceKey"),
+            )
+            self.assertEqual("设置", settings.property("text"))
+            self.assertTrue(str(settings.property("toolTipText")).strip())
+            self.assertEqual("日志", log.property("text"))
+            self.assertEqual("log", log.property("iconName"))
+            self.assertTrue(str(log.property("toolTipText")).strip())
         finally:
             self._dispose_probe(view, container)
 
@@ -168,21 +181,76 @@ Item {
         finally:
             self._dispose_probe(view, container)
 
-    def test_shell_uses_hide_instead_of_extreme_inspector_compression(self):
+    def test_normal_mode_global_actions_stay_inside_the_1080px_window(self):
+        gate = CapabilityGate(
+            DEFAULT_USER_CAPABILITIES,
+            runtime_mode=DEFAULT_USER_MODE,
+        )
+        source = '''import QtQuick
+import "ui_next/qml/components"
+
+Item {
+    width: 1080
+    height: 58
+
+    TopStatusBar {
+        anchors.fill: parent
+        modeLabel: "正常运行"
+        capabilityLabel: capabilitySummary
+        versionLabel: "v5.0"
+        workspaces: [
+            { "key": "autoConvert", "title": "自动转码", "description": "任务" },
+            { "key": "audioEditor", "title": "音频编辑", "description": "编辑" }
+        ]
+        currentWorkspaceKey: "autoConvert"
+    }
+}
+'''.encode("utf-8")
+        view, _component, container = self._create_probe(
+            source,
+            "top_status_normal_mode_geometry_probe.qml",
+            {"capabilitySummary": gate.enabledFeatureSummary},
+        )
+        try:
+            capability = container.findChild(QObject, "capabilityStatusBadge")
+            settings = container.findChild(QObject, "openSettingsButton")
+            log = container.findChild(QObject, "openGlobalLogButton")
+            self.assertFalse(capability.property("visible"))
+            for action in (settings, log):
+                self.assertGreaterEqual(action.x(), 0)
+                self.assertLessEqual(
+                    action.x() + action.width(),
+                    container.width() + 0.5,
+                )
+
+            container.setWidth(1536)
+            view.setWidth(1536)
+            self.app.processEvents()
+            self.assertTrue(capability.property("visible"))
+            self.assertLessEqual(
+                log.x() + log.width(),
+                container.width() + 0.5,
+            )
+        finally:
+            self._dispose_probe(view, container)
+
+    def test_shell_uses_persistent_workspaces_without_the_legacy_inspector(self):
         shell = self._source("ui_next/qml/AppShell.qml")
         inspector = self._source("ui_next/qml/components/RightInspector.qml")
         top = self._source("ui_next/qml/components/TopStatusBar.qml")
         settings = self._source("ui_next/qml/pages/SettingsPage.qml")
 
-        self.assertIn("inspectorSpaceCollapsed: width < inspectorRequiredWidth", shell)
-        self.assertIn("visible: root.inspectorPanelVisible", shell)
-        self.assertIn("Layout.fillWidth: false", shell)
-        self.assertIn("theme.inspectorMinimumWidth", shell)
-        self.assertIn("theme.inspectorMaximumWidth", shell)
+        self.assertIn("WorkspaceStack {", shell)
+        self.assertIn("FolderBrowserPane {", shell)
+        self.assertIn("SettingsOverlay {", shell)
+        self.assertNotIn("SidebarNavigation {", shell)
+        self.assertNotIn("RightInspector {", shell)
+        self.assertNotIn("Loader {", shell)
         self.assertIn("contentWidth: Math.max(0, width - leftPadding - rightPadding", inspector)
         self.assertIn("- inspectorVerticalScrollBar.width)", inspector)
         self.assertIn("ScrollBar.horizontal.policy: ScrollBar.AlwaysOff", inspector)
-        self.assertIn('objectName: "inspectorToggleButton"', top)
+        self.assertIn('objectName: "openSettingsButton"', top)
+        self.assertIn('objectName: "openGlobalLogButton"', top)
         self.assertIn("text: label", settings)
 
 

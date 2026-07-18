@@ -15,6 +15,8 @@ Item {
     property var audioPlayer
     property var editSession: null
     property var processingSession: null
+    property bool pageActive: true
+    enabled: pageActive
 
     Flickable {
         id: pageScroll
@@ -157,6 +159,7 @@ Item {
         objectName: "audioEditorDropArea"
         anchors.fill: parent
         z: 20
+        enabled: root.pageActive
         onEntered: function(drag) {
             drag.accepted = !!root.fileSession
         }

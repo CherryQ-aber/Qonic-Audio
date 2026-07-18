@@ -90,6 +90,13 @@ def main(argv: list[str] | None = None) -> int:
     install_log_model_handler(log_model)
 
     app_state = AppStateViewModel(capability_gate=capability_gate)
+    if runtime_config.requested_module:
+        if not app_state.setCurrentModule(runtime_config.requested_module):
+            _print_startup_error(f"未知模块: {runtime_config.requested_module}")
+            return 2
+    if runtime_config.open_settings:
+        app_state.openSettings()
+
     task_queue_model = TaskQueueModel(capability_gate=capability_gate)
     auto_convert_view_model = AutoConvertViewModel(
         task_queue_model,
@@ -161,10 +168,6 @@ def main(argv: list[str] | None = None) -> int:
         auto_convert_view_model.notify_settings_saved
     )
 
-    if runtime_config.open_settings:
-        app_state.setCurrentModule("settings")
-    elif runtime_config.requested_module:
-        app_state.setCurrentModule(runtime_config.requested_module)
     app.aboutToQuit.connect(auto_convert_view_model.shutdown)
     app.aboutToQuit.connect(editor_file_browser_view_model.shutdown)
     app.aboutToQuit.connect(processing_session_view_model.shutdown)

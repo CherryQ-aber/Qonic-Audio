@@ -92,18 +92,22 @@ Item {
         self.assertIn("root.width * 0.32", self.drawer_source)
         self.assertIn("workspaceLeftInset", self.drawer_source)
         self.assertIn("workspaceRightInset", self.drawer_source)
-        self.assertIn("Keys.onEscapePressed", self.drawer_source)
+        self.assertIn("Shortcut {", self.drawer_source)
+        self.assertIn("context: Qt.ApplicationShortcut", self.drawer_source)
         self.assertNotIn("root.width * 0.42", self.drawer_source)
 
-    def test_shell_coordinates_space_drawer_and_session_inspector_collapse(self):
-        self.assertIn("property bool inspectorTemporarilyCollapsed", self.shell_source)
-        self.assertIn("property bool inspectorUserCollapsed", self.shell_source)
-        self.assertIn("property bool inspectorSpaceCollapsed", self.shell_source)
-        self.assertIn("property bool inspectorDrawerCollapsed", self.shell_source)
-        self.assertIn("property bool inspectorPanelVisible", self.shell_source)
-        self.assertIn("visible: root.inspectorPanelVisible", self.shell_source)
-        self.assertIn("workspaceLeftInset: sidebarNavigation.width", self.shell_source)
-        self.assertIn("workspaceRightInset: root.inspectorPanelVisible", self.shell_source)
+    def test_shell_coordinates_drawer_with_the_hidden_folder_pane(self):
+        self.assertIn("FolderBrowserPane {", self.shell_source)
+        self.assertIn("visible: false", self.shell_source)
+        self.assertIn(
+            "workspaceLeftInset: folderBrowserPane.visible ? folderBrowserPane.width : 0",
+            self.shell_source,
+        )
+        self.assertIn("workspaceRightInset: 0", self.shell_source)
+        self.assertIn('property string logDrawerOpener: "bottom"', self.shell_source)
+        self.assertIn('root.openLogDrawer("top")', self.shell_source)
+        self.assertIn('root.openLogDrawer("bottom")', self.shell_source)
+        self.assertNotIn("inspectorPanelVisible", self.shell_source)
 
     def test_log_opener_and_drawer_controls_are_keyboard_focusable(self):
         self.assertIn('objectName: "openLogButton"', self.bottom_source)

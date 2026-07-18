@@ -151,5 +151,111 @@ Item {
         self.assertEqual(1, self.root.property("keyboardFocusIndex"))
 
 
+class WorkspaceNavigationAccessibilityTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.app = QApplication.instance() or QApplication([])
+
+    def setUp(self):
+        self.switcher_source = (
+            PROJECT_ROOT / "ui_next/qml/components/WorkspaceSwitcher.qml"
+        ).read_text(encoding="utf-8")
+        self.subnav_source = (
+            PROJECT_ROOT / "ui_next/qml/components/WorkspaceSubNavigation.qml"
+        ).read_text(encoding="utf-8")
+        self.view = QQuickView()
+        self.component = QQmlComponent(self.view.engine())
+        self.component.setData(
+            b'''import QtQuick
+import "ui_next/qml/components"
+
+Item {
+    width: 800
+    height: 110
+
+    WorkspaceSwitcher {
+        id: switcher
+        objectName: "workspaceSwitcherUnderTest"
+        workspaces: [
+            { "key": "autoConvert", "title": "\xe8\x87\xaa\xe5\x8a\xa8\xe8\xbd\xac\xe7\xa0\x81", "description": "\xe4\xbb\xbb\xe5\x8a\xa1" },
+            { "key": "audioEditor", "title": "\xe9\x9f\xb3\xe9\xa2\x91\xe7\xbc\x96\xe8\xbe\x91", "description": "\xe7\xbc\x96\xe8\xbe\x91" }
+        ]
+        currentWorkspaceKey: "autoConvert"
+    }
+
+    WorkspaceSubNavigation {
+        id: subnav
+        objectName: "workspaceSubNavigationUnderTest"
+        y: 60
+        width: parent.width
+        currentWorkspaceKey: "audioEditor"
+        currentEditorPageKey: "fileInfo"
+        editorPages: [
+            { "key": "fileInfo", "title": "\xe6\x96\x87\xe4\xbb\xb6\xe4\xbf\xa1\xe6\x81\xaf" },
+            { "key": "lyrics", "title": "\xe6\xad\x8c\xe8\xaf\x8d" },
+            { "key": "audioProcessing", "title": "\xe9\x9f\xb3\xe9\xa2\x91\xe5\xa4\x84\xe7\x90\x86" }
+        ]
+    }
+}
+''',
+            QUrl.fromLocalFile(
+                str(PROJECT_ROOT / "workspace_navigation_accessibility_probe.qml")
+            ),
+        )
+        self.container = self.component.create()
+        self.assertIsNotNone(self.container, self.component.errors())
+        self.assertIsInstance(self.container, QQuickItem)
+        self.container.setParentItem(self.view.contentItem())
+        self.view.setWidth(800)
+        self.view.setHeight(110)
+        self.view.show()
+        self.app.processEvents()
+        self.switcher = self.container.findChild(
+            QObject, "workspaceSwitcherUnderTest"
+        )
+        self.subnav = self.container.findChild(
+            QObject, "workspaceSubNavigationUnderTest"
+        )
+        self.assertIsNotNone(self.switcher)
+        self.assertIsNotNone(self.subnav)
+        self.workspace_requests = []
+        self.page_requests = []
+        self.switcher.workspaceRequested.connect(self.workspace_requests.append)
+        self.subnav.editorPageRequested.connect(self.page_requests.append)
+
+    def tearDown(self):
+        self.view.close()
+        self.container.deleteLater()
+        self.view.deleteLater()
+
+    def test_new_navigation_uses_horizontal_roving_focus_and_accessible_state(self):
+        for source in (self.switcher_source, self.subnav_source):
+            self.assertIn("Keys.onLeftPressed", source)
+            self.assertIn("Keys.onRightPressed", source)
+            self.assertIn("Keys.onReturnPressed", source)
+            self.assertIn("Qt.Key_Home", source)
+            self.assertIn("Qt.Key_End", source)
+            self.assertIn("Qt.Key_Space", source)
+            self.assertIn("Accessible.checked: selected", source)
+            self.assertNotIn("MouseArea {", source)
+
+    def test_workspace_and_editor_navigation_only_activate_on_confirmation(self):
+        self.switcher.focusIndex(0)
+        self.app.processEvents()
+        QTest.keyClick(self.view, Qt.Key_Right)
+        self.assertEqual(1, self.switcher.property("tabStopIndex"))
+        self.assertEqual([], self.workspace_requests)
+        QTest.keyClick(self.view, Qt.Key_Return)
+        self.assertEqual(["audioEditor"], self.workspace_requests)
+
+        self.subnav.focusIndex(0)
+        self.app.processEvents()
+        QTest.keyClick(self.view, Qt.Key_Right)
+        self.assertEqual(1, self.subnav.property("tabStopIndex"))
+        self.assertEqual([], self.page_requests)
+        QTest.keyClick(self.view, Qt.Key_Space)
+        self.assertEqual(["lyrics"], self.page_requests)
+
+
 if __name__ == "__main__":
     unittest.main()

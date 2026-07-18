@@ -10,6 +10,9 @@ Item {
 
     property QtObject theme: Theme {}
     property QtObject typography: Typography {}
+    property bool pageActive: true
+    enabled: pageActive
+
     // Keep the context objects under page-local names before passing them to
     // components that expose identically named properties.  Without this,
     // QML resolves ``autoConvertViewModel: autoConvertViewModel`` as a
@@ -156,6 +159,7 @@ Item {
             typography: root.typography
             queueModel: root.taskQueueBridge
             autoConvertViewModel: root.autoConvertBridge
+            pageActive: root.pageActive
         }
 
         ScanSummaryBar {

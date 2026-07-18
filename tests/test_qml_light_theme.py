@@ -53,12 +53,14 @@ class QmlLightThemeCoverageTests(unittest.TestCase):
 
     def test_shell_keeps_focus_and_capability_boundaries_outside_theme_switching(self):
         shell = self._source("ui_next/qml/AppShell.qml")
-        sidebar = self._source("ui_next/qml/components/SidebarNavigation.qml")
+        switcher = self._source("ui_next/qml/components/WorkspaceSwitcher.qml")
         capabilities = self._source("ui_next/bridge/capabilities.py")
 
         self.assertIn("Theme {", shell)
-        self.assertIn("theme.sidebarWidth", shell)
-        self.assertIn("navItem.visualFocus", sidebar)
+        self.assertIn("FolderBrowserPane {", shell)
+        self.assertIn("visible: false", shell)
+        self.assertIn("activeFocusOnTab", switcher)
+        self.assertIn("Accessible.checked: selected", switcher)
         self.assertIn("PHASE4_ENABLED_CAPABILITIES", capabilities)
         self.assertNotIn("save_config", self._source("ui_next/qml/theme/Theme.qml"))
 

@@ -12,11 +12,14 @@ SectionCard {
     property var queueModel
     property var autoConvertViewModel
     property bool previewMode: autoConvertViewModel ? autoConvertViewModel.previewMode : true
+    property bool pageActive: true
+    property bool interactionEnabled: pageActive
     property var selectedPaths: []
     property int selectionAnchorIndex: -1
 
     implicitHeight: 260
     Layout.minimumWidth: 0
+    enabled: pageActive && interactionEnabled
 
     ColumnLayout {
         anchors.fill: parent
@@ -101,6 +104,7 @@ SectionCard {
 
                 delegate: TaskRowDelegate {
                     width: queueList.width
+                    interactionEnabled: root.interactionEnabled
                     theme: root.theme
                     typography: root.typography
                     rowIndex: index
@@ -181,7 +185,9 @@ SectionCard {
 
             DropArea {
                 id: dropArea
+                objectName: "autoConvertDropArea"
                 anchors.fill: parent
+                enabled: root.pageActive && root.interactionEnabled
                 onEntered: drag.accepted = true
                 onDropped: function(drop) {
                     root.autoConvertViewModel.enqueue_dropped_items(drop.urls)

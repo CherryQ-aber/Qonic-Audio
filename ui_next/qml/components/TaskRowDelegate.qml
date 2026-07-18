@@ -34,7 +34,15 @@ Rectangle {
     property bool canRemove: false
     property bool canOpenOutput: false
     property bool readOnly: true
+    property bool interactionEnabled: true
     property var formatOptions: []
+
+    enabled: interactionEnabled
+
+    onInteractionEnabledChanged: {
+        if (!interactionEnabled && taskMenu.opened)
+            taskMenu.close()
+    }
 
     signal selectionRequested(string path, int rowIndex, int modifiers, bool rightClick)
     signal enabledForRunRequested(var paths, bool enabled)

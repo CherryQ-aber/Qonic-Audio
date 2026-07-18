@@ -4,9 +4,9 @@
 
 - 日期：2026-07-18
 - 项目：CherryQ Audio Converter v5.0 Internal Test
-- 阶段：Phase 5.9.5-A
-- 状态：PlayerSession 与媒体事务安全基础已实现、通过回归并完成提交收尾
-- 下一阶段：等待用户明确要求继续 Phase 5.9.5-B
+- 阶段：Phase 5.9.5-B
+- 状态：持久化工作区外壳与两级导航已实现并通过回归，尚未提交
+- 下一阶段：先完成 Phase B 提交收尾；其后等待用户明确要求继续 Phase 5.9.5-C
 - 长期计划：`Codex_memory/PHASE_5_9_5_WORKSPACE_INTEGRATION_PLAN.md`
 
 本文是 Phase 5.9.5 的工程合同。长期计划描述完整方向，本文固定当前代码基线、状态归属、兼容规则、测试迁移和阶段门禁。后续实现如需改变本文合同，必须先更新本文并单独汇报，不得在代码修改中隐式改变语义。
@@ -581,7 +581,7 @@ Phase 5.9.5 不修改：
 
 watcher 只允许在 Phase E 经专项测试后增加检查器所需的只读运行结果字段，不得改变状态机。
 
-## 18. Phase A 精确进入范围
+## 18. Phase A 历史精确进入范围
 
 下一阶段生产代码只允许修改：
 
@@ -672,4 +672,73 @@ Phase A 开始前必须：
 
 ### 19.5 阶段门禁
 
-Phase A 已按精确文件清单完成提交收尾但未推送。Phase B 未开始，只有在用户明确要求后才能进入。
+Phase A 已按精确文件清单完成提交收尾但未推送。本记录形成时 Phase B 尚未开始；当前进度以第 20 节为准。
+
+## 20. Phase 5.9.5-B 完成记录
+
+### 20.1 实际修改范围
+
+生产代码修改：
+
+- `main_qml.py`
+- `ui_next/bridge/app_state_viewmodel.py`
+- `ui_next/qml/AppShell.qml`
+- `ui_next/qml/components/WorkspaceSwitcher.qml`
+- `ui_next/qml/components/WorkspaceSubNavigation.qml`
+- `ui_next/qml/components/WorkspaceStack.qml`
+- `ui_next/qml/components/SettingsOverlay.qml`
+- `ui_next/qml/components/FolderBrowserPane.qml`
+- `ui_next/qml/components/TopStatusBar.qml`
+- `ui_next/qml/components/LogDrawer.qml`
+- `ui_next/qml/components/TaskQueueView.qml`
+- `ui_next/qml/components/TaskRowDelegate.qml`
+- `ui_next/qml/pages/AutoConvertPage.qml`
+- `ui_next/qml/pages/AudioEditorPage.qml`
+- `ui_next/qml/pages/LyricsCoverPage.qml`
+
+测试修改或新增：
+
+- `tests/test_qml_phase595_workspace_shell.py`
+- `tests/test_qml_inspector_and_button_regressions.py`
+- `tests/test_qml_light_theme.py`
+- `tests/test_qml_log_drawer_layout.py`
+- `tests/test_qml_native_2k_window_layout.py`
+- `tests/test_qml_sidebar_accessibility.py`
+
+此外只更新 Phase 5.9.5 工程契约和 `Codex_memory` 长期状态文档。`SidebarNavigation.qml`、`RightInspector.qml`、`AnalysisPage.qml` 等兼容文件继续保留，但不再由正式工作区外壳加载。
+
+### 20.2 合同落实结果
+
+- 正式导航只有 `autoConvert` / `audioEditor` 两个一级工作区；音频编辑二级页只有 `fileInfo` / `lyrics` / `audioProcessing`。自动转码在 Phase B 只展示 `all`，没有提前实现 Phase E 筛选。
+- AppShell 使用常驻 `WorkspaceStack` 和嵌套 `StackLayout`；两个一级工作区和三个编辑子页在切换后保持相同实例。唯一 Python ViewModel、TaskQueueModel、PlayerSession、EditSession、SettingsViewModel 和 LogModel 均未重建。
+- `audioEditor` 与 `metadata` 的正式 canonical 状态统一为 `audioEditor/fileInfo/metadata`；旧模块键继续兼容。未知 CLI 模块在主要业务 ViewModel 构造和 shell 加载前返回 2，不静默回退首页。
+- SettingsPage 只在一个模态 `SettingsOverlay` 中创建；打开/关闭不改变工作区，关闭不调用保存、重载或草稿丢弃。LogDrawer 仍为 AppShell 单例。
+- Overlay / Drawer 支持 Escape；日志抽屉正向和反向焦点环只包含自身控件，关闭后按顶部或底部实际 opener 恢复焦点。Drawer 或 Settings 打开时底层 `shellContent` 被禁用。
+- 隐藏一级工作区的 DropArea、任务行交互和任务菜单不会继续响应；Legacy analysis 打开时整个主栈禁用，关闭后恢复当前工作区及正确状态摘要。
+- `FolderBrowserPane` 与 AppShell 同生命周期，当前固定隐藏、禁用和零宽；只预留 model 属性与 220 / 260 / 360 px 尺寸，不扫描、不创建 Python FolderBrowserModel、不复用编辑器浅层浏览器。
+- TopStatusBar 在小于 1360 px 时收起非必要能力摘要，实测 1080 px 正常用户能力文案下设置和日志仍位于窗口内。
+- 当前过渡期 `audioProcessing` 子页复用现有 `AudioEditorPage`，因此现有页面内 PlayerBar 暂时保留。全局 Player Dock 只允许在 Phase C 实现；当前没有第二个播放器视图或后端。
+
+### 20.3 验证结果
+
+- Phase B 合同定向测试：`49 passed, 6 subtests passed`。
+- 全部 QML 测试：`268 passed, 26 subtests passed`。
+- 最终完整无缓存回归：`493 passed, 2 warnings, 26 subtests passed`。
+- 两条 warning 仍是 `tests/test_release_baseline.py` 的既有 Qt `QMouseEvent` 构造弃用提示。
+- 首次完整回归的唯一失败发生在旧 Legacy 假 M4A 临时文件清理阶段，属于 Windows `WinError 32` 文件占用；业务断言已完成，失败单测立即复跑通过，随后完整无缓存复跑零失败。未修改 Legacy 或媒体代码。
+- `autoConvert`、`audioEditor`、`metadata`、`lyricsCover`、`audioProcessing`、`analysis`、`settings` 及歌词页叠加设置 offscreen smoke 全部通过。
+- 未发现 QML ReferenceError、binding loop、类型或运行时 warning；`git diff --check` 无内容错误，仅显示工作区 LF→CRLF 提示。
+- fixture 清理后所有 context QObject 和 TaskQueue/AutoConvert timer 均已失效，无测试级 Qt 对象或活动 timer 泄漏。
+- `config.json` SHA256 仍为 `EA8BE86CDF7FC7C9351B7F961D9D8B9BC97AD3D414FB7B6A8B8376B8E82CA72B`；`config.json.bak` 仍为 `CBED09046D02FC40A229CED3D9BD0E8642F80C13185B1AED3862BB44ED14B1E4`。
+- 验证结束后未发现 `main_qml.py`、FFmpeg 或 ncmdump 残留进程。
+
+### 20.4 冻结边界与阶段门禁
+
+Phase B 未实现、未修改：
+
+- 全局播放器 Dock、歌词时间点、任务筛选/任务播放器动作/任务检查器；
+- 真实 FolderBrowserModel、目录扫描、收藏、最近目录、右键或双击行为；
+- converter、watcher、任务生命周期、FFmpeg/NCM/Pitch、媒体和导出/no-clobber 算法；
+- capability 默认授权、运行模式、`config.json` 持久化、Legacy Widgets 或发行打包。
+
+Phase B 当前尚未暂存、提交或推送；`.reasonix/`、`Code_Review_Packages/` 和 `config.json.bak` 等既有未跟踪内容未处理。完成本阶段汇报后必须停止；先完成用户认可的 Phase B 提交收尾，并再次得到明确指令后，才能进入 Phase C。
