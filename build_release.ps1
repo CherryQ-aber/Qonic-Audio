@@ -6,17 +6,19 @@ $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
 $Root = Split-Path -Parent $MyInvocation.MyCommand.Path
-$AppName = "CherryQ Audio Converter"
-$VersionNumber = (& python -c "from config import APP_VERSION; print(APP_VERSION)").Trim()
-$Version = "V$VersionNumber"
-$ReleaseName = "${AppName}_${Version}_release"
+$AppName = (& python -c "from app_info import APP_PACKAGE_BASENAME; print(APP_PACKAGE_BASENAME)").Trim()
 $BuildRoot = Join-Path $Root "build\release"
 $WorkPath = Join-Path $BuildRoot "work"
 $DistPath = Join-Path $BuildRoot "dist"
 $ReleaseRoot = Join-Path $Root "Release"
-$ReleasePath = Join-Path $ReleaseRoot $ReleaseName
-$SpecPath = Join-Path $Root "CherryQ Audio Converter.spec"
-$ReadmePath = Join-Path $Root "README_V3_RELEASE.txt"
+$ReleasePath = Join-Path $ReleaseRoot $AppName
+$SpecPath = Join-Path $Root "CherryQ_Audio_Converter.spec"
+$ReadmePath = Join-Path $Root "README.md"
+$ChangelogPath = Join-Path $Root "CHANGELOG.md"
+$ReleaseNotesPath = Join-Path $Root ((& python -c "from app_info import APP_RELEASE_NOTES_NAME; print(APP_RELEASE_NOTES_NAME)").Trim())
+$KnownIssuesPath = Join-Path $Root "Known_Issues.md"
+$ConfigExamplePath = Join-Path $Root "config.example.json"
+$LicensesPath = Join-Path $Root "LICENSES"
 
 function Get-SafeChildPath {
     param(
@@ -91,6 +93,10 @@ Set-Location -LiteralPath $Root
 foreach ($requiredFile in @(
     $SpecPath,
     $ReadmePath,
+    $ChangelogPath,
+    $ReleaseNotesPath,
+    $KnownIssuesPath,
+    $ConfigExamplePath,
     (Join-Path $Root "Tools\ffmpeg\bin\ffmpeg.exe"),
     (Join-Path $Root "Tools\ncmdump\ncmdump.exe")
 )) {
@@ -118,7 +124,16 @@ Copy-Item -Path (Join-Path $BuiltAppPath "*") -Destination $ReleasePath -Recurse
 
 New-Item -ItemType Directory -Path (Join-Path $ReleasePath "logs") -Force | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $ReleasePath "Music_Output") -Force | Out-Null
-Copy-Item -LiteralPath $ReadmePath -Destination (Join-Path $ReleasePath "README.txt") -Force
+New-Item -ItemType Directory -Path (Join-Path $ReleasePath "AudioEditor_Output") -Force | Out-Null
+Copy-Item -LiteralPath $ReadmePath -Destination (Join-Path $ReleasePath "README.md") -Force
+Copy-Item -LiteralPath $ChangelogPath -Destination (Join-Path $ReleasePath "CHANGELOG.md") -Force
+Copy-Item -LiteralPath $ReleaseNotesPath -Destination (Join-Path $ReleasePath (Split-Path -Leaf $ReleaseNotesPath)) -Force
+Copy-Item -LiteralPath $KnownIssuesPath -Destination (Join-Path $ReleasePath "Known_Issues.md") -Force
+Copy-Item -LiteralPath $ConfigExamplePath -Destination (Join-Path $ReleasePath "config.example.json") -Force
+
+if (Test-Path -LiteralPath $LicensesPath) {
+    Copy-Item -LiteralPath $LicensesPath -Destination (Join-Path $ReleasePath "LICENSES") -Recurse -Force
+}
 
 $ReleaseExe = Join-Path $ReleasePath "$AppName.exe"
 $ReleaseFfmpeg = Join-Path $ReleasePath "_internal\Tools\ffmpeg\bin\ffmpeg.exe"
@@ -144,8 +159,8 @@ if (-not $SkipArchive) {
     Assert-FileExists -Path $SevenZip
     Assert-FileExists -Path $SevenZipSfx
 
-    $ArchivePath = Join-Path $ReleaseRoot "$ReleaseName.7z"
-    $SfxPath = Join-Path $ReleaseRoot "$ReleaseName.exe"
+    $ArchivePath = Join-Path $ReleaseRoot "$AppName.7z"
+    $SfxPath = Join-Path $ReleaseRoot "$AppName.exe"
 
     foreach ($outputFile in @($ArchivePath, $SfxPath)) {
         if (Test-Path -LiteralPath $outputFile) {
@@ -156,7 +171,7 @@ if (-not $SkipArchive) {
     Push-Location -LiteralPath $ReleaseRoot
 
     try {
-        & $SevenZip a -t7z -mx=7 $ArchivePath $ReleaseName
+        & $SevenZip a -t7z -mx=7 $ArchivePath $AppName
     }
     finally {
         Pop-Location

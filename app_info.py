@@ -1,0 +1,8 @@
+APP_DISPLAY_NAME = "CherryQ Audio Converter"
+APP_VERSION = "5.0 Internal Test"
+APP_RELEASE_VERSION = "5.0_internal_test"
+APP_STAGE = "v5.0 内部测试版"
+APP_WINDOW_TITLE = f"{APP_DISPLAY_NAME} v{APP_VERSION}"
+APP_PACKAGE_BASENAME = f"CherryQ_Audio_Converter_v{APP_RELEASE_VERSION}"
+APP_SPEC_NAME = "CherryQ_Audio_Converter.spec"
+APP_RELEASE_NOTES_NAME = "Release_Notes_v5.0_Internal_Test.md"

@@ -1,5 +1,15 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import sys
+from pathlib import Path
+
+SPEC_PATH = Path(globals().get("__file__", Path.cwd() / "CherryQ_Audio_Converter.spec")).resolve()
+SPEC_DIR = SPEC_PATH.parent
+
+if str(SPEC_DIR) not in sys.path:
+    sys.path.insert(0, str(SPEC_DIR))
+
+from app_info import APP_PACKAGE_BASENAME
 
 a = Analysis(
     ['gui.py'],
@@ -24,7 +34,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='CherryQ Audio Converter',
+    name=APP_PACKAGE_BASENAME,
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -44,5 +54,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='CherryQ Audio Converter',
+    name=APP_PACKAGE_BASENAME,
 )
