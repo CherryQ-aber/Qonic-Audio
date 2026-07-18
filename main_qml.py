@@ -109,6 +109,9 @@ def main(argv: list[str] | None = None) -> int:
     file_session_view_model.currentFileChanged.connect(
         edit_session_view_model.beginCurrentFile
     )
+    file_session_view_model.currentFileReloaded.connect(
+        edit_session_view_model.beginCurrentFile
+    )
     file_session_view_model.currentFileCleared.connect(edit_session_view_model.clear)
     metadata_view_model.metadataReadApplied.connect(
         edit_session_view_model.loadMetadataResult
@@ -124,9 +127,6 @@ def main(argv: list[str] | None = None) -> int:
     )
     edit_session_view_model.stateChanged.connect(
         file_session_view_model.notifyDraftStateChanged
-    )
-    file_session_view_model.setFileChangeBlocker(
-        lambda: edit_session_view_model.anyExporting
     )
     editor_file_browser_view_model = EditorFileBrowserViewModel(
         capability_gate=capability_gate,
@@ -147,7 +147,11 @@ def main(argv: list[str] | None = None) -> int:
         capability_gate=capability_gate,
     )
     file_session_view_model.setFileChangeBlocker(
-        lambda: edit_session_view_model.anyExporting or processing_session_view_model.isBusy
+        lambda: (
+            edit_session_view_model.anyExporting
+            or processing_session_view_model.isBusy
+            or audio_player_view_model.mediaOperationBusy
+        )
     )
     settings_view_model = SettingsViewModel(
         log_model=log_model,

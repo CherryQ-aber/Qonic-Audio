@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import uuid
 
 from PySide6.QtCore import Property, QObject, QUrl, Signal, Slot
 from PySide6.QtMultimedia import QAudioOutput, QMediaDevices, QMediaPlayer
@@ -15,10 +16,17 @@ class _NullAudioOutput(QObject):
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self._volume = 0.7
+        self._muted = False
         self._device = None
 
     def setVolume(self, value: float) -> None:
         self._volume = float(value)
+
+    def setMuted(self, value: bool) -> None:
+        self._muted = bool(value)
+
+    def isMuted(self) -> bool:
+        return self._muted
 
     def setDevice(self, device) -> None:
         self._device = device
@@ -80,7 +88,22 @@ class AudioPlayerViewModel(BaseViewModel):
         "original": "原音频",
         "preview_cache": "试听版本",
         "export_result": "导出结果",
+        "unknown": "未知来源",
     }
+    _KNOWN_PLAYBACK_ORIGINS = {
+        "folder_tree",
+        "transcode_source",
+        "transcode_output",
+        "editor_file",
+        "pitch_preview",
+        "editor_export",
+    }
+    _EDITOR_ASSOCIATED_ORIGINS = {
+        "editor_file",
+        "pitch_preview",
+        "editor_export",
+    }
+    _SEEK_STEP_MS = 2_000
 
     def __init__(
         self,
@@ -116,25 +139,39 @@ class AudioPlayerViewModel(BaseViewModel):
         self._duration = 0
         self._position = 0
         self._volume = 70
+        self._muted = False
         self._error = ""
         self._playback_source_path = ""
         self._playback_source_label = "未加载"
         self._playback_source_type = "none"
+        self._playback_origin = "none"
+        self._playback_editor_path = ""
         self._source_generation = 0
         self._playback_token = 0
         self._media_loaded = False
         self._ignore_backend_events = False
         self._signal_bindings: list[tuple[object, object]] = []
-        self._release_snapshot: dict[str, object] | None = None
+        self._active_operation_token = ""
+        self._active_operation_owner = ""
+        self._active_operation_snapshot: dict[str, object] | None = None
+        self._compat_operation_token = ""
         self._devices_by_id: dict[str, object] = {}
         self._output_devices: list[dict[str, object]] = []
         self._selected_device_id = ""
         self._device_name = "系统默认输出" if self._backend_initialized else ""
         self._audio_output.setVolume(self._volume / 100.0)
+        self._set_output_muted(self._muted)
         self._rebind_player_signals()
 
-        self._file_session.currentFileChanged.connect(self.loadFile)
-        self._file_session.currentFileCleared.connect(self.clear)
+        if hasattr(self._file_session, "editorFilePlaybackRequested"):
+            self._file_session.editorFilePlaybackRequested.connect(
+                self.loadEditorFile
+            )
+        else:
+            self._file_session.currentFileChanged.connect(self.loadFile)
+        self._file_session.currentFileCleared.connect(
+            self._on_current_file_cleared
+        )
         if hasattr(self._file_session, "currentFileMissing"):
             self._file_session.currentFileMissing.connect(
                 self._on_current_file_missing
@@ -181,6 +218,33 @@ class AudioPlayerViewModel(BaseViewModel):
         )
 
     @Property(bool, notify=stateChanged)
+    def hasPlaybackSource(self) -> bool:
+        return bool(self._playback_source_path)
+
+    @Property(str, notify=stateChanged)
+    def currentPlaybackFileName(self) -> str:
+        return (
+            Path(self._playback_source_path).name
+            if self._playback_source_path
+            else "未加载"
+        )
+
+    @Property(bool, notify=stateChanged)
+    def playbackMatchesEditorFile(self) -> bool:
+        return bool(
+            self._playback_source_path
+            and self.currentFilePath
+            and self._same_path(
+                self._playback_source_path,
+                self.currentFilePath,
+            )
+        )
+
+    @Property(str, notify=stateChanged)
+    def playbackOrigin(self) -> str:
+        return self._playback_origin
+
+    @Property(bool, notify=stateChanged)
     def hasCurrentFile(self) -> bool:
         return bool(self.currentFilePath)
 
@@ -199,6 +263,25 @@ class AudioPlayerViewModel(BaseViewModel):
     @Property(int, notify=stateChanged)
     def volume(self) -> int:
         return self._volume
+
+    @Property(bool, notify=stateChanged)
+    def muted(self) -> bool:
+        return self._muted
+
+    @Property(int, constant=True)
+    def seekStepMs(self) -> int:
+        return self._SEEK_STEP_MS
+
+    @Property(str, notify=stateChanged)
+    def currentTimestampText(self) -> str:
+        total_centiseconds = max(0, int(self._position)) // 10
+        total_seconds, centiseconds = divmod(total_centiseconds, 100)
+        minutes, seconds = divmod(total_seconds, 60)
+        return f"[{minutes:02d}:{seconds:02d}.{centiseconds:02d}]"
+
+    @Property(bool, notify=stateChanged)
+    def mediaOperationBusy(self) -> bool:
+        return bool(self._active_operation_token)
 
     @Property(str, notify=stateChanged)
     def error(self) -> str:
@@ -226,43 +309,85 @@ class AudioPlayerViewModel(BaseViewModel):
 
     @Property(bool, notify=stateChanged)
     def mediaSourceReleased(self) -> bool:
-        return self._state == "released" and not self._playback_source_path
+        return (
+            self._state == "released"
+            and not self._playback_source_path
+            and self.mediaOperationBusy
+        )
 
     @Property(bool, notify=stateChanged)
     def canPlay(self) -> bool:
         return (
             self._backend_initialized
             and bool(self._playback_source_path)
+            and not self.mediaOperationBusy
             and self._state in {"ready", "paused", "stopped", "finished"}
         )
 
     @Slot(str, int)
     def loadFile(self, path: str, generation: int = 0) -> None:
+        self.loadEditorFile(path, generation, "editor_file")
+
+    @Slot(str, int, str)
+    def loadEditorFile(
+        self,
+        path: str,
+        generation: int = 0,
+        origin: str = "editor_file",
+    ) -> None:
         if generation and generation < self._source_generation:
             return
         self._source_generation = int(generation)
         if not path:
-            self.clear()
+            self._clear_playback_source(
+                "当前编辑文件为空，关联播放器媒体源已释放。"
+            )
             return
         if not self._backend_initialized:
             self._state = "empty"
             self._emit_state("预览模式不会加载或输出真实音频。")
             return
-        self._set_playback_source(path, "原音频", "original", False, 0)
+        normalized_origin = (
+            origin
+            if origin in {"editor_file", "editor_export"}
+            else "editor_file"
+        )
+        self._set_playback_source(
+            path,
+            "编辑导出结果" if normalized_origin == "editor_export" else "原音频",
+            "export_result" if normalized_origin == "editor_export" else "original",
+            normalized_origin,
+            False,
+            0,
+            associated_editor_path=path,
+        )
 
-    @Slot(str, str, bool, int)
+    @Slot(str, str, bool, int, result=bool)
     def setPlaybackSource(
         self,
         path: str,
         label: str = "原音频",
         autoplay: bool = False,
         position: int = 0,
-    ) -> None:
+    ) -> bool:
         """Compatibility entry: switch only the player, never FileSession."""
         source_type = self._infer_source_type(path, label)
-        self._set_playback_source(path, label, source_type, autoplay, position)
+        origin = self._infer_playback_origin(path, label, source_type)
+        return self._set_playback_source(
+            path,
+            label,
+            source_type,
+            origin,
+            autoplay,
+            position,
+            associated_editor_path=(
+                self.currentFilePath
+                if origin in self._EDITOR_ASSOCIATED_ORIGINS
+                else ""
+            ),
+        )
 
-    @Slot(str, str, str, bool, int)
+    @Slot(str, str, str, bool, int, result=bool)
     def setPlaybackSourceWithType(
         self,
         path: str,
@@ -270,13 +395,49 @@ class AudioPlayerViewModel(BaseViewModel):
         source_type: str,
         autoplay: bool = False,
         position: int = 0,
-    ) -> None:
-        self._set_playback_source(
+    ) -> bool:
+        normalized_type = self._normalize_source_type(source_type)
+        origin = self._infer_playback_origin(path, label, normalized_type)
+        return self._set_playback_source(
             path,
             label,
-            source_type,
+            normalized_type,
+            origin,
             autoplay,
             position,
+            associated_editor_path=(
+                self.currentFilePath
+                if origin in self._EDITOR_ASSOCIATED_ORIGINS
+                else ""
+            ),
+        )
+
+    @Slot(str, str, str, str, bool, int, result=bool)
+    def setPlaybackSourceWithOrigin(
+        self,
+        path: str,
+        label: str,
+        source_type: str,
+        origin: str,
+        autoplay: bool = False,
+        position: int = 0,
+    ) -> bool:
+        normalized_origin = (
+            origin if origin in self._KNOWN_PLAYBACK_ORIGINS else "unknown"
+        )
+        associated_editor_path = (
+            self.currentFilePath
+            if normalized_origin in self._EDITOR_ASSOCIATED_ORIGINS
+            else ""
+        )
+        return self._set_playback_source(
+            path,
+            label,
+            self._normalize_source_type(source_type),
+            normalized_origin,
+            autoplay,
+            position,
+            associated_editor_path=associated_editor_path,
         )
 
     def _set_playback_source(
@@ -284,42 +445,62 @@ class AudioPlayerViewModel(BaseViewModel):
         path: str,
         label: str,
         source_type: str,
+        origin: str,
         autoplay: bool,
         position: int,
-    ) -> None:
+        *,
+        associated_editor_path: str = "",
+    ) -> bool:
+        if self.mediaOperationBusy:
+            self._emit_state(
+                "播放器正在为文件操作释放媒体源；暂不能切换播放来源。"
+            )
+            return False
         if not path:
-            self.clear()
-            return
+            return self._clear_playback_source("播放器媒体源已清除。")
         if not self._backend_initialized:
             self._state = "empty"
             self._emit_state("预览模式不会加载或输出真实音频。")
-            return
+            return False
         source_path = str(Path(path).expanduser().resolve())
         if not Path(source_path).is_file():
             self._handle_missing_source(source_path)
-            return
+            return False
 
         self._playback_token += 1
         self._rebind_player_signals()
         self._clear_backend_source()
-        self._release_snapshot = None
         self._state = "loading"
         self._error = ""
         self._media_loaded = False
         self._playback_source_path = source_path
         self._playback_source_label = str(label or "音频")
-        self._playback_source_type = (
-            source_type if source_type in self._SOURCE_TYPE_LABELS else "original"
+        self._playback_source_type = self._normalize_source_type(source_type)
+        self._playback_origin = (
+            origin if origin in self._KNOWN_PLAYBACK_ORIGINS else "unknown"
+        )
+        self._playback_editor_path = (
+            str(Path(associated_editor_path).expanduser().resolve())
+            if associated_editor_path
+            else ""
         )
         self._player.setSource(QUrl.fromLocalFile(source_path))
         if position > 0:
-            self._player.setPosition(max(0, int(position)))
+            restored_position = max(0, int(position))
+            self._player.setPosition(restored_position)
+            self._position = restored_position
         if autoplay:
             self._player.play()
         self._emit_state(f"正在加载{self._playback_source_label}。")
+        return True
 
     @Slot()
     def returnToOriginal(self) -> None:
+        if self.mediaOperationBusy:
+            self._emit_state(
+                "播放器正在为文件操作释放媒体源；暂不能返回编辑文件。"
+            )
+            return
         if not self.currentFilePath:
             self._emit_state("请先导入音频。")
             return
@@ -327,8 +508,10 @@ class AudioPlayerViewModel(BaseViewModel):
             self.currentFilePath,
             "原音频",
             "original",
+            "editor_file",
             False,
             0,
+            associated_editor_path=self.currentFilePath,
         )
 
     @Slot()
@@ -387,52 +570,123 @@ class AudioPlayerViewModel(BaseViewModel):
         self._audio_output.setVolume(self._volume / 100.0)
         self._emit_state("音量已更新；不会在拖动时保存配置。")
 
-    @Slot(result=bool)
-    def releaseMediaSource(self) -> bool:
-        """Release the Qt media handle while preserving the edit session."""
-        self._release_snapshot = {
+    @Slot(bool)
+    def setMuted(self, muted: bool) -> None:
+        self._muted = bool(muted)
+        self._set_output_muted(self._muted)
+        self._emit_state("已静音。" if self._muted else "已取消静音。")
+
+    @Slot()
+    def seekBackward(self) -> None:
+        self.seek(self._position - self._SEEK_STEP_MS)
+
+    @Slot()
+    def seekForward(self) -> None:
+        self.seek(self._position + self._SEEK_STEP_MS)
+
+    @Slot(str, result=str)
+    def beginFileOperation(self, owner: str) -> str:
+        if self.mediaOperationBusy:
+            self._emit_state("已有媒体文件操作正在进行；本次请求已拒绝。")
+            return ""
+        token = uuid.uuid4().hex
+        snapshot = {
             "path": self._playback_source_path,
             "label": self._playback_source_label,
             "source_type": self._playback_source_type,
+            "origin": self._playback_origin,
+            "editor_path": self._playback_editor_path,
             "position": self._position,
-            "was_playing": self._state == "playing",
+            "generation": self._source_generation,
         }
+        self._active_operation_token = token
+        self._active_operation_owner = str(owner or "file_operation")
+        self._active_operation_snapshot = snapshot
         self._playback_token += 1
         self._rebind_player_signals()
         self._clear_backend_source()
         self._playback_source_path = ""
         self._playback_source_label = "已释放"
         self._playback_source_type = "none"
-        self._state = "released" if self.hasCurrentFile else "empty"
+        self._playback_origin = "none"
+        self._playback_editor_path = ""
+        self._state = "released"
         self._error = ""
-        released = self._backend_source_is_empty()
+        if not self._backend_source_is_empty():
+            self._active_operation_token = ""
+            self._active_operation_owner = ""
+            self._active_operation_snapshot = None
+            self._restore_snapshot(snapshot)
+            self._emit_state("播放器未能确认媒体源已释放。")
+            return ""
+        self._emit_state("播放器已释放媒体源，可继续执行文件操作。")
+        return token
+
+    @Slot(str, bool, result=bool)
+    def finishFileOperation(
+        self,
+        token: str,
+        restore: bool = True,
+    ) -> bool:
+        normalized_token = str(token or "")
+        if (
+            not normalized_token
+            or normalized_token != self._active_operation_token
+        ):
+            self._emit_state("媒体文件操作令牌无效或已经结束。")
+            return False
+        snapshot = dict(self._active_operation_snapshot or {})
+        self._active_operation_token = ""
+        self._active_operation_owner = ""
+        self._active_operation_snapshot = None
+        if self._compat_operation_token == normalized_token:
+            self._compat_operation_token = ""
+        if restore and snapshot.get("path"):
+            return self._restore_snapshot(snapshot)
+        self._state = "empty"
+        self._error = ""
+        self._playback_source_path = ""
+        self._playback_source_label = "未加载"
+        self._playback_source_type = "none"
+        self._playback_origin = "none"
+        self._playback_editor_path = ""
         self._emit_state(
-            "播放器已释放媒体源，可继续执行文件操作。"
-            if released
-            else "播放器未能确认媒体源已释放。"
+            "文件操作已完成；原播放源未恢复。"
+            if not restore
+            else "文件操作已完成；此前没有播放源可恢复。"
         )
-        return released
+        return True
+
+    @Slot(result=bool)
+    def releaseMediaSource(self) -> bool:
+        """Compatibility wrapper over the single media-operation lease."""
+        if self._compat_operation_token:
+            self._emit_state("兼容媒体文件操作已经进行中。")
+            return False
+        token = self.beginFileOperation("legacy_release")
+        if not token:
+            return False
+        self._compat_operation_token = token
+        return True
 
     @Slot(result=bool)
     def prepareForFileOperation(self) -> bool:
-        return self.releaseMediaSource()
+        if self._compat_operation_token:
+            self._emit_state("兼容媒体文件操作已经进行中。")
+            return False
+        token = self.beginFileOperation("legacy_prepare")
+        if not token:
+            return False
+        self._compat_operation_token = token
+        return True
 
     @Slot(result=bool)
     def restorePlaybackSource(self) -> bool:
-        snapshot = dict(self._release_snapshot or {})
-        path = str(snapshot.get("path") or self.currentFilePath or "")
-        if not path or not Path(path).is_file():
-            self._handle_missing_source(path)
+        token = self._compat_operation_token
+        if not token:
+            self._emit_state("当前没有可恢复的兼容媒体文件操作。")
             return False
-        self._release_snapshot = None
-        self._set_playback_source(
-            path,
-            str(snapshot.get("label") or "原音频"),
-            str(snapshot.get("source_type") or "original"),
-            False,
-            int(snapshot.get("position") or 0),
-        )
-        return True
+        return self.finishFileOperation(token, True)
 
     @Slot()
     def refreshOutputDevices(self) -> None:
@@ -481,6 +735,7 @@ class AudioPlayerViewModel(BaseViewModel):
             try:
                 self._audio_output.setDevice(fallback)
                 self._audio_output.setVolume(self._volume / 100.0)
+                self._set_output_muted(self._muted)
                 self._selected_device_id = self._device_id(fallback)
                 self._device_name = self._device_name_for(fallback)
                 message = "原输出设备已不可用，已安全回退到系统默认设备。"
@@ -522,6 +777,7 @@ class AudioPlayerViewModel(BaseViewModel):
         try:
             self._audio_output.setDevice(device)
             self._audio_output.setVolume(self._volume / 100.0)
+            self._set_output_muted(self._muted)
         except Exception as exc:
             try:
                 if previous_device is not None:
@@ -541,7 +797,16 @@ class AudioPlayerViewModel(BaseViewModel):
 
     @Slot()
     def clear(self) -> None:
-        self._release_snapshot = None
+        if self.mediaOperationBusy:
+            self._emit_state(
+                "播放器正在为文件操作释放媒体源；暂不能清空播放来源。"
+            )
+            return
+        self._clear_playback_source(
+            "播放器媒体源已清除；未改变当前编辑文件。"
+        )
+
+    def _clear_playback_source(self, message: str) -> bool:
         self._playback_token += 1
         self._rebind_player_signals()
         self._clear_backend_source()
@@ -550,17 +815,25 @@ class AudioPlayerViewModel(BaseViewModel):
         self._playback_source_path = ""
         self._playback_source_label = "未加载"
         self._playback_source_type = "none"
-        self._emit_state("当前文件已清除，播放器媒体源已释放。")
+        self._playback_origin = "none"
+        self._playback_editor_path = ""
+        self._emit_state(message)
+        return True
 
     @Slot()
     def shutdown(self) -> None:
-        self._release_snapshot = None
+        self._active_operation_token = ""
+        self._active_operation_owner = ""
+        self._active_operation_snapshot = None
+        self._compat_operation_token = ""
         self._playback_token += 1
         self._rebind_player_signals()
         self._clear_backend_source()
         self._playback_source_path = ""
         self._playback_source_label = "未加载"
         self._playback_source_type = "none"
+        self._playback_origin = "none"
+        self._playback_editor_path = ""
         self._state = "empty"
 
     def _clear_backend_source(self) -> None:
@@ -710,6 +983,8 @@ class AudioPlayerViewModel(BaseViewModel):
         self._playback_source_path = ""
         self._playback_source_label = "文件缺失"
         self._playback_source_type = "none"
+        self._playback_origin = "none"
+        self._playback_editor_path = ""
         if (
             path
             and self.currentFilePath
@@ -729,12 +1004,25 @@ class AudioPlayerViewModel(BaseViewModel):
         self._playback_source_path = ""
         self._playback_source_label = "加载失败"
         self._playback_source_type = "none"
+        self._playback_origin = "none"
+        self._playback_editor_path = ""
         self._emit_state(self._error)
+
+    @Slot()
+    def _on_current_file_cleared(self) -> None:
+        if self._playback_origin not in self._EDITOR_ASSOCIATED_ORIGINS:
+            return
+        self._clear_playback_source(
+            "当前编辑文件已清除，关联播放器媒体源已释放。"
+        )
 
     @Slot(str, int)
     def _on_current_file_missing(self, path: str, _generation: int) -> None:
-        if not path or not self.currentFilePath or not self._same_path(
-            path, self.currentFilePath
+        if (
+            not path
+            or self._playback_origin not in self._EDITOR_ASSOCIATED_ORIGINS
+            or not self._playback_editor_path
+            or not self._same_path(path, self._playback_editor_path)
         ):
             return
         self._playback_token += 1
@@ -745,6 +1033,8 @@ class AudioPlayerViewModel(BaseViewModel):
         self._playback_source_path = ""
         self._playback_source_label = "文件缺失"
         self._playback_source_type = "none"
+        self._playback_origin = "none"
+        self._playback_editor_path = ""
         self._emit_state(self._error)
 
     def _classify_error(self, message: str) -> str:
@@ -759,14 +1049,75 @@ class AudioPlayerViewModel(BaseViewModel):
         return f"音频加载或播放错误：{detail or '未知原因'}"
 
     def _infer_source_type(self, path: str, label: str) -> str:
-        if path and self.currentFilePath and self._same_path(path, self.currentFilePath):
-            return "original"
         lowered = str(label or "").casefold()
         if "试听" in lowered or "preview" in lowered:
             return "preview_cache"
         if "导出" in lowered or "export" in lowered:
             return "export_result"
-        return "original"
+        if (
+            path
+            and self.currentFilePath
+            and self._same_path(path, self.currentFilePath)
+            and ("原音频" in lowered or "original" in lowered)
+        ):
+            return "original"
+        return "unknown"
+
+    def _infer_playback_origin(
+        self,
+        path: str,
+        label: str,
+        source_type: str,
+    ) -> str:
+        if source_type == "preview_cache":
+            return "pitch_preview"
+        if (
+            source_type == "original"
+            and path
+            and self.currentFilePath
+            and self._same_path(path, self.currentFilePath)
+        ):
+            return "editor_file"
+        return "unknown"
+
+    def _restore_snapshot(self, snapshot: dict[str, object]) -> bool:
+        path = str(snapshot.get("path") or "")
+        if not path:
+            self._state = "empty"
+            self._error = ""
+            self._emit_state("此前没有播放源可恢复。")
+            return True
+        if not Path(path).is_file():
+            self._handle_missing_source(path)
+            return False
+        self._source_generation = int(
+            snapshot.get("generation") or self._source_generation
+        )
+        return self._set_playback_source(
+            path,
+            str(snapshot.get("label") or "音频"),
+            self._normalize_source_type(
+                str(snapshot.get("source_type") or "unknown")
+            ),
+            str(snapshot.get("origin") or "unknown"),
+            False,
+            int(snapshot.get("position") or 0),
+            associated_editor_path=str(snapshot.get("editor_path") or ""),
+        )
+
+    @classmethod
+    def _normalize_source_type(cls, source_type: str) -> str:
+        normalized = str(source_type or "")
+        return (
+            normalized
+            if normalized in cls._SOURCE_TYPE_LABELS
+            else "unknown"
+        )
+
+    def _set_output_muted(self, muted: bool) -> None:
+        setter = getattr(self._audio_output, "setMuted", None)
+        if callable(setter):
+            setter(bool(muted))
 
     def _current_audio_device(self):
         getter = getattr(self._audio_output, "device", None)

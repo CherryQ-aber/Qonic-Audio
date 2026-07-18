@@ -18,22 +18,26 @@ def test_processing_capabilities_are_explicit_and_default_user_mode_is_available
 
 class _FileSession(QObject):
     currentFileChanged = Signal(str, int)
+    currentFileReloaded = Signal(str, int)
     currentFileCleared = Signal()
+    currentFileMissing = Signal(str, int)
+    editorFilePlaybackRequested = Signal(str, int, str)
 
-    def __init__(self):
+    def __init__(self, outcome="loaded"):
         super().__init__()
         self.loads = []
+        self.outcome = outcome
 
     def setCurrentFile(self, path, source):
         self.loads.append((path, source))
-        return "loaded"
+        return self.outcome
 
 
 class _Player(QObject):
     stateChanged = Signal()
 
     def __init__(self):
-        super().__init__(); self.playerState = "ready"; self.error = ""; self.position = 0; self.sources = []; self.currentPlaybackSourceType = "none"; self.prepare_count = 0; self.restore_count = 0
+        super().__init__(); self.playerState = "ready"; self.error = ""; self.position = 0; self.sources = []; self.currentPlaybackSourceType = "none"; self.begin_calls = []; self.finish_calls = []; self.active_token = ""; self.mediaOperationBusy = False
 
     def setPlaybackSource(self, path, label, autoplay, position):
         self.sources.append((path, label, "inferred", position)); self.playerState = "loading"; self.position = position; self.stateChanged.emit()
@@ -48,13 +52,27 @@ class _Player(QObject):
     def play(self):
         self.playerState = "playing"; self.stateChanged.emit()
 
-    def prepareForFileOperation(self):
-        self.prepare_count += 1
+    def beginFileOperation(self, owner):
+        if self.active_token:
+            return ""
+        self.active_token = f"token-{len(self.begin_calls) + 1}"
+        self.mediaOperationBusy = True
+        self.begin_calls.append((owner, self.active_token))
+        return self.active_token
+
+    def finishFileOperation(self, token, restore=True):
+        self.finish_calls.append((token, bool(restore)))
+        if token != self.active_token:
+            return False
+        self.active_token = ""
+        self.mediaOperationBusy = False
         return True
 
+    def prepareForFileOperation(self):
+        raise AssertionError("Phase A export must prefer the token lease API")
+
     def restorePlaybackSource(self):
-        self.restore_count += 1
-        return True
+        raise AssertionError("Phase A export must finish the token it acquired")
 
 
 def _session(tmp_path):
@@ -177,6 +195,19 @@ def test_manual_preview_cache_cleanup_restores_current_original(tmp_path):
     assert not preview.exists()
 
 
+def test_preview_cache_cleanup_is_rejected_during_media_operation(tmp_path):
+    view_model, _source = _session(tmp_path)
+    preview = _activate_preview(view_model, tmp_path)
+    token = view_model._audio_player.beginFileOperation("edit_export")
+
+    view_model.cleanPreviewCache()
+
+    assert preview.exists()
+    assert view_model.previewPath == str(preview)
+    assert "暂不能清理试听缓存" in view_model.statusMessage
+    assert view_model._audio_player.finishFileOperation(token, False)
+
+
 def test_return_to_original_uses_explicit_source_type_and_starts_at_zero(tmp_path):
     view_model, source = _session(tmp_path)
     view_model._audio_player.position = 42_000
@@ -188,6 +219,27 @@ def test_return_to_original_uses_explicit_source_type_and_starts_at_zero(tmp_pat
     assert view_model._audio_player.sources[-1] == (str(source), "原音频", "original", 0)
     assert view_model._audio_player.position == 0
     assert view_model.currentPlaybackSource == "original"
+
+
+def test_processing_reload_invalidates_preview_without_switching_player(tmp_path):
+    view_model, source = _session(tmp_path)
+    preview = tmp_path / "preview-before-reload.wav"
+    preview.write_bytes(b"preview")
+    view_model._preview_path = str(preview)
+    view_model._preview_generation = view_model.sourceGeneration
+    view_model._preview_valid = True
+    view_model._current_playback_source = "preview"
+    view_model._audio_player.currentPlaybackSourceType = "preview_cache"
+    source_count = len(view_model._audio_player.sources)
+
+    view_model._file_session.currentFileReloaded.emit(str(source), 4)
+
+    assert view_model.sourceGeneration == 4
+    assert view_model.sourcePath == str(source)
+    assert not view_model.previewValid
+    assert view_model.currentPlaybackSource == "preview"
+    assert len(view_model._audio_player.sources) == source_count
+    assert preview.exists()
 
 
 def test_pitch_export_result_stays_separate_until_explicit_load(tmp_path):
@@ -203,7 +255,7 @@ def test_pitch_export_result_stays_separate_until_explicit_load(tmp_path):
 
     view_model.loadExportResultAsCurrent()
 
-    assert view_model._audio_player.prepare_count == 1
+    assert view_model._audio_player.begin_calls == []
     assert view_model._file_session.loads == [
         (str(output), "pitch_export_result")
     ]
@@ -218,8 +270,9 @@ def test_pitch_export_completion_restores_released_player_for_same_session(tmp_p
     view_model._request_generation = view_model.sourceGeneration
     view_model._request_semitone = view_model.semitone
     view_model._workers[request_id] = object()
+    token = view_model._audio_player.beginFileOperation("pitch_export")
     view_model._request_context[request_id] = {
-        "player_released": True,
+        "player_operation_token": token,
         "started_ns": 0,
     }
 
@@ -230,5 +283,57 @@ def test_pitch_export_completion_restores_released_player_for_same_session(tmp_p
         {"success": True, "output_path": str(output), "diagnostics": {}},
     )
 
-    assert view_model._audio_player.restore_count == 1
+    assert view_model._audio_player.finish_calls == [(token, True)]
     assert view_model.exportPath == str(output)
+
+
+def test_stale_pitch_export_finishes_its_token_without_restoring(tmp_path):
+    view_model, _source = _session(tmp_path)
+    output = tmp_path / "stale-pitch.wav"
+    output.write_bytes(b"pitch")
+    request_id = "stale-export"
+    view_model._active_request_id = "newer-request"
+    view_model._request_generation = view_model.sourceGeneration
+    view_model._request_semitone = view_model.semitone
+    view_model._workers[request_id] = object()
+    view_model._workers["newer-request"] = object()
+    token = view_model._audio_player.beginFileOperation("pitch_export")
+    view_model._request_context[request_id] = {
+        "player_operation_token": token,
+        "started_ns": 0,
+    }
+    view_model._finish_request(
+        request_id,
+        "export",
+        str(output),
+        {"success": True, "output_path": str(output), "diagnostics": {}},
+    )
+
+    assert view_model._audio_player.finish_calls == [(token, False)]
+    assert view_model._audio_player.active_token == ""
+    assert view_model.activeRequestId == "newer-request"
+    assert view_model.exportPath == ""
+
+
+def test_pitch_worker_start_failure_finishes_media_operation(
+    tmp_path,
+    monkeypatch,
+):
+    view_model, _source = _session(tmp_path)
+    output = tmp_path / "never-started.wav"
+
+    def fail_start(_worker):
+        raise RuntimeError("start failed")
+
+    monkeypatch.setattr(
+        "ui_next.bridge.audio_processing_session._ProcessingWorker.start",
+        fail_start,
+    )
+
+    view_model._start("export", str(output))
+
+    token = view_model._audio_player.begin_calls[-1][1]
+    assert view_model._audio_player.finish_calls == [(token, True)]
+    assert not view_model._audio_player.mediaOperationBusy
+    assert view_model.errorCode == "processing_start_failed"
+    assert view_model.activeRequestId == ""

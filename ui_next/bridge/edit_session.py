@@ -183,7 +183,7 @@ class EditSessionViewModel(BaseViewModel):
         self._file_session = None
         self._audio_player = None
         self._active_export_generation = 0
-        self._player_released_for_export = False
+        self._player_operation_token = ""
         self.set_status_message("当前没有文件信息编辑草稿。")
 
     def attach_runtime(self, file_session, audio_player) -> None:
@@ -652,11 +652,20 @@ class EditSessionViewModel(BaseViewModel):
         self._unified_export_state = "exporting"
         self._unified_export_validation_message = "正在创建并验证新的音频副本。"
         self.set_status_message("正在安全导出编辑副本；原文件不会被覆盖。")
-        worker = _UnifiedExportWorker(self._service_for_export(), request)
-        self._unified_export_worker = worker
-        worker.resultReady.connect(self._apply_unified_export_result)
-        worker.finished.connect(worker.deleteLater)
-        worker.start()
+        try:
+            worker = _UnifiedExportWorker(self._service_for_export(), request)
+            self._unified_export_worker = worker
+            worker.resultReady.connect(self._apply_unified_export_result)
+            worker.finished.connect(worker.deleteLater)
+            worker.start()
+        except Exception as exc:
+            self._unified_export_worker = None
+            self._finish_audio_export_transaction()
+            self._set_unified_failure(
+                "export_start_failed",
+                f"无法启动编辑副本导出任务：{type(exc).__name__}",
+            )
+            return
         self.stateChanged.emit()
 
     @Slot()
@@ -693,22 +702,23 @@ class EditSessionViewModel(BaseViewModel):
             self.set_status_message("当前没有可载入的已验证导出结果。")
             return
         output_path = str(self._unified_export_result.get("output_path") or "")
-        if self._audio_player is not None:
-            prepare = getattr(self._audio_player, "prepareForFileOperation", None)
-            if callable(prepare) and not prepare():
-                self.set_status_message("播放器未能释放媒体源，已取消载入导出结果。")
-                return
         outcome = self._file_session.setCurrentFile(
             output_path,
             "edit_export_result",
         )
         if outcome in {"loaded", "unchanged"}:
             self.discardAllDraftsForResultLoad()
-        self.set_status_message(
-            "已载入导出结果并重新读取文件信息。"
-            if outcome in {"loaded", "unchanged"}
-            else "无法载入导出结果；请确认文件仍然存在。"
-        )
+            self.set_status_message("已载入导出结果并重新读取文件信息。")
+        elif outcome == "confirmation_required":
+            self.set_status_message(
+                "当前草稿保持不变；确认放弃草稿后才会载入导出结果。"
+            )
+        elif outcome == "blocked":
+            self.set_status_message(
+                "当前有媒体处理或导出操作；暂不能载入导出结果。"
+            )
+        else:
+            self.set_status_message("无法载入导出结果；请确认文件仍然存在。")
 
     @Slot()
     def discardAllDraftsForResultLoad(self) -> None:
@@ -910,11 +920,29 @@ class EditSessionViewModel(BaseViewModel):
             return
         self._cover_state = "writing"
         self.set_status_message("正在安全导出含封面草稿的新音频副本；原文件不会被覆盖。")
-        worker = _CoverExportWorker(self._service_for_export(), request)
-        self._cover_export_worker = worker
-        worker.resultReady.connect(self._apply_cover_export_result)
-        worker.finished.connect(worker.deleteLater)
-        worker.start()
+        try:
+            worker = _CoverExportWorker(self._service_for_export(), request)
+            self._cover_export_worker = worker
+            worker.resultReady.connect(self._apply_cover_export_result)
+            worker.finished.connect(worker.deleteLater)
+            worker.start()
+        except Exception as exc:
+            self._cover_export_worker = None
+            self._finish_audio_export_transaction()
+            self._cover_state = "failed"
+            self._cover_last_export_result = {
+                "success": False,
+                "error_code": "export_start_failed",
+                "message": (
+                    "无法启动封面导出任务："
+                    f"{type(exc).__name__}"
+                ),
+            }
+            self.set_status_message(
+                str(self._cover_last_export_result["message"])
+            )
+            self.stateChanged.emit()
+            return
         self.stateChanged.emit()
 
     def loadMetadataResult(self, result: dict) -> None:
@@ -1305,11 +1333,32 @@ class EditSessionViewModel(BaseViewModel):
             return
         self._edit_state = "writing"
         self.set_status_message("正在安全导出编辑副本；原文件不会被覆盖。")
-        worker = _MetadataExportWorker(self._service_for_export(), request)
-        self._export_worker = worker
-        worker.resultReady.connect(self._apply_export_result)
-        worker.finished.connect(worker.deleteLater)
-        worker.start()
+        try:
+            worker = _MetadataExportWorker(
+                self._service_for_export(),
+                request,
+            )
+            self._export_worker = worker
+            worker.resultReady.connect(self._apply_export_result)
+            worker.finished.connect(worker.deleteLater)
+            worker.start()
+        except Exception as exc:
+            self._export_worker = None
+            self._finish_audio_export_transaction()
+            self._edit_state = "failed"
+            self._last_export_result = {
+                "success": False,
+                "error_code": "export_start_failed",
+                "message": (
+                    "无法启动文件信息导出任务："
+                    f"{type(exc).__name__}"
+                ),
+            }
+            self.set_status_message(
+                str(self._last_export_result["message"])
+            )
+            self.stateChanged.emit()
+            return
         self.stateChanged.emit()
 
     def _check_exportable(self) -> bool:
@@ -1343,8 +1392,8 @@ class EditSessionViewModel(BaseViewModel):
         if not self.hasSession:
             self.set_status_message("当前没有可导出的歌词草稿。")
             return False
-        if self.lyricsExporting:
-            self.set_status_message("正在导出歌词，请等待当前操作完成。")
+        if self.anyExporting:
+            self.set_status_message("正在导出编辑副本，请等待当前操作完成。")
             return False
         if not self.lyricsDirty:
             self.set_status_message("歌词草稿没有修改，无需导出。")
@@ -1367,15 +1416,34 @@ class EditSessionViewModel(BaseViewModel):
             "正在安全导出新的 .lrc 文件；不会覆盖原始歌词文件。"
             if lrc_only else "正在安全导出含歌词的新音频副本；原文件不会被覆盖。"
         )
-        worker = _LyricsExportWorker(
-            self._service_for_export(),
-            request,
-            lrc_only=lrc_only,
-        )
-        self._lyrics_export_worker = worker
-        worker.resultReady.connect(self._apply_lyrics_export_result)
-        worker.finished.connect(worker.deleteLater)
-        worker.start()
+        try:
+            worker = _LyricsExportWorker(
+                self._service_for_export(),
+                request,
+                lrc_only=lrc_only,
+            )
+            self._lyrics_export_worker = worker
+            worker.resultReady.connect(self._apply_lyrics_export_result)
+            worker.finished.connect(worker.deleteLater)
+            worker.start()
+        except Exception as exc:
+            self._lyrics_export_worker = None
+            if not lrc_only:
+                self._finish_audio_export_transaction()
+            self._lyrics_state = "failed"
+            self._lyrics_last_export_result = {
+                "success": False,
+                "error_code": "export_start_failed",
+                "message": (
+                    "无法启动歌词导出任务："
+                    f"{type(exc).__name__}"
+                ),
+            }
+            self.set_status_message(
+                str(self._lyrics_last_export_result["message"])
+            )
+            self.stateChanged.emit()
+            return
         self.stateChanged.emit()
 
     def _apply_lyrics_export_result(self, result: dict) -> None:
@@ -1619,34 +1687,44 @@ class EditSessionViewModel(BaseViewModel):
         self.stateChanged.emit()
 
     def _prepare_audio_export(self) -> bool:
+        if self._player_operation_token:
+            return False
         self._active_export_generation = self._session_generation
-        self._player_released_for_export = False
         if self._audio_player is None:
             return True
-        prepare = getattr(self._audio_player, "prepareForFileOperation", None)
-        if not callable(prepare):
-            return True
-        self._player_released_for_export = bool(prepare())
-        return self._player_released_for_export
+        begin = getattr(self._audio_player, "beginFileOperation", None)
+        finish = getattr(self._audio_player, "finishFileOperation", None)
+        if not callable(begin) or not callable(finish):
+            return False
+        token = str(begin("edit_export") or "")
+        self._player_operation_token = token
+        return bool(token)
 
     def _service_for_export(self):
         if self._export_service is None:
             self._export_service = EditExportService(self.capabilityGate)
         return self._export_service
 
-    def _finish_audio_export_transaction(self) -> None:
+    def _finish_audio_export_transaction(
+        self,
+        *,
+        restore_override: bool | None = None,
+    ) -> None:
         should_restore = (
-            self._player_released_for_export
-            and self._active_export_generation == self._session_generation
+            self._active_export_generation == self._session_generation
             and bool(self._source_path)
         )
-        self._player_released_for_export = False
+        if restore_override is not None:
+            should_restore = bool(restore_override)
+        token = self._player_operation_token
+        self._player_operation_token = ""
         self._active_export_generation = 0
-        if not should_restore or self._audio_player is None:
+        if self._audio_player is None:
             return
-        restore = getattr(self._audio_player, "restorePlaybackSource", None)
-        if callable(restore):
-            restore()
+        if token:
+            finish = getattr(self._audio_player, "finishFileOperation", None)
+            if callable(finish):
+                finish(token, should_restore)
 
     def shutdown(self) -> None:
         self.cancelExport()
@@ -1658,6 +1736,8 @@ class EditSessionViewModel(BaseViewModel):
         ):
             if worker is not None:
                 worker.wait(3_000)
+        if self._player_operation_token:
+            self._finish_audio_export_transaction(restore_override=False)
 
     def _result_matches_session(self, result: dict) -> bool:
         """Reject results that belong to an older or different file session."""

@@ -26,6 +26,7 @@ class _FakeAudioOutput(QObject):
         super().__init__()
         self.volume = 0.0
         self.volume_history = []
+        self.muted = False
         self._device = device
         self.device_history = []
 
@@ -35,10 +36,17 @@ class _FakeAudioOutput(QObject):
 
     def setDevice(self, device):
         self._device = device
+        self.muted = False
         self.device_history.append(device)
 
     def device(self):
         return self._device
+
+    def setMuted(self, value):
+        self.muted = bool(value)
+
+    def isMuted(self):
+        return self.muted
 
 
 class _FakePlayer(QObject):
@@ -373,12 +381,13 @@ class AudioPlayerViewModelTests(unittest.TestCase):
         self.assertIs(second, output.device())
         self.assertEqual(second_id, player.selectedOutputDeviceId)
 
-    def test_disappearing_selected_device_falls_back_safely_and_keeps_volume(self):
+    def test_disappearing_selected_device_keeps_volume_and_muted_state(self):
         first = _FakeAudioDevice("device-a", "设备 A")
         second = _FakeAudioDevice("device-b", "设备 B")
         output = _FakeAudioOutput(second)
         session, player, _fake, output = self._build_player(fake_output=output)
         player.setVolume(42)
+        player.setMuted(True)
         _FakeMediaDevices.outputs = [first, second]
         _FakeMediaDevices.default_output = first
 
@@ -399,6 +408,8 @@ class AudioPlayerViewModelTests(unittest.TestCase):
         self.assertEqual("设备 A", player.outputDeviceName)
         self.assertEqual(42, player.volume)
         self.assertAlmostEqual(0.42, output.volume)
+        self.assertTrue(player.muted)
+        self.assertTrue(output.muted)
         self.assertIn("回退", player.statusMessage)
 
     def test_missing_current_file_marks_file_session_and_releases_source(self):

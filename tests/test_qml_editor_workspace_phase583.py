@@ -55,6 +55,7 @@ class EditorWorkspacePhase583Tests(unittest.TestCase):
         edit_session = EditSessionViewModel(gate)
         file_session.attach_edit_session(edit_session)
         file_session.currentFileChanged.connect(edit_session.beginCurrentFile)
+        file_session.currentFileReloaded.connect(edit_session.beginCurrentFile)
         file_session.currentFileCleared.connect(edit_session.clear)
         file_session.setUnsavedChangesGuard(
             lambda: edit_session.hasUnsavedDrafts
@@ -63,6 +64,32 @@ class EditorWorkspacePhase583Tests(unittest.TestCase):
             file_session.notifyDraftStateChanged
         )
         return file_session, edit_session
+
+    def test_reload_advances_editor_generation_without_a_file_switch(self):
+        file_session, edit_session = self._wire_session()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            source = Path(temp_dir) / "reload.wav"
+            source.write_bytes(b"audio")
+            self.assertEqual(
+                "loaded",
+                file_session.setCurrentFile(str(source), "audio_editor"),
+            )
+            first_generation = file_session.sessionGeneration
+
+            file_session.reloadCurrentFile()
+
+            self.assertGreater(
+                file_session.sessionGeneration,
+                first_generation,
+            )
+            self.assertEqual(
+                file_session.sessionGeneration,
+                edit_session.sessionGeneration,
+            )
+            self.assertEqual(
+                str(source.resolve()),
+                edit_session.sourcePath,
+            )
 
     def test_supported_formats_use_registry_and_ncm_is_rejected(self):
         extensions = (

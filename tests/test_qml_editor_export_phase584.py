@@ -136,25 +136,39 @@ def test_empty_lyrics_draft_removes_only_exported_copy(tmp_path):
 
 class _Player:
     def __init__(self):
-        self.prepare_count = 0
-        self.restore_count = 0
+        self.begin_calls = []
+        self.finish_calls = []
+        self.active_token = ""
+
+    def beginFileOperation(self, owner):
+        if self.active_token:
+            return ""
+        self.active_token = f"token-{len(self.begin_calls) + 1}"
+        self.begin_calls.append((owner, self.active_token))
+        return self.active_token
+
+    def finishFileOperation(self, token, restore=True):
+        self.finish_calls.append((token, bool(restore)))
+        if token != self.active_token:
+            return False
+        self.active_token = ""
+        return True
 
     def prepareForFileOperation(self):
-        self.prepare_count += 1
-        return True
+        raise AssertionError("Phase A export must prefer the token lease API")
 
     def restorePlaybackSource(self):
-        self.restore_count += 1
-        return True
+        raise AssertionError("Phase A export must finish the token it acquired")
 
 
 class _FileSession:
-    def __init__(self):
+    def __init__(self, outcome="confirmation_required"):
         self.loads = []
+        self.outcome = outcome
 
     def setCurrentFile(self, path, source):
         self.loads.append((path, source))
-        return "loaded"
+        return self.outcome
 
 
 class _CopyExporter:
@@ -193,16 +207,16 @@ def test_unified_export_releases_restores_and_loads_result_only_when_explicit(tm
     session.startUnifiedAudioExport(True, False, False)
     _wait_for_unified_export(session)
 
-    assert player.prepare_count == 1
-    assert player.restore_count == 1
+    assert len(player.begin_calls) == 1
+    assert player.finish_calls == [(player.begin_calls[0][1], True)]
     assert file_session.loads == []
     assert session.hasUnsavedDrafts
     assert session.canLoadUnifiedExportResult
 
     session.loadUnifiedExportResultAsCurrent()
-    assert player.prepare_count == 2
+    assert len(player.begin_calls) == 1
     assert file_session.loads == [(str(output), "edit_export_result")]
-    assert not session.hasUnsavedDrafts
+    assert session.hasUnsavedDrafts
 
 
 class _CancellableExporter:
@@ -249,7 +263,95 @@ def test_unified_export_cancel_is_real_and_keeps_session_draft(tmp_path):
     assert session.unifiedExportResult["error_code"] == "export_cancelled"
     assert session.hasUnsavedDrafts
     assert not output.exists()
-    assert player.restore_count == 1
+    assert player.finish_calls == [(player.begin_calls[0][1], True)]
+
+
+def test_unified_worker_start_failure_finishes_media_operation(
+    tmp_path,
+    monkeypatch,
+):
+    source = tmp_path / "source.flac"
+    output = tmp_path / "edited.flac"
+    source.write_bytes(b"source")
+    player = _Player()
+    session = EditSessionViewModel(
+        CapabilityGate((METADATA_WRITE,)),
+        export_service=_CopyExporter(),
+    )
+    session.attach_runtime(_FileSession(), player)
+    session.beginCurrentFile(str(source), 5)
+    session.loadMetadataResult(
+        {
+            "ok": True,
+            "path": str(source),
+            "session_generation": 5,
+            "title": "Old",
+        }
+    )
+    session.updateField("title", "New")
+    session.setUnifiedExportOutputPath(str(output))
+
+    def fail_start(_worker):
+        raise RuntimeError("start failed")
+
+    monkeypatch.setattr(
+        "ui_next.bridge.edit_session._UnifiedExportWorker.start",
+        fail_start,
+    )
+
+    session.startUnifiedAudioExport(True, False, False)
+
+    token = player.begin_calls[-1][1]
+    assert player.finish_calls == [(token, True)]
+    assert player.active_token == ""
+    assert session.unifiedExportState == "failed"
+    assert session.unifiedExportResult["error_code"] == "export_start_failed"
+
+
+def test_running_edit_export_cannot_overwrite_its_media_token(tmp_path):
+    source = tmp_path / "source.flac"
+    first_output = tmp_path / "first.flac"
+    second_output = tmp_path / "second.flac"
+    source.write_bytes(b"source")
+    player = _Player()
+    session = EditSessionViewModel(
+        CapabilityGate((METADATA_WRITE, LYRICS_WRITE)),
+        export_service=_CancellableExporter(),
+    )
+    session.attach_runtime(_FileSession(), player)
+    session.beginCurrentFile(str(source), 8)
+    session.loadMetadataResult(
+        {
+            "ok": True,
+            "path": str(source),
+            "session_generation": 8,
+            "title": "Old",
+        }
+    )
+    session.loadLyricsResult(
+        {
+            "ok": True,
+            "path": str(source),
+            "session_generation": 8,
+            "lyrics_text": "old lyrics",
+            "lyrics_source": "embedded",
+        }
+    )
+    session.updateField("title", "New")
+    session.updateLyricsDraft("new lyrics")
+    session.setUnifiedExportOutputPath(str(first_output))
+    session.startUnifiedAudioExport(True, False, False)
+    token = player.begin_calls[-1][1]
+
+    session.exportLyricsToAudioPath(str(second_output))
+
+    assert len(player.begin_calls) == 1
+    assert player.active_token == token
+    assert session.unifiedExporting
+    assert not second_output.exists()
+    session.cancelExport()
+    _wait_for_unified_export(session)
+    assert player.finish_calls == [(token, True)]
 
 
 def test_phase584_qml_exposes_cancel_result_summary_and_explicit_load():

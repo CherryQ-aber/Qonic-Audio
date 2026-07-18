@@ -119,6 +119,8 @@ class FileSessionViewModel(BaseViewModel):
 
     stateChanged = Signal()
     currentFileChanged = Signal(str, int)
+    currentFileReloaded = Signal(str, int)
+    editorFilePlaybackRequested = Signal(str, int, str)
     currentFileCleared = Signal()
     currentFileMissing = Signal(str, int)
     fileChangeConfirmationRequested = Signal()
@@ -311,16 +313,17 @@ class FileSessionViewModel(BaseViewModel):
     @Slot(str, str, result=str)
     def setCurrentFile(self, path: str, source: str = "file_dialog") -> str:
         normalized_path, error = self._validate_path(path)
-        if not error and normalized_path == self._current_file_path:
-            self.set_status_message(
-                "当前音频已经载入；如需刷新，请使用“重新读取”。"
-            )
-            self.stateChanged.emit()
-            return "unchanged"
-        if (
-            not error
-            and self._is_file_change_blocked()
-        ):
+        normalized_source = (
+            source if source in self._SOURCE_LABELS else "file_dialog"
+        )
+        same_path = bool(
+            not error and normalized_path == self._current_file_path
+        )
+        result_load = normalized_source in {
+            "edit_export_result",
+            "pitch_export_result",
+        }
+        if not error and self._is_file_change_blocked():
             self.set_status_message("正在导出编辑副本；请等待导出完成后再切换当前文件。")
             self.stateChanged.emit()
             return "blocked"
@@ -336,20 +339,39 @@ class FileSessionViewModel(BaseViewModel):
             self.set_status_message(error)
             self.stateChanged.emit()
             return "rejected"
-        if self._has_unsaved_changes():
+        if self._has_unsaved_changes() and (not same_path or result_load):
             self._pending_file_path = normalized_path
-            self._pending_file_source = source if source in self._SOURCE_LABELS else "file_dialog"
+            self._pending_file_source = normalized_source
             self._pending_clear = False
             self.set_status_message("当前存在未导出的编辑草稿；请确认放弃草稿后再切换文件。")
             self.fileChangeConfirmationRequested.emit()
             self.stateChanged.emit()
             return "confirmation_required"
-        self._apply_current_file(normalized_path, source)
+        if same_path:
+            if result_load:
+                self._current_file_source = normalized_source
+            self.set_status_message(
+                "当前音频已经载入；已请求播放器从开头重新载入。"
+            )
+            self.editorFilePlaybackRequested.emit(
+                self._current_file_path,
+                self._generation,
+                self._playback_origin_for_source(normalized_source),
+            )
+            self.stateChanged.emit()
+            return "unchanged"
+        self._apply_current_file(normalized_path, normalized_source)
         return "loaded"
 
     @Slot()
     def discardPendingFileChange(self) -> None:
         if not self.hasPendingFileChange:
+            return
+        if self._is_file_change_blocked():
+            self.set_status_message(
+                "当前有媒体处理或导出操作；请等待完成后再确认切换文件。"
+            )
+            self.stateChanged.emit()
             return
         pending_path = self._pending_file_path
         pending_source = self._pending_file_source
@@ -358,6 +380,24 @@ class FileSessionViewModel(BaseViewModel):
         self._clear_pending_file_change()
         if pending_clear:
             self._clear_local_state("")
+        elif pending_path == self._current_file_path:
+            self._current_file_source = (
+                pending_source
+                if pending_source in self._SOURCE_LABELS
+                else "file_dialog"
+            )
+            self._generation += 1
+            self._error_summary = ""
+            self.currentFileReloaded.emit(
+                self._current_file_path,
+                self._generation,
+            )
+            self._begin_read_cycle()
+            self.editorFilePlaybackRequested.emit(
+                self._current_file_path,
+                self._generation,
+                self._playback_origin_for_source(self._current_file_source),
+            )
         else:
             self._apply_current_file(pending_path, pending_source)
             if pending_lrc:
@@ -381,6 +421,11 @@ class FileSessionViewModel(BaseViewModel):
         self._error_summary = ""
         self.currentFileChanged.emit(self._current_file_path, self._generation)
         self._begin_read_cycle()
+        self.editorFilePlaybackRequested.emit(
+            self._current_file_path,
+            self._generation,
+            self._playback_origin_for_source(self._current_file_source),
+        )
 
     @Slot()
     def clearCurrentFile(self) -> None:
@@ -416,7 +461,10 @@ class FileSessionViewModel(BaseViewModel):
             return
         self._generation += 1
         self._error_summary = ""
-        self.currentFileChanged.emit(self._current_file_path, self._generation)
+        self.currentFileReloaded.emit(
+            self._current_file_path,
+            self._generation,
+        )
         self._begin_read_cycle()
 
     @Slot(str)
@@ -778,6 +826,12 @@ class FileSessionViewModel(BaseViewModel):
             return bool(self._file_change_blocker and self._file_change_blocker())
         except Exception:
             return False
+
+    @staticmethod
+    def _playback_origin_for_source(source: str) -> str:
+        if source in {"edit_export_result", "pitch_export_result"}:
+            return "editor_export"
+        return "editor_file"
 
     def _clear_pending_file_change(self) -> None:
         self._pending_file_path = ""

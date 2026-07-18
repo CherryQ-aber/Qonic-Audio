@@ -100,7 +100,11 @@ class ProcessingSessionViewModel(BaseViewModel):
         self._player_load_started_ns: int | None = None; self._preview_ready_ns: int | None = None
         self._player_load_timer = QTimer(self); self._player_load_timer.setSingleShot(True); self._player_load_timer.timeout.connect(self._on_player_load_timeout)
         file_session.currentFileChanged.connect(self.beginCurrentFile)
+        if hasattr(file_session, "currentFileReloaded"):
+            file_session.currentFileReloaded.connect(self.reloadCurrentFile)
         file_session.currentFileCleared.connect(self.clear)
+        if hasattr(file_session, "currentFileMissing"):
+            file_session.currentFileMissing.connect(self._on_current_file_missing)
         audio_player.stateChanged.connect(self._on_player_state_changed)
         self.set_status_message("等待工作区文件。")
 
@@ -178,6 +182,47 @@ class ProcessingSessionViewModel(BaseViewModel):
         self.set_status_message("处理会话已创建；原文件未修改。")
         self.stateChanged.emit()
 
+    @Slot(str, int)
+    def reloadCurrentFile(self, path: str, generation: int) -> None:
+        self._cancel_active_request()
+        self._player_load_timer.stop()
+        self._player_load_token = ""
+        self._player_load_started_ns = None
+        self._preview_ready_ns = None
+        self._preview_cache.clear()
+        self._source_probe_cache.clear()
+        self._preview_valid = False
+        self._preview_generation = 0
+        self._source_path = str(path)
+        self._source_generation = int(generation)
+        self._semitone = 0
+        self._state = "ready"
+        player_origin = str(
+            getattr(self._audio_player, "playbackOrigin", "") or ""
+        )
+        player_source_type = str(
+            getattr(
+                self._audio_player,
+                "currentPlaybackSourceType",
+                "",
+            )
+            or ""
+        )
+        self._current_playback_source = (
+            "preview"
+            if player_origin == "pitch_preview"
+            or player_source_type == "preview_cache"
+            else "original"
+        )
+        self._export_path = ""
+        self._export_result = {}
+        self._error_code = self._error_message = ""
+        self._progress = 0
+        self.set_status_message(
+            "处理会话已按新文件代次刷新；播放器来源保持不变。"
+        )
+        self.stateChanged.emit()
+
     @Slot()
     def clear(self) -> None:
         self._cancel_active_request()
@@ -228,6 +273,11 @@ class ProcessingSessionViewModel(BaseViewModel):
     def playPreview(self) -> None:
         if not self._preview_valid or not Path(self._preview_path).is_file() or not self._require(AUDIO_PLAYBACK, "playback_capability_denied"):
             return self._fail("preview_missing", "当前没有可播放的已验证试听缓存。")
+        if bool(getattr(self._audio_player, "mediaOperationBusy", False)):
+            return self._fail(
+                "player_media_operation_busy",
+                "播放器正在为文件操作释放媒体源；暂不能播放试听。",
+            )
         self._player_load_token = uuid.uuid4().hex
         self._state = "loading_player_source"; self._error_code = self._error_message = ""
         self._request_diagnostics["player_load_started_at"] = time.time()
@@ -235,13 +285,18 @@ class ProcessingSessionViewModel(BaseViewModel):
         self.set_status_message("正在加载已验证试听源。")
         self._player_load_timer.start(self.player_load_timeout_ms)
         try:
-            self._set_player_source(
+            loaded = self._set_player_source(
                 self._preview_path,
                 f"Pitch Shift 试听（{self._semitone:+d} 半音）",
                 "preview_cache",
                 False,
                 0,
             )
+            if not loaded:
+                self._player_load_failed(
+                    "player_load_rejected",
+                    "播放器拒绝载入试听源。",
+                )
         except Exception as exc:
             self._player_load_failed("player_load_failed", f"播放器加载试听源失败：{type(exc).__name__}")
         self.stateChanged.emit()
@@ -249,9 +304,24 @@ class ProcessingSessionViewModel(BaseViewModel):
     @Slot()
     def returnToOriginal(self) -> None:
         if not self.hasSource or not self._require(AUDIO_PLAYBACK, "playback_capability_denied"): return
+        if bool(getattr(self._audio_player, "mediaOperationBusy", False)):
+            return self._fail(
+                "player_media_operation_busy",
+                "播放器正在为文件操作释放媒体源；暂不能返回原音频。",
+            )
         self._player_load_timer.stop(); self._player_load_token = ""
         self._player_load_started_ns = None
-        self._set_player_source(self._source_path, "原音频", "original", False, 0)
+        if not self._set_player_source(
+            self._source_path,
+            "原音频",
+            "original",
+            False,
+            0,
+        ):
+            return self._fail(
+                "player_load_rejected",
+                "播放器拒绝载入原音频。",
+            )
         self._current_playback_source = "original"; self._state = "original_playing"; self.set_status_message("已返回原音频；试听缓存仍可复用。")
         self.stateChanged.emit()
 
@@ -275,6 +345,12 @@ class ProcessingSessionViewModel(BaseViewModel):
 
     @Slot()
     def cleanPreviewCache(self) -> None:
+        if bool(getattr(self._audio_player, "mediaOperationBusy", False)):
+            self.set_status_message(
+                "播放器正在为文件操作保留试听源；暂不能清理试听缓存。"
+            )
+            self.stateChanged.emit()
+            return
         self._release_preview_for_cleanup()
         self.set_status_message("试听缓存已清理。" if not self._preview_path else "试听缓存清理失败；不会影响原文件。")
         self.stateChanged.emit()
@@ -287,13 +363,16 @@ class ProcessingSessionViewModel(BaseViewModel):
     def loadExportResultAsCurrent(self) -> None:
         if not self.canLoadExportResult:
             return self._fail("export_result_missing", "当前没有可载入的已验证 Pitch 导出结果。")
-        prepare = getattr(self._audio_player, "prepareForFileOperation", None)
-        if callable(prepare) and not prepare():
-            return self._fail("player_release_failed", "播放器未能释放媒体源，已取消载入导出结果。")
         outcome = self._file_session.setCurrentFile(
             self._export_path,
             "pitch_export_result",
         )
+        if outcome == "confirmation_required":
+            self.set_status_message(
+                "当前草稿保持不变；确认放弃草稿后才会载入 Pitch 导出结果。"
+            )
+            self.stateChanged.emit()
+            return
         if outcome not in {"loaded", "unchanged"}:
             return self._fail("export_result_load_failed", "无法载入 Pitch 导出结果。")
         if self._edit_session is not None:
@@ -308,8 +387,14 @@ class ProcessingSessionViewModel(BaseViewModel):
             self._cancel_request(request_id)
         for worker in list(self._workers.values()):
             worker.wait(3_000)
+        for context in list(self._request_context.values()):
+            self._finish_player_operation(context, restore=False)
+        self._request_context.clear()
         self._active_request_id = ""
-        self._release_preview_for_cleanup(restore_source=False)
+        self._release_preview_for_cleanup(
+            restore_source=False,
+            force=True,
+        )
 
     def _choose_export_path(self) -> None:
         source = Path(self._source_path)
@@ -320,17 +405,27 @@ class ProcessingSessionViewModel(BaseViewModel):
 
     def _start(self, mode: str, output: str, *, cache_key: str = "", source_key: str = "") -> None:
         self._cancel_active_request()
-        player_released = False
+        player_operation_token = ""
         if mode == "export":
-            prepare = getattr(self._audio_player, "prepareForFileOperation", None)
-            if callable(prepare):
-                player_released = bool(prepare())
-                if not player_released:
-                    self._fail(
-                        "player_release_failed",
-                        "播放器未能释放当前媒体源，已取消 Pitch 导出。",
-                    )
-                    return
+            begin = getattr(self._audio_player, "beginFileOperation", None)
+            finish = getattr(
+                self._audio_player,
+                "finishFileOperation",
+                None,
+            )
+            if not callable(begin) or not callable(finish):
+                self._fail(
+                    "player_contract_missing",
+                    "播放器不支持安全媒体文件操作，已取消 Pitch 导出。",
+                )
+                return
+            player_operation_token = str(begin("pitch_export") or "")
+            if not player_operation_token:
+                self._fail(
+                    "player_release_failed",
+                    "播放器未能取得媒体文件操作租约，已取消 Pitch 导出。",
+                )
+                return
         request_id = uuid.uuid4().hex
         self._active_request_id = request_id; self._request_generation = self._source_generation; self._request_semitone = self._semitone; self._request_mode = mode
         self._state = "validating_request"; self._progress = 0; self._stage_detail = "正在校验请求"; self._error_code = self._error_message = ""
@@ -338,14 +433,26 @@ class ProcessingSessionViewModel(BaseViewModel):
             "cache_key": cache_key,
             "source_key": source_key,
             "started_ns": time.perf_counter_ns(),
-            "player_released": player_released,
+            "player_operation_token": player_operation_token,
         }
-        worker = _ProcessingWorker(request_id=request_id, source_generation=self._source_generation, mode=mode, source=self._source_path, output=output, semitone=self._semitone, source_probe=self._source_probe_cache.get(source_key) if mode == "preview" else None)
-        self._workers[request_id] = worker
-        worker.stageChanged.connect(lambda event, rid=request_id: self._on_worker_stage(rid, event))
-        worker.finished.connect(lambda rid=request_id, current=worker, current_mode=mode, current_output=output: self._on_worker_finished(rid, current_mode, current_output, current))
-        worker.finished.connect(worker.deleteLater)
-        worker.start(); self.stateChanged.emit()
+        try:
+            worker = _ProcessingWorker(request_id=request_id, source_generation=self._source_generation, mode=mode, source=self._source_path, output=output, semitone=self._semitone, source_probe=self._source_probe_cache.get(source_key) if mode == "preview" else None)
+            self._workers[request_id] = worker
+            worker.stageChanged.connect(lambda event, rid=request_id: self._on_worker_stage(rid, event))
+            worker.finished.connect(lambda rid=request_id, current=worker, current_mode=mode, current_output=output: self._on_worker_finished(rid, current_mode, current_output, current))
+            worker.finished.connect(worker.deleteLater)
+            worker.start()
+        except Exception as exc:
+            self._workers.pop(request_id, None)
+            context = self._request_context.pop(request_id, {})
+            self._active_request_id = ""
+            self._finish_player_operation(context, restore=True)
+            self._fail(
+                "processing_start_failed",
+                f"无法启动音频处理任务：{type(exc).__name__}",
+            )
+            return
+        self.stateChanged.emit()
 
     def _on_worker_stage(self, request_id: str, event: dict) -> None:
         if request_id != self._active_request_id:
@@ -374,16 +481,15 @@ class ProcessingSessionViewModel(BaseViewModel):
         stale = not is_active or self._request_generation != self._source_generation or self._request_semitone != self._semitone
         if stale:
             if mode == "preview": diagnostics["cleanup_ok"] = AudioProcessingService.cleanup_owned(Path(output))
+            self._finish_player_operation(context, restore=False)
             diagnostics["final_state"] = "stale"
             _LOG.info("pitch request finished: %s", diagnostics)
             # Crucially, an old request never clears a newer request's busy flag.
             return
 
         self._active_request_id = ""
-        if mode == "export" and context.get("player_released"):
-            restore = getattr(self._audio_player, "restorePlaybackSource", None)
-            if callable(restore):
-                restore()
+        if mode == "export":
+            self._finish_player_operation(context, restore=True)
         self._request_diagnostics = diagnostics
         timings = self._request_diagnostics.setdefault("timings_ms", {})
         if context.get("started_ns"):
@@ -461,9 +567,25 @@ class ProcessingSessionViewModel(BaseViewModel):
         self._current_playback_source = "original"; self._state = "error"; self._error_code = code; self._error_message = message
         self.set_status_message(message); self.stateChanged.emit()
 
-    def _release_preview_for_cleanup(self, *, restore_source: bool = True) -> None:
+    def _release_preview_for_cleanup(
+        self,
+        *,
+        restore_source: bool = True,
+        force: bool = False,
+    ) -> None:
+        if (
+            not force
+            and bool(
+                getattr(
+                    self._audio_player,
+                    "mediaOperationBusy",
+                    False,
+                )
+            )
+        ):
+            return
         self._player_load_timer.stop(); self._player_load_token = ""
-        self._player_load_started_ns = None; self._preview_ready_ns = None; self._preview_cache.clear(); self._source_probe_cache.clear(); self._request_context.clear()
+        self._player_load_started_ns = None; self._preview_ready_ns = None; self._preview_cache.clear(); self._source_probe_cache.clear()
         preview = self._preview_path
         if not preview: return
         player_source_type = str(getattr(self._audio_player, "currentPlaybackSourceType", "") or "")
@@ -491,13 +613,67 @@ class ProcessingSessionViewModel(BaseViewModel):
             pass
         self._workspace = Path(tempfile.gettempdir()) / "CherryQ_Audio_Converter" / "processing" / uuid.uuid4().hex
 
-    def _set_player_source(self, path: str, label: str, source_type: str, autoplay: bool, position: int) -> None:
+    def _set_player_source(self, path: str, label: str, source_type: str, autoplay: bool, position: int) -> bool:
         """Use the player's explicit source model, with old test doubles supported."""
         typed_setter = getattr(self._audio_player, "setPlaybackSourceWithType", None)
         if callable(typed_setter):
-            typed_setter(path, label, source_type, autoplay, position)
+            result = typed_setter(
+                path,
+                label,
+                source_type,
+                autoplay,
+                position,
+            )
+            return result is not False
+        result = self._audio_player.setPlaybackSource(
+            path,
+            label,
+            autoplay,
+            position,
+        )
+        return result is not False
+
+    @Slot(str, int)
+    def _on_current_file_missing(self, path: str, _generation: int) -> None:
+        if not path or not self._source_path:
             return
-        self._audio_player.setPlaybackSource(path, label, autoplay, position)
+        try:
+            matches = Path(path).resolve() == Path(self._source_path).resolve()
+        except OSError:
+            matches = str(path) == str(self._source_path)
+        if not matches:
+            return
+        self._cancel_active_request()
+        self._release_preview_for_cleanup(restore_source=False)
+        self._source_path = ""
+        self._source_generation = 0
+        self._semitone = 0
+        self._state = "empty"
+        self._current_playback_source = "original"
+        self._export_path = ""
+        self._export_result = {}
+        self._progress = 0
+        self.set_status_message(
+            "当前编辑文件已不存在；Pitch 试听缓存已失效。"
+        )
+        self.stateChanged.emit()
+
+    def _finish_player_operation(
+        self,
+        context: dict,
+        *,
+        restore: bool,
+    ) -> None:
+        token = str(context.get("player_operation_token") or "")
+        if token:
+            finish = getattr(
+                self._audio_player,
+                "finishFileOperation",
+                None,
+            )
+            if callable(finish):
+                finish(token, bool(restore))
+            context["player_operation_token"] = ""
 
     def _preview_cache_key(self) -> tuple[str, str]:
         source = Path(self._source_path).resolve(); stat = source.stat()

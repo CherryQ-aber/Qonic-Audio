@@ -4,9 +4,9 @@
 
 - 日期：2026-07-18
 - 项目：CherryQ Audio Converter v5.0 Internal Test
-- 阶段：Phase 5.9.5-0
-- 状态：契约与基线已冻结，生产代码尚未开始
-- 下一阶段：Phase 5.9.5-A PlayerSession 与媒体事务安全基础
+- 阶段：Phase 5.9.5-A
+- 状态：PlayerSession 与媒体事务安全基础已实现、通过回归并完成提交收尾
+- 下一阶段：等待用户明确要求继续 Phase 5.9.5-B
 - 长期计划：`Codex_memory/PHASE_5_9_5_WORKSPACE_INTEGRATION_PLAN.md`
 
 本文是 Phase 5.9.5 的工程合同。长期计划描述完整方向，本文固定当前代码基线、状态归属、兼容规则、测试迁移和阶段门禁。后续实现如需改变本文合同，必须先更新本文并单独汇报，不得在代码修改中隐式改变语义。
@@ -232,7 +232,7 @@ FileSession 信号职责固定为：
 
 ## 8. PlayerSession 媒体事务合同
 
-当前代码存在以下已确认风险：
+Phase A 开始前的代码存在以下已确认风险：
 
 1. `AudioPlayerViewModel` 直接连接 `currentFileChanged → loadFile` 和 `currentFileCleared → clear`。
 2. `reloadCurrentFile()` 也发出 `currentFileChanged`。
@@ -610,3 +610,66 @@ Phase A 开始前必须：
 3. 记录 `config.json` 哈希；
 4. 先写失败测试证明当前风险；
 5. 完成并汇报 Phase A 后停止。
+
+## 19. Phase 5.9.5-A 完成记录
+
+### 19.1 实际修改范围
+
+生产代码仅修改：
+
+- `ui_next/bridge/audio_player_viewmodel.py`
+- `ui_next/bridge/file_session_viewmodel.py`
+- `ui_next/bridge/edit_session.py`
+- `ui_next/bridge/audio_processing_session.py`
+- `main_qml.py`
+
+测试仅修改或新增：
+
+- `tests/test_qml_audio_player.py`
+- `tests/test_qml_editor_workspace_phase583.py`
+- `tests/test_audio_processing_session.py`
+- `tests/test_qml_editor_export_phase584.py`
+- `tests/test_qml_phase595_player_session_safety.py`
+
+未修改任何 QML 文件，也未修改 AppShell、导航、任务队列、任务菜单、watcher、converter、capability、运行模式、配置写入、FFmpeg/NCM/Pitch 算法、导出/no-clobber 算法或 Legacy Widgets。
+
+### 19.2 合同落实结果
+
+- `currentFileChanged` 只表示真实编辑文件切换；`currentFileReloaded` 只驱动 reader/Edit/Processing 刷新；`editorFilePlaybackRequested` 独立表达显式播放器同步。
+- reload、编辑文件清除和缺失处理不会无条件覆盖或清空无关的文件夹/转码播放源。
+- `beginFileOperation(owner)` / `finishFileOperation(token, restore)` 是唯一媒体事务状态；兼容包装复用同一 token lease，不维护第二套快照。
+- 媒体事务非重入，租约期间拒绝普通播放源切换；错误、过期、重复 token 均不能结束当前事务；无快照时不回退 FileSession。
+- 统一编辑结果与 Pitch 结果载入先通过 dirty guard，不提前 release；`confirmation_required`、`blocked`、`rejected` 和用户取消均保持 PlayerSession 完全不变。
+- 正式编辑/Pitch 导出在实际写文件阶段持有 token；正常、失败、取消、过期、worker 启动异常和 shutdown 均按精确 token 收尾。
+- `main_qml.py` 只设置一个合并 blocker：`EditSession.anyExporting OR ProcessingSession.isBusy OR AudioPlayer.mediaOperationBusy`。
+- PlayerSession 已提供 `hasPlaybackSource`、`currentPlaybackFileName`、`playbackMatchesEditorFile`、`playbackOrigin`、`muted`、`seekStepMs=2000`、前进/后退和 `[mm:ss.xx]` 时间文本；设备回退保留音量/静音且不自动播放。
+
+### 19.3 完成时工作副本 SHA256
+
+| 文件 | SHA256 |
+|---|---|
+| `main_qml.py` | `985E28291EEC931FF94E7CDEE8137B3195113A86BCAF912890EC70BF969FC879` |
+| `ui_next/bridge/audio_player_viewmodel.py` | `09A4A1A80BBCFD77D5EA37BB3CBCF04DF683100AEC3392D0036E505938811CA7` |
+| `ui_next/bridge/file_session_viewmodel.py` | `746813460F2E47C26E5950781FB2C8E38C4229EE5097CC8C3CF443F1B635C276` |
+| `ui_next/bridge/edit_session.py` | `5BDEB2170F5FF59B81D5949304C302C3DCD82D7257E0AE39E9540599F94AF621` |
+| `ui_next/bridge/audio_processing_session.py` | `E50308499A1D39A75913287C00FD27DF51AFAF5EC1798C466B1FA293107D16F0` |
+| `tests/test_qml_audio_player.py` | `120AC2AD501DC56D9047CC1A226CEE474B4F440406CD8C022560646D2CCCBABA` |
+| `tests/test_qml_editor_workspace_phase583.py` | `45796CE65BFD7D7044C86EE5D79CF2447B507E2A0DEF11ADD2CF87E44BF33B48` |
+| `tests/test_audio_processing_session.py` | `334CE6A5FF2A07FFDA8032F988E4E9CE9E983E988057382AC9E2DEB1D3637DEF` |
+| `tests/test_qml_editor_export_phase584.py` | `00C0F02C691433858D8C085E385940CDD815B14B3672B83E1D3F35D8A2ECDAD7` |
+| `tests/test_qml_phase595_player_session_safety.py` | `DC4350E0CE3ADE9B5272EC53A6F9F8B8E5A83A258FF00378417DA6A968A7A345` |
+
+### 19.4 验证结果
+
+- Phase A 九文件定向回归：`84 passed, 2 subtests passed`。
+- 完整回归最终复跑：`483 passed, 2 warnings, 20 subtests passed`。
+- 首次完整回归在旧 Widgets 临时 FLAC 清理阶段偶发一次 Windows `WinError 32`；失败单测复跑 `1 passed`，随后完整复跑通过，未修改冻结的 Legacy 媒体代码。
+- 默认及 `autoConvert`、`audioEditor`、`metadata`、`lyricsCover`、`analysis`、`settings`、`--qml-open-settings` 八组 offscreen smoke 全部通过。
+- Legacy Safe Start、QML runtime modes 与 capability 专项：`30 passed`；Legacy `gui` / `MainWindow` import 通过。
+- `git diff --check` 与目标 Python 文件编译检查通过；未增加 warning。
+- `config.json` SHA256 仍为 `EA8BE86CDF7FC7C9351B7F961D9D8B9BC97AD3D414FB7B6A8B8376B8E82CA72B`；`config.json.bak` 仍为 `CBED09046D02FC40A229CED3D9BD0E8642F80C13185B1AED3862BB44ED14B1E4`。
+- 验证结束后未发现 Python、FFmpeg 或 ncmdump 残留进程。
+
+### 19.5 阶段门禁
+
+Phase A 已按精确文件清单完成提交收尾但未推送。Phase B 未开始，只有在用户明确要求后才能进入。
