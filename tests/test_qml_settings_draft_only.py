@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import patch
 
+from config import DEFAULT_CONFIG, _merge_with_default
+from ui_next.bridge.capabilities import CapabilityGate
 from ui_next.bridge.settings_viewmodel import SettingsViewModel
 
 
@@ -21,6 +23,7 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
             "log_level": "INFO",
             "ui_density": "standard",
             "editor_file_bar_mode": "fixed",
+            "lyrics_timestamp_precision": "millisecond",
         }
 
     def test_preview_changes_and_save_attempt_never_call_save_config(self):
@@ -38,6 +41,7 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
             view_model.updatePendingValue("theme_mode", "dark")
             view_model.updatePendingValue("ui_density", "compact")
             view_model.setEditorFileBarMode("floating")
+            view_model.setLyricsTimestampPrecision("centisecond")
             view_model.simulateSaveDraft()
             view_model.savePendingChanges()
 
@@ -47,6 +51,7 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
         self.assertFalse(view_model.canPersistConfig)
         self.assertTrue(view_model.hasPendingChanges)
         self.assertEqual(view_model.editorFileBarMode, "floating")
+        self.assertEqual(view_model.lyricsTimestampPrecision, "centisecond")
         self.assertIn("当前不可用", view_model.statusMessage)
         mock_save.assert_not_called()
 
@@ -59,6 +64,7 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
             view_model.updatePendingValue("target_format", "flac")
             view_model.updatePendingValue("auto_start_monitor", False)
             view_model.setEditorFileBarMode("floating")
+            view_model.setLyricsTimestampPrecision("centisecond")
             view_model.discardPendingChanges()
 
         self.assertFalse(view_model.hasPendingChanges)
@@ -69,6 +75,7 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
             self.real_config["auto_start_monitor"],
         )
         self.assertEqual(view_model.editorFileBarMode, "fixed")
+        self.assertEqual(view_model.lyricsTimestampPrecision, "millisecond")
         self.assertIn("config.json 未改变", view_model.statusMessage)
 
     def test_file_bar_mode_rejects_unknown_values(self):
@@ -81,6 +88,72 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
 
         self.assertEqual(view_model.editorFileBarMode, "fixed")
         self.assertFalse(view_model.hasPendingChanges)
+
+    def test_timestamp_precision_defaults_to_milliseconds_and_rejects_unknown(self):
+        self.assertEqual(
+            "millisecond",
+            DEFAULT_CONFIG["lyrics_timestamp_precision"],
+        )
+        self.assertEqual(
+            "millisecond",
+            _merge_with_default({})["lyrics_timestamp_precision"],
+        )
+        self.assertEqual(
+            "millisecond",
+            _merge_with_default(
+                {"lyrics_timestamp_precision": "unknown"}
+            )["lyrics_timestamp_precision"],
+        )
+        self.assertEqual(
+            "centisecond",
+            _merge_with_default(
+                {"lyrics_timestamp_precision": "centisecond"}
+            )["lyrics_timestamp_precision"],
+        )
+
+        with patch(
+            "ui_next.bridge.settings_viewmodel.load_config",
+            return_value=dict(self.real_config),
+        ):
+            view_model = SettingsViewModel()
+            view_model.setLyricsTimestampPrecision("unknown")
+
+        self.assertEqual(view_model.lyricsTimestampPrecision, "millisecond")
+        self.assertFalse(view_model.hasPendingChanges)
+
+    def test_timestamp_precision_is_in_confirmed_config_whitelist(self):
+        gate = CapabilityGate.from_environment(
+            {"CHERRYQ_QML_USER_TEST": "1"}
+        )
+        saved_config = {}
+
+        def save_config(config_data):
+            saved_config.update(config_data)
+            return dict(config_data)
+
+        with (
+            patch(
+                "ui_next.bridge.settings_viewmodel.load_config",
+                return_value=dict(self.real_config),
+            ),
+            patch(
+                "ui_next.bridge.settings_viewmodel.save_config",
+                side_effect=save_config,
+            ),
+            patch.object(
+                SettingsViewModel,
+                "_confirm_live_save",
+                return_value=True,
+            ),
+        ):
+            view_model = SettingsViewModel(capability_gate=gate)
+            view_model.setLyricsTimestampPrecision("centisecond")
+            view_model.savePendingChanges()
+
+        self.assertEqual(
+            "centisecond",
+            saved_config["lyrics_timestamp_precision"],
+        )
 
     def test_reload_replaces_pending_draft_with_latest_real_config(self):
         reloaded_config = dict(self.real_config)

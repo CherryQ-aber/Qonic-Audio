@@ -47,6 +47,7 @@ class SettingsViewModel(BaseViewModel):
         "log_level",
         "ui_density",
         "editor_file_bar_mode",
+        "lyrics_timestamp_precision",
     }
     _PREVIEW_SAFETY_MESSAGE = (
         "预览模式：设置修改只保存为页面草稿，不会写入 config.json，"
@@ -162,6 +163,18 @@ class SettingsViewModel(BaseViewModel):
             self._pending_config.get("editor_file_bar_mode") or "fixed"
         ).strip().lower()
         return value if value in {"fixed", "floating"} else "fixed"
+
+    @Property(str, notify=settingsChanged)
+    def lyricsTimestampPrecision(self) -> str:
+        value = str(
+            self._pending_config.get("lyrics_timestamp_precision")
+            or "millisecond"
+        ).strip().lower()
+        return (
+            value
+            if value in {"centisecond", "millisecond"}
+            else "millisecond"
+        )
 
     @Property(str, notify=saveStatusChanged)
     def saveStatus(self) -> str:
@@ -352,6 +365,10 @@ class SettingsViewModel(BaseViewModel):
     def setEditorFileBarMode(self, value: str) -> None:
         self.updatePendingValue("editor_file_bar_mode", value)
 
+    @Slot(str)
+    def setLyricsTimestampPrecision(self, value: str) -> None:
+        self.updatePendingValue("lyrics_timestamp_precision", value)
+
     @Slot()
     def openLogFolder(self) -> None:
         os.makedirs(LOG_DIR, exist_ok=True)
@@ -454,7 +471,17 @@ class SettingsViewModel(BaseViewModel):
         self._pending_config[normalized_key] = normalized_value
         self._set_pending_changes(self._pending_config != self._current_config)
         self.settingsChanged.emit()
-        if self.previewMode:
+        if normalized_key == "lyrics_timestamp_precision":
+            self._set_save_status(
+                "时间点精度已在本次会话中预览；"
+                + (
+                    "未写入 config.json。"
+                    if self.previewMode
+                    else "保存并确认后才会作为下次启动默认值。"
+                ),
+                level="warning" if self.previewMode else "info",
+            )
+        elif self.previewMode:
             self._set_save_status(
                 "草稿不生效：修改仅保存在当前页面内存，未写入 config.json，"
                 "不会影响旧 Widgets UI 或后台任务。",
@@ -508,6 +535,13 @@ class SettingsViewModel(BaseViewModel):
         if key == "editor_file_bar_mode":
             normalized = str(value or "fixed").strip().lower()
             return normalized if normalized in {"fixed", "floating"} else "fixed"
+        if key == "lyrics_timestamp_precision":
+            normalized = str(value or "millisecond").strip().lower()
+            return (
+                normalized
+                if normalized in {"centisecond", "millisecond"}
+                else "millisecond"
+            )
         return value
 
     def _confirm_live_save(self) -> bool:

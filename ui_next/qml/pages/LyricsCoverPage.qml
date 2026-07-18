@@ -166,6 +166,7 @@ Item {
                         : lyricsWorkspace.width
                     theme: root.theme
                     typography: root.typography
+                    audioPlayer: root.audioPlayer
                     editSession: root.editSession
                     onSourceRequested: function(source) { root.requestSource(source) }
                     onManualSourceRequested: root.requestManualSource()

@@ -93,6 +93,95 @@ class EditSessionLyricsTests(unittest.TestCase):
         self.assertFalse(session._check_lyrics_exportable())
         self.assertEqual("lyrics_draft_empty", session.lastLyricsExportResult["error_code"])
 
+    def test_timestamp_insert_targets_selection_start_line_and_preserves_files(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            audio = root / "source.flac"
+            lrc = root / "source.lrc"
+            audio.write_bytes(b"audio")
+            original_text = (
+                "first\r\n"
+                "[00:00.10][00:00.20]second\r\n"
+                "third"
+            )
+            lrc.write_text(original_text, encoding="utf-8", newline="")
+            audio_hash = hashlib.sha256(audio.read_bytes()).hexdigest()
+            lrc_hash = hashlib.sha256(lrc.read_bytes()).hexdigest()
+            session = EditSessionViewModel(CapabilityGate((LYRICS_READ,)))
+            session.loadLyricsResult(
+                self._result(
+                    str(audio),
+                    embedded=original_text,
+                    external=original_text,
+                )
+            )
+            selection_start = original_text.index("second") + 2
+            selection_end = original_text.index("third") + 3
+
+            result = session.insertLyricsTimestamp(
+                selection_start,
+                selection_end,
+                selection_end,
+                3_753_450,
+                "centisecond",
+            )
+
+            expected = (
+                "first\r\n"
+                "[62:33.45][00:00.20]second\r\n"
+                "third"
+            )
+            self.assertTrue(result["ok"])
+            self.assertTrue(result["changed"])
+            self.assertEqual("[62:33.45]", result["timestamp"])
+            self.assertEqual(expected, session.draftLyrics)
+            self.assertTrue(session.lyricsDirty)
+            self.assertEqual(
+                original_text[selection_start:selection_end],
+                expected[result["selection_start"]:result["selection_end"]],
+            )
+            self.assertEqual(audio_hash, hashlib.sha256(audio.read_bytes()).hexdigest())
+            self.assertEqual(lrc_hash, hashlib.sha256(lrc.read_bytes()).hexdigest())
+            self.assertIn("仅更新内存歌词草稿", session.statusMessage)
+
+    def test_timestamp_insert_adds_prefix_without_newline(self):
+        original_text = "first\nsecond\nthird"
+        session = EditSessionViewModel(CapabilityGate((LYRICS_READ,)))
+        session.loadLyricsResult(
+            self._result(
+                "D:/CherryQ_Test/demo.flac",
+                embedded=original_text,
+                external="",
+            )
+        )
+        cursor_position = original_text.index("second") + 2
+
+        result = session.insertLyricsTimestamp(
+            cursor_position,
+            cursor_position,
+            cursor_position,
+            201_450,
+        )
+
+        self.assertEqual(
+            "first\n[03:21.450]second\nthird",
+            session.draftLyrics,
+        )
+        self.assertEqual(2, session.draftLyrics.count("\n"))
+        self.assertEqual(
+            cursor_position + len("[03:21.450]"),
+            result["cursor_position"],
+        )
+
+    def test_timestamp_insert_without_editor_session_is_rejected(self):
+        session = EditSessionViewModel(CapabilityGate((LYRICS_READ,)))
+
+        result = session.insertLyricsTimestamp(0, 0, 0, 201_450)
+
+        self.assertFalse(result["ok"])
+        self.assertEqual("", session.draftLyrics)
+        self.assertIn("没有可插入", session.statusMessage)
+
     def test_file_session_blocks_dirty_lyrics_switch_until_confirmed(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)

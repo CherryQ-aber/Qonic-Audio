@@ -2,11 +2,11 @@
 
 ## 1. 文档状态
 
-- 日期：2026-07-18
+- 日期：2026-07-19
 - 项目：CherryQ Audio Converter v5.0 Internal Test
-- 阶段：Phase 5.9.5-D1 音频编辑工作区整合
-- 状态：Phase C 已提交为 `9b4ac07`；Phase D1 工程实现、回归、人工审核和提交收尾已完成，当前未推送
-- 下一阶段：保持停止；继续 Phase 5.9.5-D2 须用户明确要求
+- 阶段：Phase 5.9.5-D2 歌词时间点闭环
+- 状态：Phase C 已提交为 `9b4ac07`，Phase D1 已提交为 `0d5a317`，均未推送；Phase D2 工程实现、精度设置补充、回归和人工审核已完成，本记录随精确提交收尾归档
+- 下一阶段：D2 提交后停止；继续 Phase E 须用户再次明确要求
 - 长期计划：`Codex_memory/PHASE_5_9_5_WORKSPACE_INTEGRATION_PLAN.md`
 
 本文是 Phase 5.9.5 的工程合同。长期计划描述完整方向，本文固定当前代码基线、状态归属、兼容规则、测试迁移和阶段门禁。后续实现如需改变本文合同，必须先更新本文并单独汇报，不得在代码修改中隐式改变语义。
@@ -352,15 +352,15 @@ OR AudioPlayer.mediaOperationBusy
 ## 12. 歌词时间点合同
 
 - 时间来自 PlayerSession 已确认的真实 position。
-- 格式与 Legacy 算法一致：`[mm:ss.xx]`、百分之一秒、累计分钟。
-- 示例：201450 ms → `[03:21.45]`；3753450 ms → `[62:33.45]`。
+- 复制与插入共用同一精度：默认 `millisecond`（`[mm:ss.xxx]`），可选 `centisecond`（`[mm:ss.xx]`）；均使用累计分钟。
+- 示例：默认模式 201450 ms → `[03:21.450]`；3753450 ms → `[62:33.450]`。百分之一秒模式分别为 `[03:21.45]`、`[62:33.45]`，继续使用原有舍入规则。
 - 有选区使用 `selectionStart` 所在行，无选区使用光标行。
 - 多行选择只处理起始行。
 - 替换行首第一个合法 LRC 时间戳；没有则插入行首。
 - 不换行、不播放、不写文件，只更新 EditSession 歌词草稿。
 - 点击工具前保存光标/选区，完成后恢复焦点。
 - ±2 秒 seek 在 0 和 duration 边界钳制。
-- 当前版本不增加快捷键或配置项。
+- 当前版本不增加时间点快捷键；只允许 `lyrics_timestamp_precision` 这一精度配置，经既有设置草稿、`config_write` 能力、显式保存和二次确认持久化。
 
 ## 13. 布局与全局组件合同
 
@@ -576,7 +576,7 @@ Phase 5.9.5 不修改：
 - `config.json` 持久化语义；
 - WAV/raw AAC 当前不支持边界；
 - 文件夹树真实功能；
-- 时间点快捷键与未来设置；
+- 时间点快捷键，以及除当前精度选择外的未来设置；
 - Release 打包。
 
 watcher 只允许在 Phase E 经专项测试后增加检查器所需的只读运行结果字段，不得改变状态机。
@@ -815,7 +815,7 @@ Phase B 已按精确文件清单提交为 `9a01869`，未推送；`.reasonix/`�
 - `AppShell` 在主内容区下方持有唯一生产播放器视图；人工审核后不再实例化 `BottomStatusBar`，`GlobalPlayerDock` 直接成为窗口最底部组件。原全局状态摘要由 `LogDrawer.globalStatusSummary` 显示在日志抽屉顶部，右上角日志按钮是唯一生产入口；`BottomStatusBar.qml` 文件仅作兼容保留。`WorkspaceStack` 仍接收同一 `audioPlayerViewModel` 供 CurrentFileBar 和 Pitch 业务使用，但页面不再实例化播放器视图。
 - `AudioEditorPage` 删除生产 `PlayerBar` 实例；`PlayerBar.qml` 不删除、不改名，只作为 `GlobalPlayerDock` 的兼容包装，生产 AppShell 不加载该包装。
 - 播放、暂停、停止、seek、音量、静音、输出设备、前后 2 秒和时间点复制全部调用同一 ViewModel。停止与 seek 等控制以 `hasPlaybackSource` 为权威，不以 `hasCurrentFile` 推断。
-- `copyCurrentTimestamp()` 从 `currentTimestampText` 复制真实播放器位置到系统剪贴板，精度固定百分之一秒；当前没有时间点快捷键，也没有提前实现歌词插入。
+- Phase C 当时的 `copyCurrentTimestamp()` 固定复制百分之一秒；该历史精度已由第 24 节的 D2 用户授权补充取代。当前仍没有时间点快捷键。
 - 六类 `playbackOrigin` 由媒体信息组件映射为冻结用户文案；未知来源保持“未知来源”。当播放源和 FileSession 当前编辑文件同时存在但路径不一致时，Dock 明确显示“与编辑文件不同”。
 - v5.0 不新增播放器专属封面 reader；Dock 使用占位封面。输出设备刷新继续由既有 Python 逻辑保证当前设备可用时不切换，仅 ComboBox 显式激活调用选择槽。
 
@@ -885,3 +885,61 @@ Phase B 已按精确文件清单提交为 `9a01869`，未推送；`.reasonix/`�
 - 除 SettingsViewModel 与 `editor_file_bar_mode` 配置字段外，未修改 FileSession/PlayerSession/EditSession/ProcessingSession、播放器/媒体/处理/导出/no-clobber 算法、capability、自动转码、Legacy Widgets 或发行打包。
 - 未实现 D2 歌词时间点插入、E 任务源/结果播放与检查器、F 真实文件夹树。
 - `.reasonix/`、`Code_Review_Packages/` 和 `config.json.bak` 等既有未跟踪内容未处理。D1 已通过人工审核并完成精确提交收尾，未推送；阶段结束后停止等待下一步授权。
+
+## 24. Phase 5.9.5-D2 完成记录
+
+### 24.1 实际修改范围
+
+生产 Python：
+
+- 新增 `ui_next/bridge/lyrics_timestamp.py`
+- `ui_next/bridge/audio_player_viewmodel.py`
+- `ui_next/bridge/edit_session.py`
+- `ui_next/bridge/settings_viewmodel.py`
+- `main_qml.py`
+- `config.py`
+
+生产 QML：
+
+- `ui_next/qml/components/LyricsDraftEditor.qml`
+- `ui_next/qml/pages/LyricsCoverPage.qml`
+- `ui_next/qml/pages/SettingsPage.qml`
+
+测试：
+
+- 新增 `tests/test_qml_phase595_lyrics_timestamp.py`
+- `tests/test_qml_audio_player.py`
+- `tests/test_edit_session_lyrics.py`
+- `tests/test_qml_settings_draft_only.py`
+- `tests/test_qml_phase595_player_session_safety.py`
+
+同时更新 `config.example.json`、本合同与 `Codex_memory` 长期记录。没有修改转换、watcher、Pitch、导出服务、capability 或 Legacy Widgets；配置改动仅增加精度默认值、合法值校验和既有显式保存白名单。
+
+### 24.2 时间点与草稿语义
+
+- `format_lrc_timestamp()` 是播放器复制和歌词插入的共享格式权威。默认输出千分之一秒，切换百分之一秒时继续使用既有舍入规则；两种模式均使用累计分钟，不把一小时以上位置回卷到 00～59 分钟。
+- `SettingsViewModel.lyricsTimestampPrecision` 只接受 `millisecond | centisecond`，默认和无效值回退均为 `millisecond`。设置草稿通过应用组合层即时同步到唯一 `AudioPlayerViewModel.timestampPrecision`；放弃/重载草稿会恢复已保存值。
+- 歌词插入直接读取唯一 `AudioPlayerViewModel.position`，不读取进度条拖动临时值。没有播放源时按钮禁用，不允许用无媒体状态下的 0 ms 伪造时间点。
+- 有选区时只处理 `selectionStart` 所在行；多行选区不处理末行。没有选区时处理光标行。
+- 目标行首已有合法 LRC 时间戳时只替换第一个；否则在行首插入。正文、后续时间戳、CRLF/LF 和现有换行数量保持不变。
+- `insertLyricsTimestamp()` 只更新 `EditSessionViewModel._draft_lyrics`、lyrics dirty 与内存状态，不调用歌词 reader/writer、导出服务或配置保存。
+- QML 持续记录 TextArea 有焦点时的光标/选区。按钮夺取焦点并折叠选择时不得覆盖缓存；插入完成后恢复 TextArea 焦点及调整后的光标/选区。
+- 不新增时间点快捷键，不自动播放、不自动换行、不写源音频或原 `.lrc`。切换精度不批量改写已有歌词，只影响之后的复制和插入。
+
+### 24.3 验证
+
+- D2 定向测试分文件合计 `54 passed, 2 subtests passed`，包括播放器、EditSession、歌词只读边界、PlayerSession 安全及真实动态 QML TextArea。
+- 用户授权的精度设置补充专项分文件合计 `39 passed, 2 subtests passed`，覆盖默认/回退、保存白名单、两种格式、动态 QML 插入和 PlayerSession 安全。
+- 编辑工作区连续性与布局回归 `16 passed, 6 subtests passed`。
+- 运行模式、capability 与 Legacy Safe Start `30 passed`；Legacy `gui` / `MainWindow` import 通过。
+- 默认、`lyricsCover`、`audioEditor`、`audioProcessing` offscreen smoke 通过，无新增 QML ReferenceError、binding loop、类型或运行时 warning。
+- 最终完整无缓存回归更新为 `529 passed, 2 warnings, 32 subtests passed`；两条 warning 仍是既有 Qt `QMouseEvent` 构造弃用提示。
+- `compileall`、目标 Python 编译和 `git diff --check` 通过。`config.json` SHA256 前后均为 `EA8BE86CDF7FC7C9351B7F961D9D8B9BC97AD3D414FB7B6A8B8376B8E82CA72B`。
+- 测试验证源音频和原 `.lrc` SHA256 不变。无 FFmpeg/ncmdump 残留；PID 19448 在精度补充轮只读复核时已不在运行，本轮未终止或重启用户进程。
+
+### 24.4 边界与阶段门禁
+
+- 未修改 `converter.py`、watcher、任务队列、FFmpeg/NCM/Pitch、导出/no-clobber、capability 或 Legacy Widgets；没有放宽配置写入能力或确认流程。
+- 未开放 Phase E 的任务筛选、任务源/结果播放器动作和任务检查器，也未实现 Phase F 真实文件夹树。
+- `.reasonix/`、`Code_Review_Packages/` 和 `config.json.bak` 等既有未跟踪内容未处理。
+- D2 人工审核已通过并执行精确提交收尾，不推送；阶段结束后停止等待后续明确授权。

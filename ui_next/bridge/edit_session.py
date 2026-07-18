@@ -19,6 +19,7 @@ from ui_next.bridge.edit_export_service import (
     LrcExportRequest,
     supported_edit_modules,
 )
+from ui_next.bridge.lyrics_timestamp import apply_lrc_timestamp
 
 try:
     from lyrics import read_lrc_file_preview
@@ -1072,6 +1073,43 @@ class EditSessionViewModel(BaseViewModel):
             if self.lyricsDirty else "歌词草稿与当前来源一致；尚未写入文件。"
         )
         self.stateChanged.emit()
+
+    @Slot(int, int, int, int, str, result="QVariantMap")
+    def insertLyricsTimestamp(
+        self,
+        selection_start: int,
+        selection_end: int,
+        cursor_position: int,
+        playback_position_ms: int,
+        timestamp_precision: str = "millisecond",
+    ) -> dict[str, object]:
+        """Apply the player position to one draft line without writing files."""
+        if not self.hasSession:
+            self.set_status_message("当前没有可插入时间点的歌词草稿。")
+            return {"ok": False, "changed": False}
+        if self.lyricsExporting:
+            self.set_status_message("歌词正在导出，暂不能修改草稿。")
+            return {"ok": False, "changed": False}
+
+        result = apply_lrc_timestamp(
+            self._draft_lyrics,
+            selection_start=selection_start,
+            selection_end=selection_end,
+            cursor_position=cursor_position,
+            milliseconds=playback_position_ms,
+            precision=timestamp_precision,
+        )
+        updated_text = str(result["text"])
+        if bool(result["changed"]):
+            self._draft_lyrics = updated_text
+            self._lyrics_clear_requested = False
+            self._lyrics_last_export_result = {}
+            self._lyrics_state = "modified" if self.lyricsDirty else "loaded"
+            self.stateChanged.emit()
+        self.set_status_message(
+            f"已插入当前时间点 {result['timestamp']}；仅更新内存歌词草稿。"
+        )
+        return {"ok": True, **result}
 
     @Slot()
     def saveLyricsDraft(self) -> None:

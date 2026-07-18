@@ -530,11 +530,24 @@ class AudioPlayerViewModelTests(unittest.TestCase):
             ) as gui_application:
                 copied = player.copyCurrentTimestamp()
 
-        self.assertEqual("[03:21.45]", copied)
+        self.assertEqual("[03:21.450]", copied)
         gui_application.clipboard.return_value.setText.assert_called_once_with(
-            "[03:21.45]"
+            "[03:21.450]"
         )
-        self.assertIn("[03:21.45]", player.statusMessage)
+        self.assertIn("[03:21.450]", player.statusMessage)
+
+        fake.positionChanged.emit(15)
+        self.assertEqual(
+            "[00:00.015]",
+            player.currentTimestampText,
+            "默认时间点精度必须为千分之一秒",
+        )
+        player.setTimestampPrecision("centisecond")
+        self.assertEqual("centisecond", player.timestampPrecision)
+        self.assertEqual("[00:00.02]", player.currentTimestampText)
+        player.setTimestampPrecision("invalid")
+        self.assertEqual("millisecond", player.timestampPrecision)
+        self.assertEqual("[00:00.015]", player.currentTimestampText)
 
     def test_player_error_is_specific(self):
         _session, player, fake, _output = self._build_player()

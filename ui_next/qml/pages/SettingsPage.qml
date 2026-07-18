@@ -28,6 +28,10 @@ Item {
         {"value": "fixed", "label": "固定"},
         {"value": "floating", "label": "悬浮（可收起）"}
     ]
+    property var lyricsTimestampPrecisionOptions: [
+        {"value": "millisecond", "label": "千分之一秒"},
+        {"value": "centisecond", "label": "百分之一秒"}
+    ]
 
     function optionIndex(model, value) {
         for (var index = 0; index < model.length; index += 1) {
@@ -45,6 +49,10 @@ Item {
         editorFileBarModeCombo.currentIndex = optionIndex(
             editorFileBarModeOptions,
             settingsViewModel.editorFileBarMode
+        )
+        lyricsTimestampPrecisionCombo.currentIndex = optionIndex(
+            lyricsTimestampPrecisionOptions,
+            settingsViewModel.lyricsTimestampPrecision
         )
     }
 
@@ -304,9 +312,35 @@ Item {
                     theme: root.theme
                     typography: root.typography
                     title: "歌词设置"
-                    subtitle: settingsViewModel.previewMode ? "歌词选项均为页面草稿；不会写入 config.json、不会接入转换流程，也不会修改音频或 .lrc。" : "保存并确认后才可能影响后续转换配置。"
-                    statusLabel: settingsViewModel.previewMode ? "预览时不生效" : "待确认草稿"
+                    subtitle: "时间点精度会立即作用于本次会话；其余转换歌词选项仍只进入页面草稿。"
+                    statusLabel: "时间点精度即时预览"
                     statusTone: "warning"
+
+                    SettingRow {
+                        theme: root.theme
+                        typography: root.typography
+                        label: "时间点精度"
+
+                        FormatSelector {
+                            id: lyricsTimestampPrecisionCombo
+                            objectName: "lyricsTimestampPrecisionCombo"
+                            Layout.preferredWidth: 220
+                            theme: root.theme
+                            typography: root.typography
+                            options: lyricsTimestampPrecisionOptions
+                            value: settingsViewModel.lyricsTimestampPrecision
+                            onFormatSelected: settingsViewModel.setLyricsTimestampPrecision(value)
+                        }
+
+                        Text {
+                            Layout.fillWidth: true
+                            text: "默认千分之一秒，例如 [03:21.450]；也可切换为百分之一秒 [03:21.45]。保存确认后作为下次启动默认值。"
+                            color: theme.muted
+                            font.family: typography.fontFamily
+                            font.pixelSize: typography.sizeSmall
+                            wrapMode: Text.WordWrap
+                        }
+                    }
 
                     DraftSettingBlock {
                         theme: root.theme

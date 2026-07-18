@@ -8,11 +8,52 @@ Rectangle {
     id: root
     property QtObject theme: Theme {}
     property QtObject typography: Typography {}
+    property var audioPlayer: null
     property var editSession: null
+    property int rememberedCursorPosition: 0
+    property int rememberedSelectionStart: 0
+    property int rememberedSelectionEnd: 0
     signal sourceRequested(string source)
     signal manualSourceRequested()
     signal audioExportRequested()
     signal lrcExportRequested()
+
+    function rememberDraftSelection(force) {
+        if (!force && !draftEditor.activeFocus) {
+            return
+        }
+        rememberedCursorPosition = draftEditor.cursorPosition
+        rememberedSelectionStart = draftEditor.selectionStart
+        rememberedSelectionEnd = draftEditor.selectionEnd
+    }
+
+    function insertCurrentTimestamp() {
+        if (!editSession || !editSession.hasSession || editSession.lyricsExporting
+                || !audioPlayer || !audioPlayer.hasPlaybackSource) {
+            return
+        }
+        var result = editSession.insertLyricsTimestamp(
+            rememberedSelectionStart,
+            rememberedSelectionEnd,
+            rememberedCursorPosition,
+            audioPlayer.position,
+            audioPlayer.timestampPrecision
+        )
+        if (!result || result.ok !== true) {
+            return
+        }
+        Qt.callLater(function() {
+            draftEditor.forceActiveFocus()
+            var selectionStart = Number(result.selection_start)
+            var selectionEnd = Number(result.selection_end)
+            if (selectionStart !== selectionEnd) {
+                draftEditor.select(selectionStart, selectionEnd)
+            } else {
+                draftEditor.cursorPosition = Number(result.cursor_position)
+            }
+            root.rememberDraftSelection(true)
+        })
+    }
 
     color: theme.panel
     border.color: theme.border
@@ -50,6 +91,16 @@ Rectangle {
             Button { text: "内嵌歌词"; visible: root.editSession && root.editSession.hasEmbeddedLyricsSource; onClicked: root.sourceRequested("embedded") }
             Button { text: "同名 LRC"; visible: root.editSession && root.editSession.hasSiblingLrcSource; onClicked: root.sourceRequested("sibling_lrc") }
             Button { text: "选择 .lrc 作为草稿来源"; onClicked: root.manualSourceRequested() }
+            Button {
+                id: insertTimestampButton
+                objectName: "insertCurrentTimestampButton"
+                text: "插入当前时间点"
+                enabled: root.editSession && root.editSession.hasSession
+                    && !root.editSession.lyricsExporting
+                    && root.audioPlayer && root.audioPlayer.hasPlaybackSource
+                onPressed: root.rememberDraftSelection(false)
+                onClicked: root.insertCurrentTimestamp()
+            }
         }
 
         GridLayout {
@@ -181,6 +232,9 @@ Rectangle {
                         color: theme.textPrimary
                         placeholderText: "可输入普通歌词或保留 LRC 时间戳。"
                         placeholderTextColor: theme.textMuted
+                        onCursorPositionChanged: root.rememberDraftSelection(false)
+                        onSelectionStartChanged: root.rememberDraftSelection(false)
+                        onSelectionEndChanged: root.rememberDraftSelection(false)
                         onTextChanged: if (activeFocus && root.editSession) root.editSession.updateLyricsDraft(text)
                         background: null
                     }

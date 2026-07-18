@@ -471,7 +471,7 @@ def test_playback_properties_timestamp_seek_and_unknown_origin(tmp_path):
     assert player.playbackMatchesEditorFile
     assert player.playbackOrigin == "editor_file"
     assert player.seekStepMs == 2000
-    assert player.currentTimestampText == "[03:21.45]"
+    assert player.currentTimestampText == "[03:21.450]"
 
     player.seekBackward()
     assert player.position == 199_450
@@ -494,7 +494,7 @@ def test_playback_properties_timestamp_seek_and_unknown_origin(tmp_path):
     assert not player.playbackMatchesEditorFile
     _mark_loaded(player, backend, duration=4_000_000)
     backend.positionChanged.emit(3_753_450)
-    assert player.currentTimestampText == "[62:33.45]"
+    assert player.currentTimestampText == "[62:33.450]"
 
 
 def test_file_session_signal_matrix_and_result_same_path_dirty_guard(tmp_path):

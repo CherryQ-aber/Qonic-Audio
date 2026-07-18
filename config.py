@@ -62,6 +62,7 @@ DEFAULT_CONFIG = {
     "editor_project_folders": [],
     "editor_browser_collapsed": False,
     "editor_file_bar_mode": "fixed",
+    "lyrics_timestamp_precision": "millisecond",
     "target_format": DEFAULT_TARGET_FORMAT,
     "create_format_subfolder": True,
     "preserve_relative_structure": False,
@@ -94,6 +95,14 @@ def _merge_with_default(config_data):
 
     if merged.get("editor_file_bar_mode") not in {"fixed", "floating"}:
         merged["editor_file_bar_mode"] = DEFAULT_CONFIG["editor_file_bar_mode"]
+
+    if merged.get("lyrics_timestamp_precision") not in {
+        "centisecond",
+        "millisecond",
+    }:
+        merged["lyrics_timestamp_precision"] = DEFAULT_CONFIG[
+            "lyrics_timestamp_precision"
+        ]
 
     merged["target_format"] = normalize_target_format(
         merged.get("target_format"),

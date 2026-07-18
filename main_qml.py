@@ -167,6 +167,14 @@ def main(argv: list[str] | None = None) -> int:
     settings_view_model.configPersisted.connect(
         auto_convert_view_model.notify_settings_saved
     )
+    settings_view_model.settingsChanged.connect(
+        lambda: audio_player_view_model.setTimestampPrecision(
+            settings_view_model.lyricsTimestampPrecision
+        )
+    )
+    audio_player_view_model.setTimestampPrecision(
+        settings_view_model.lyricsTimestampPrecision
+    )
 
     app.aboutToQuit.connect(auto_convert_view_model.shutdown)
     app.aboutToQuit.connect(editor_file_browser_view_model.shutdown)

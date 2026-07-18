@@ -9,6 +9,10 @@ from PySide6.QtMultimedia import QAudioOutput, QMediaDevices, QMediaPlayer
 
 from ui_next.bridge.base_viewmodel import BaseViewModel
 from ui_next.bridge.capabilities import AUDIO_PLAYBACK, CapabilityGate
+from ui_next.bridge.lyrics_timestamp import (
+    format_lrc_timestamp,
+    normalize_timestamp_precision,
+)
 
 
 class _NullAudioOutput(QObject):
@@ -139,6 +143,7 @@ class AudioPlayerViewModel(BaseViewModel):
         self._state = "empty"
         self._duration = 0
         self._position = 0
+        self._timestamp_precision = "millisecond"
         self._volume = 70
         self._muted = False
         self._error = ""
@@ -275,10 +280,22 @@ class AudioPlayerViewModel(BaseViewModel):
 
     @Property(str, notify=stateChanged)
     def currentTimestampText(self) -> str:
-        total_centiseconds = max(0, int(self._position)) // 10
-        total_seconds, centiseconds = divmod(total_centiseconds, 100)
-        minutes, seconds = divmod(total_seconds, 60)
-        return f"[{minutes:02d}:{seconds:02d}.{centiseconds:02d}]"
+        return format_lrc_timestamp(
+            self._position,
+            self._timestamp_precision,
+        )
+
+    @Property(str, notify=stateChanged)
+    def timestampPrecision(self) -> str:
+        return self._timestamp_precision
+
+    @Slot(str)
+    def setTimestampPrecision(self, value: str) -> None:
+        normalized = normalize_timestamp_precision(value)
+        if normalized == self._timestamp_precision:
+            return
+        self._timestamp_precision = normalized
+        self.stateChanged.emit()
 
     @Slot(result=str)
     def copyCurrentTimestamp(self) -> str:
