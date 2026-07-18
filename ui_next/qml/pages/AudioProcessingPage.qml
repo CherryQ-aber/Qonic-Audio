@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 
 import "../components"
@@ -11,24 +12,39 @@ Item {
     property QtObject typography: Typography {}
     property var processingSession
 
-    // Anchored children do not contribute to an Item's implicit size.  The
-    // outer editor Flickable therefore needs the processing stack explicitly.
-    implicitHeight: processingContent.implicitHeight
-
-    ColumnLayout {
-        id: processingContent
+    Flickable {
+        id: pageScroll
+        objectName: "audioProcessingPageScroll"
         anchors.fill: parent
-        spacing: theme.spacing
+        clip: true
+        contentWidth: width
+        contentHeight: processingContent.implicitHeight + root.theme.spacing * 2
+        boundsBehavior: Flickable.StopAtBounds
 
-        // The outer editor Flickable owns page scrolling.  Pitch keeps its
-        // safety note, parameters, preview and export in one responsive card.
-        PitchShiftCard {
-            objectName: "audioEditorPitchCard"
-            Layout.fillWidth: true
-            Layout.minimumWidth: 0
+        ScrollBar.vertical: ThemeScrollBar {
             theme: root.theme
-            typography: root.typography
-            processingSession: root.processingSession
+            policy: ScrollBar.AsNeeded
+        }
+
+        ColumnLayout {
+            id: processingContent
+            objectName: "audioProcessingPageContent"
+            width: pageScroll.width
+            Layout.minimumWidth: 0
+            spacing: root.theme.spacing
+
+            PitchShiftCard {
+                objectName: "audioEditorPitchCard"
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                theme: root.theme
+                typography: root.typography
+                processingSession: root.processingSession
+            }
+
+            Item {
+                Layout.minimumHeight: root.theme.spacing
+            }
         }
     }
 }

@@ -94,10 +94,7 @@ Item {
                                 ? "歌词草稿已修改" : "歌词草稿未修改"
                             tone: root.editSession && root.editSession.lyricsDirty ? "warning" : "muted"
                         }
-                        ActionButton { text: "选择音频并读取歌词"; onClicked: fileSessionViewModel.chooseAudioFile("lyrics_cover_page") }
                         ActionButton { text: "选择 .lrc 作为草稿来源"; onClicked: root.requestManualSource() }
-                        ActionButton { text: "重新读取"; enabled: fileSessionViewModel.hasCurrentFile; onClicked: fileSessionViewModel.reloadCurrentFile() }
-                        ActionButton { text: "清除当前文件"; enabled: fileSessionViewModel.hasCurrentFile; onClicked: fileSessionViewModel.clearCurrentFile() }
                     }
                     Text {
                         text: (fileSessionViewModel.currentFilePath === ""

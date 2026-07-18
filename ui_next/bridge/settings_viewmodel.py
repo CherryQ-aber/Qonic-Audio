@@ -46,6 +46,7 @@ class SettingsViewModel(BaseViewModel):
         "theme_mode",
         "log_level",
         "ui_density",
+        "editor_file_bar_mode",
     }
     _PREVIEW_SAFETY_MESSAGE = (
         "预览模式：设置修改只保存为页面草稿，不会写入 config.json，"
@@ -154,6 +155,13 @@ class SettingsViewModel(BaseViewModel):
     @Property(str, notify=settingsChanged)
     def uiDensity(self) -> str:
         return str(self._pending_config.get("ui_density") or "standard")
+
+    @Property(str, notify=settingsChanged)
+    def editorFileBarMode(self) -> str:
+        value = str(
+            self._pending_config.get("editor_file_bar_mode") or "fixed"
+        ).strip().lower()
+        return value if value in {"fixed", "floating"} else "fixed"
 
     @Property(str, notify=saveStatusChanged)
     def saveStatus(self) -> str:
@@ -340,6 +348,10 @@ class SettingsViewModel(BaseViewModel):
             normalized = "standard"
         self.updatePendingValue("ui_density", normalized)
 
+    @Slot(str)
+    def setEditorFileBarMode(self, value: str) -> None:
+        self.updatePendingValue("editor_file_bar_mode", value)
+
     @Slot()
     def openLogFolder(self) -> None:
         os.makedirs(LOG_DIR, exist_ok=True)
@@ -493,6 +505,9 @@ class SettingsViewModel(BaseViewModel):
         if key == "ui_density":
             normalized = str(value or "standard").strip().lower()
             return normalized if normalized in {"compact", "standard"} else "standard"
+        if key == "editor_file_bar_mode":
+            normalized = str(value or "fixed").strip().lower()
+            return normalized if normalized in {"fixed", "floating"} else "fixed"
         return value
 
     def _confirm_live_save(self) -> bool:

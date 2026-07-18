@@ -343,6 +343,8 @@ class Phase595RealAppShellTests(unittest.TestCase):
                 "audioProcessingPage",
                 "settingsOverlay",
                 "folderBrowserPane",
+                "audioEditorCurrentFileCard",
+                "toggleEditorFileBarButton",
                 "globalPlayerDock",
                 "logDrawer",
                 "logDrawerGlobalStatusSummary",
@@ -372,7 +374,7 @@ class Phase595RealAppShellTests(unittest.TestCase):
             app_state.setCurrentModule("lyricsCover")
             self.app.processEvents()
             self.assertFalse(auto_drop.property("enabled"))
-            self.assertFalse(editor_drop.property("enabled"))
+            self.assertTrue(editor_drop.property("enabled"))
 
             app_state.setCurrentModule("audioProcessing")
             self.app.processEvents()
@@ -394,6 +396,44 @@ class Phase595RealAppShellTests(unittest.TestCase):
                 )
 
             settings = objects["settingsViewModel"]
+            original_file_bar_mode = settings.editorFileBarMode
+            settings.setEditorFileBarMode("floating")
+            app_state.setCurrentModule("audioEditor")
+            QTest.qWait(220)
+            self.app.processEvents()
+            self.assertTrue(
+                children["audioEditorCurrentFileCard"].property("floatingMode")
+            )
+            self.assertTrue(children["toggleEditorFileBarButton"].property("visible"))
+            self.assertFalse(root.property("editorFileBarExpanded"))
+            self.assertLess(
+                float(children["audioEditorCurrentFileCard"].property("y")),
+                0.0,
+            )
+
+            root.setProperty("editorFileBarExpanded", True)
+            QTest.qWait(220)
+            self.app.processEvents()
+            self.assertTrue(
+                children["audioEditorCurrentFileCard"].property("expanded")
+            )
+            self.assertAlmostEqual(
+                0.0,
+                float(children["audioEditorCurrentFileCard"].property("y")),
+                delta=1.0,
+            )
+
+            root.setProperty("editorFileBarExpanded", False)
+            QTest.qWait(220)
+            settings.discardPendingChanges()
+            app_state.setCurrentModule("autoConvert")
+            self.app.processEvents()
+            self.assertEqual(
+                original_file_bar_mode == "floating",
+                children["audioEditorCurrentFileCard"].property("floatingMode"),
+            )
+            self.assertFalse(children["toggleEditorFileBarButton"].property("visible"))
+
             next_density = (
                 "compact" if settings.uiDensity != "compact" else "standard"
             )
@@ -472,6 +512,15 @@ class Phase595RealAppShellTests(unittest.TestCase):
             self.assertIsNone(root.findChild(QObject, "rightInspector"))
             self.assertIsNone(
                 root.findChild(QObject, "audioEditorPlayerCard")
+            )
+            self.assertIsNone(
+                root.findChild(QObject, "audioEditorFileBrowser")
+            )
+            self.assertIsNone(
+                root.findChild(QObject, "audioEditorWaveformCard")
+            )
+            self.assertIsNone(
+                root.findChild(QObject, "audioEditorTabsCard")
             )
 
             player_dock = children["globalPlayerDock"]

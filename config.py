@@ -61,6 +61,7 @@ DEFAULT_CONFIG = {
     "editor_browser_folder": "",
     "editor_project_folders": [],
     "editor_browser_collapsed": False,
+    "editor_file_bar_mode": "fixed",
     "target_format": DEFAULT_TARGET_FORMAT,
     "create_format_subfolder": True,
     "preserve_relative_structure": False,
@@ -90,6 +91,9 @@ def _merge_with_default(config_data):
 
     if merged.get("theme_mode") not in THEME_MODE_OPTIONS:
         merged["theme_mode"] = DEFAULT_CONFIG["theme_mode"]
+
+    if merged.get("editor_file_bar_mode") not in {"fixed", "floating"}:
+        merged["editor_file_bar_mode"] = DEFAULT_CONFIG["editor_file_bar_mode"]
 
     merged["target_format"] = normalize_target_format(
         merged.get("target_format"),

@@ -20,6 +20,7 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
             "theme_mode": "system",
             "log_level": "INFO",
             "ui_density": "standard",
+            "editor_file_bar_mode": "fixed",
         }
 
     def test_preview_changes_and_save_attempt_never_call_save_config(self):
@@ -36,6 +37,7 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
             view_model.updatePendingValue("overwrite_existing_lyrics", True)
             view_model.updatePendingValue("theme_mode", "dark")
             view_model.updatePendingValue("ui_density", "compact")
+            view_model.setEditorFileBarMode("floating")
             view_model.simulateSaveDraft()
             view_model.savePendingChanges()
 
@@ -44,6 +46,7 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
         self.assertTrue(view_model.isDisabledInPreview)
         self.assertFalse(view_model.canPersistConfig)
         self.assertTrue(view_model.hasPendingChanges)
+        self.assertEqual(view_model.editorFileBarMode, "floating")
         self.assertIn("当前不可用", view_model.statusMessage)
         mock_save.assert_not_called()
 
@@ -55,6 +58,7 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
             view_model = SettingsViewModel()
             view_model.updatePendingValue("target_format", "flac")
             view_model.updatePendingValue("auto_start_monitor", False)
+            view_model.setEditorFileBarMode("floating")
             view_model.discardPendingChanges()
 
         self.assertFalse(view_model.hasPendingChanges)
@@ -64,7 +68,19 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
             view_model.autoStartMonitor,
             self.real_config["auto_start_monitor"],
         )
+        self.assertEqual(view_model.editorFileBarMode, "fixed")
         self.assertIn("config.json 未改变", view_model.statusMessage)
+
+    def test_file_bar_mode_rejects_unknown_values(self):
+        with patch(
+            "ui_next.bridge.settings_viewmodel.load_config",
+            return_value=dict(self.real_config),
+        ):
+            view_model = SettingsViewModel()
+            view_model.setEditorFileBarMode("unknown")
+
+        self.assertEqual(view_model.editorFileBarMode, "fixed")
+        self.assertFalse(view_model.hasPendingChanges)
 
     def test_reload_replaces_pending_draft_with_latest_real_config(self):
         reloaded_config = dict(self.real_config)

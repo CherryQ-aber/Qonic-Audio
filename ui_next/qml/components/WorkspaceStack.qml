@@ -19,16 +19,11 @@ Item {
     property var audioPlayer: null
     property var editSession: null
     property var processingSession: null
+    property var settings: null
+    property bool editorFileBarExpanded: false
 
     signal closeLegacyAnalysisRequested()
-
-    function editorPageIndex(pageKey) {
-        if (pageKey === "lyrics")
-            return 1
-        if (pageKey === "audioProcessing")
-            return 2
-        return 0
-    }
+    signal editorFileBarCollapseRequested()
 
     StackLayout {
         id: primaryWorkspaceStack
@@ -50,58 +45,22 @@ Item {
             }
         }
 
-        Item {
+        AudioEditorWorkspace {
             id: audioEditorWorkspace
             objectName: "audioEditorWorkspace"
             enabled: primaryWorkspaceStack.currentIndex === 1
-
-            StackLayout {
-                id: editorPageStack
-                objectName: "editorPageStack"
-                anchors.fill: parent
-                currentIndex: root.editorPageIndex(root.currentEditorPageKey)
-
-                MetadataPage {
-                    objectName: "fileInfoPage"
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    enabled: audioEditorWorkspace.enabled
-                        && editorPageStack.currentIndex === 0
-                    theme: root.theme
-                    typography: root.typography
-                    audioPlayer: root.audioPlayer
-                    editSession: root.editSession
-                }
-
-                LyricsCoverPage {
-                    objectName: "lyricsPage"
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    enabled: audioEditorWorkspace.enabled
-                        && editorPageStack.currentIndex === 1
-                    pageActive: enabled
-                    theme: root.theme
-                    typography: root.typography
-                    audioPlayer: root.audioPlayer
-                    editSession: root.editSession
-                }
-
-                AudioEditorPage {
-                    objectName: "audioProcessingPage"
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    enabled: audioEditorWorkspace.enabled
-                        && editorPageStack.currentIndex === 2
-                    pageActive: enabled
-                    theme: root.theme
-                    typography: root.typography
-                    fileSession: root.fileSession
-                    fileBrowser: root.fileBrowser
-                    audioPlayer: root.audioPlayer
-                    editSession: root.editSession
-                    processingSession: root.processingSession
-                }
-            }
+            pageActive: enabled
+            currentEditorPageKey: root.currentEditorPageKey
+            theme: root.theme
+            typography: root.typography
+            fileSession: root.fileSession
+            audioPlayer: root.audioPlayer
+            editSession: root.editSession
+            processingSession: root.processingSession
+            settings: root.settings
+            floatingFileBarExpanded: root.editorFileBarExpanded
+            onFloatingFileBarCollapseRequested:
+                root.editorFileBarCollapseRequested()
         }
     }
 

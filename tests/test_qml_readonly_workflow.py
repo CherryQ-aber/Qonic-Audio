@@ -18,11 +18,15 @@ class ReadonlyWorkflowWiringTests(unittest.TestCase):
     def test_qml_entry_points_route_to_the_shared_session(self):
         metadata = self._source("ui_next/qml/pages/MetadataPage.qml")
         lyrics = self._source("ui_next/qml/pages/LyricsCoverPage.qml")
+        current_file = self._source(
+            "ui_next/qml/components/CurrentFileBar.qml"
+        )
         scan = self._source("ui_next/qml/components/ScanPreviewPanel.qml")
         single = self._source("ui_next/qml/components/SingleFileConvertPanel.qml")
         inspector = self._source("ui_next/qml/components/RightInspector.qml")
-        self.assertIn('chooseAudioFile("metadata_page")', metadata)
-        self.assertIn('chooseAudioFile("lyrics_cover_page")', lyrics)
+        self.assertIn('chooseAudioFile("audio_editor")', current_file)
+        self.assertNotIn("chooseAudioFile(", metadata)
+        self.assertNotIn("chooseAudioFile(", lyrics)
         self.assertIn("loadSelectedFileIntoWorkspace", scan)
         self.assertIn("setInputFileFromCurrentSession", single)
         self.assertIn("currentFileSourceLabel", inspector)

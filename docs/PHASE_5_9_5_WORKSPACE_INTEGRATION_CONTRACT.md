@@ -4,9 +4,9 @@
 
 - 日期：2026-07-18
 - 项目：CherryQ Audio Converter v5.0 Internal Test
-- 阶段：Phase 5.9.5-C 全局播放器 Dock
-- 状态：Phase C 工程实现和回归已完成，当前未暂存、提交或推送
-- 下一阶段：保持停止，等待用户审核；提交收尾或继续 Phase 5.9.5-D1 均须用户明确要求
+- 阶段：Phase 5.9.5-D1 音频编辑工作区整合
+- 状态：Phase C 已提交为 `9b4ac07`；Phase D1 工程实现、回归、人工审核和提交收尾已完成，当前未推送
+- 下一阶段：保持停止；继续 Phase 5.9.5-D2 须用户明确要求
 - 长期计划：`Codex_memory/PHASE_5_9_5_WORKSPACE_INTEGRATION_PLAN.md`
 
 本文是 Phase 5.9.5 的工程合同。长期计划描述完整方向，本文固定当前代码基线、状态归属、兼容规则、测试迁移和阶段门禁。后续实现如需改变本文合同，必须先更新本文并单独汇报，不得在代码修改中隐式改变语义。
@@ -832,7 +832,56 @@ Phase B 已按精确文件清单提交为 `9a01869`，未推送；`.reasonix/`�
 ### 22.4 边界与阶段门禁
 
 - 未开放任务源/转码结果播放器动作，未开放文件夹树播放器入口；分别继续属于 Phase E、F。
-- 未实现 D1 的编辑工作区结构收敛或 D2 的歌词时间点插入；AudioEditorPage 的其余过渡浏览器、波形占位和处理内容留待 D1。
+- Phase C 尚未实现 D1 的编辑工作区结构收敛或 D2 的歌词时间点插入；D1 已在后续第 23 节完成，D2 仍未开始。
 - 未修改 watcher、converter、任务生命周期、FFmpeg/NCM/Pitch、媒体和导出/no-clobber 算法、capability、运行模式、配置持久化、Legacy Widgets 或发行打包。
 - 开始前用户已有 `python.exe main_qml.py` PID 37392；本任务未终止或重启该进程，后续只读复核时该进程已自然退出。
-- `.reasonix/`、`Code_Review_Packages/` 和 `config.json.bak` 等既有未跟踪内容未处理。Phase C 当前未暂存、提交或推送；阶段完成后停止等待用户审核。
+- `.reasonix/`、`Code_Review_Packages/` 和 `config.json.bak` 等既有未跟踪内容未处理。Phase C 已精确提交为 `9b4ac07`，未推送。
+
+## 23. Phase 5.9.5-D1 完成记录
+
+### 23.1 实际修改范围
+
+生产 QML：
+
+- 新增 `ui_next/qml/components/AudioEditorWorkspace.qml`
+- `ui_next/qml/components/WorkspaceStack.qml`
+- `ui_next/qml/components/CurrentFileBar.qml`
+- `ui_next/qml/pages/AudioProcessingPage.qml`
+- `ui_next/qml/pages/MetadataPage.qml`
+- `ui_next/qml/pages/LyricsCoverPage.qml`
+
+设置与配置：
+
+- `config.py` / `config.example.json`：新增 `editor_file_bar_mode = fixed | floating`，默认 `fixed`
+- `ui_next/bridge/settings_viewmodel.py`
+- `ui_next/qml/pages/SettingsPage.qml`
+- `ui_next/qml/AppShell.qml`
+
+测试：
+
+- 新增 `tests/test_qml_phase595_editor_workspace.py`
+- 调整编辑工作区、布局、图像白名单、全局播放器、真实 AppShell、只读入口、状态文案和统一导出合同测试
+
+### 23.2 组件所有权与用户语义
+
+- `AudioEditorWorkspace` 持有唯一公共 `CurrentFileBar` 和唯一 `editorPageStack`；Metadata、歌词、音频处理三个页面在同一 StackLayout 中常驻，切换不销毁实例。
+- `CurrentFileBar` 展示当前有效封面、文件名/路径/格式/来源/读取状态、播放文件一致性和三类 dirty 摘要；导入、载入播放器、打开位置和统一导出集中在该栏。
+- 公共文件栏保留固定与悬浮两种模式。`fixed` 是默认值并完整保留原布局；`floating` 不占用页面栈高度，收起时整张卡片滑到编辑区顶部边界之外、透明且禁用交互，展开时从顶部下拉覆盖显示。“展开/收起公共文件栏”按钮位于“编辑页面”二级导航行最右侧；展开状态只属于当前 QML 实例，切换三个编辑子页时保持。
+- 设置页修改 `editor_file_bar_mode` 后立即预览当前会话；放弃或重新读取草稿会恢复真实配置，只有既有“保存设置 + 二次确认”路径才写入 `config.json`。该设置不得进入媒体、文件、编辑、导出或自动转码后端。
+- 编辑导入继续走既有 FileSession dirty guard，并由 `editorFilePlaybackRequested` 同步载入播放器；播放器固定 `autoplay=false`、`position=0`。显式“载入播放器”直接调用既有 `loadEditorFile()`，不改变 FileSession。
+- 工作区级 DropArea 在三个子页均可用，离开音频编辑工作区后禁用。Metadata/歌词页不再各自提供音频选择、重新读取或清除入口；歌词 `.lrc` 草稿导入保留。
+- `AudioEditorPage.qml`、`EditorFileBrowser.qml`、`WaveformPlaceholder.qml` 和假 Tab 没有删除，但生产 `WorkspaceStack` 不再加载。`AudioProcessingPage` 自己承担唯一页面滚动。
+
+### 23.3 验证
+
+- D1 定向回归 `71 passed, 6 subtests passed`。
+- 全部 QML 回归 `293 passed, 26 subtests passed`。
+- 最终完整回归 `520 passed, 2 warnings, 32 subtests passed`；两条 warning 仍是既有 Qt `QMouseEvent` 弃用提示。
+- `audioEditor`、`lyricsCover`、`audioProcessing` 与设置覆盖层 offscreen smoke 通过。
+- `config.json` SHA256 保持 `EA8BE86CDF7FC7C9351B7F961D9D8B9BC97AD3D414FB7B6A8B8376B8E82CA72B`。
+
+### 23.4 边界与阶段门禁
+
+- 除 SettingsViewModel 与 `editor_file_bar_mode` 配置字段外，未修改 FileSession/PlayerSession/EditSession/ProcessingSession、播放器/媒体/处理/导出/no-clobber 算法、capability、自动转码、Legacy Widgets 或发行打包。
+- 未实现 D2 歌词时间点插入、E 任务源/结果播放与检查器、F 真实文件夹树。
+- `.reasonix/`、`Code_Review_Packages/` 和 `config.json.bak` 等既有未跟踪内容未处理。D1 已通过人工审核并完成精确提交收尾，未推送；阶段结束后停止等待下一步授权。

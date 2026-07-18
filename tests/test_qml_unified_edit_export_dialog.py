@@ -10,7 +10,6 @@ def test_global_dialog_is_the_only_audio_copy_export_ui():
     shell = (QML / "AppShell.qml").read_text(encoding="utf-8")
     metadata = (QML / "pages" / "MetadataPage.qml").read_text(encoding="utf-8")
     lyrics_cover = (QML / "pages" / "LyricsCoverPage.qml").read_text(encoding="utf-8")
-    audio_editor = (QML / "pages" / "AudioEditorPage.qml").read_text(encoding="utf-8")
     current_file = (QML / "components" / "CurrentFileBar.qml").read_text(encoding="utf-8")
 
     assert "objectName: \"unifiedEditExportDialog\"" in dialog
@@ -19,7 +18,7 @@ def test_global_dialog_is_the_only_audio_copy_export_ui():
     assert 'openUnifiedExportDialog("lyrics")' in lyrics_cover
     assert 'openUnifiedExportDialog("cover")' in metadata
     assert 'openUnifiedExportDialog("cover")' not in lyrics_cover
-    assert 'openUnifiedExportDialog("auto")' in audio_editor + current_file
+    assert 'openUnifiedExportDialog("auto")' in current_file
     assert "metadataCombinedExportDialog" not in metadata
     assert "combinedExportDialog" not in lyrics_cover
     assert "coverCombinedExportDialog" not in metadata

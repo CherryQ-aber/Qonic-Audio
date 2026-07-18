@@ -29,7 +29,10 @@ ApplicationWindow {
     }
 
     property bool logDrawerOpened: false
+    property bool editorFileBarExpanded: false
     property int minimumWorkspaceWidth: 620
+    readonly property bool editorFileBarFloating:
+        settingsViewModel.editorFileBarMode === "floating"
 
     function userFeatureSummary() {
         return capabilityGate.enabledFeatureSummary
@@ -54,6 +57,8 @@ ApplicationWindow {
         logDrawerOpened = false
         Qt.callLater(topStatusBar.focusLogButton)
     }
+
+    onEditorFileBarFloatingChanged: editorFileBarExpanded = false
 
     ColumnLayout {
         id: shellContent
@@ -91,9 +96,13 @@ ApplicationWindow {
             currentWorkspaceKey: appState.currentWorkspaceKey
             currentEditorPageKey: appState.currentEditorPageKey
             editorPages: appState.editorPages
+            editorFileBarFloating: root.editorFileBarFloating
+            editorFileBarExpanded: root.editorFileBarExpanded
             onEditorPageRequested: function(pageKey) {
                 appState.switchEditorPage(pageKey)
             }
+            onEditorFileBarToggleRequested:
+                root.editorFileBarExpanded = !root.editorFileBarExpanded
         }
 
         RowLayout {
@@ -138,6 +147,10 @@ ApplicationWindow {
                     audioPlayer: audioPlayerViewModel
                     editSession: editSessionViewModel
                     processingSession: processingSessionViewModel
+                    settings: settingsViewModel
+                    editorFileBarExpanded: root.editorFileBarExpanded
+                    onEditorFileBarCollapseRequested:
+                        root.editorFileBarExpanded = false
                     onCloseLegacyAnalysisRequested: {
                         appState.closeLegacyAnalysis()
                         Qt.callLater(root.focusCurrentSubNavigation)

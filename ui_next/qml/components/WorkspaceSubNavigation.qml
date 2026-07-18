@@ -13,12 +13,15 @@ Rectangle {
     property string currentWorkspaceKey: "autoConvert"
     property string currentEditorPageKey: "fileInfo"
     property var editorPages: []
+    property bool editorFileBarFloating: false
+    property bool editorFileBarExpanded: false
     property int tabStopIndex: currentPageIndex()
     readonly property var currentModel: currentWorkspaceKey === "audioEditor"
         ? editorPages
         : [{"key": "all", "title": "全部任务"}]
 
     signal editorPageRequested(string pageKey)
+    signal editorFileBarToggleRequested()
 
     implicitHeight: 44
     color: theme.panel
@@ -158,6 +161,23 @@ Rectangle {
 
         Item {
             Layout.fillWidth: true
+        }
+
+        WorkstationButton {
+            id: editorFileBarToggleButton
+            objectName: "toggleEditorFileBarButton"
+            visible: root.currentWorkspaceKey === "audioEditor"
+                && root.editorFileBarFloating
+            Layout.preferredWidth: 142
+            implicitHeight: root.theme.controlHeightSmall
+            theme: root.theme
+            typography: root.typography
+            text: root.editorFileBarExpanded ? "收起公共文件栏" : "展开公共文件栏"
+            tone: root.editorFileBarExpanded ? "primary" : "ghost"
+            toolTipText: root.editorFileBarExpanded
+                ? "收起顶部公共文件栏，恢复完整编辑视图。"
+                : "从顶部展开当前编辑文件与公共操作。"
+            onClicked: root.editorFileBarToggleRequested()
         }
     }
 }

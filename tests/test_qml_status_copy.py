@@ -43,13 +43,17 @@ class QmlStatusCopyTests(unittest.TestCase):
         metadata = self._qml_source("ui_next/qml/pages/MetadataPage.qml")
         lyrics = self._qml_source("ui_next/qml/pages/LyricsCoverPage.qml")
         cover = self._qml_source("ui_next/qml/components/CoverPreviewCard.qml")
+        current_file = self._qml_source(
+            "ui_next/qml/components/CurrentFileBar.qml"
+        )
 
         self.assertIn("文件信息可供查看，修改会保存在草稿中。", metadata)
         self.assertIn("当前修改仅保存在编辑草稿中，不会立即修改音频文件。", metadata)
         self.assertIn("导出只会生成您手动选择的新文件，不会覆盖原文件。", metadata)
         self.assertNotIn('label: "metadata_write"', metadata)
         self.assertIn("歌词可供查看和编辑；外置 .lrc 会先载入草稿。", lyrics)
-        self.assertIn("选择音频并读取歌词", lyrics)
+        self.assertIn("选择 .lrc 作为草稿来源", lyrics)
+        self.assertIn("导入音频", current_file)
         self.assertIn("封面可供查看；替换、移除和恢复请在文件信息页面作为草稿处理。", cover)
         self.assertNotIn('label: "cover_read"', cover)
 

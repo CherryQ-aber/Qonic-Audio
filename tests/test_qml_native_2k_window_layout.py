@@ -26,7 +26,7 @@ class QmlNative2kWindowLayoutTests(unittest.TestCase):
 
     def test_primary_pages_use_viewport_width_and_vertical_scroll(self):
         for path in (
-            "ui_next/qml/pages/AudioEditorPage.qml",
+            "ui_next/qml/pages/AudioProcessingPage.qml",
             "ui_next/qml/pages/MetadataPage.qml",
             "ui_next/qml/pages/LyricsCoverPage.qml",
         ):
@@ -45,7 +45,9 @@ class QmlNative2kWindowLayoutTests(unittest.TestCase):
     def test_cards_that_previously_overflow_now_wrap_or_size_to_content(self):
         metadata = self._source("ui_next/qml/pages/MetadataPage.qml")
         lyrics = self._source("ui_next/qml/pages/LyricsCoverPage.qml")
-        editor = self._source("ui_next/qml/pages/AudioEditorPage.qml")
+        editor = self._source(
+            "ui_next/qml/components/AudioEditorWorkspace.qml"
+        )
 
         self.assertIn("pageScroll.width >= 880 ? 3", metadata)
         self.assertIn("pageScroll.width >= 660 ? 2 : 1", metadata)
@@ -53,7 +55,9 @@ class QmlNative2kWindowLayoutTests(unittest.TestCase):
         self.assertNotIn("CoverDraftEditor {", lyrics)
         self.assertNotIn("LyricsSourceBadge {", lyrics)
         self.assertIn('objectName: "lyricsWorkspaceGrid"', lyrics)
-        self.assertNotIn("Layout.fillHeight: true", editor)
+        self.assertNotIn("EditorFileBrowser {", editor)
+        self.assertNotIn("WaveformPlaceholder {", editor)
+        self.assertNotIn("TabPill", editor)
 
         processing = self._source("ui_next/qml/pages/AudioProcessingPage.qml")
         pitch = self._source("ui_next/qml/components/PitchShiftCard.qml")
@@ -61,7 +65,7 @@ class QmlNative2kWindowLayoutTests(unittest.TestCase):
         export = self._source("ui_next/qml/components/ExportResultPanel.qml")
         metadata_form = self._source("ui_next/qml/components/MetadataForm.qml")
         cover = self._source("ui_next/qml/components/CoverPreviewCard.qml")
-        self.assertIn("implicitHeight: processingContent.implicitHeight", processing)
+        self.assertIn("contentHeight: processingContent.implicitHeight", processing)
         self.assertIn("implicitHeight: pitchContent.implicitHeight", pitch)
         self.assertIn("columns: root.width >= 900 ? 3 : 1", pitch)
         self.assertIn("implicitHeight: previewContent.implicitHeight", preview)

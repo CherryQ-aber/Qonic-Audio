@@ -9,6 +9,7 @@
     "overwrite_existing_lyrics": false,
     "auto_start_monitor": true,
     "scan_existing_on_start": false,
+    "editor_file_bar_mode": "fixed",
     "theme_mode": "system",
     "first_launch_completed": false
 }

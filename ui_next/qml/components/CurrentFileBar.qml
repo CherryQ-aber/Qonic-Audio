@@ -13,6 +13,15 @@ Rectangle {
     property var editSession: null
     property var audioPlayer: null
     property var processingSession: null
+    property bool floatingMode: false
+    property bool expanded: false
+    readonly property string effectiveCoverSource: (
+        root.editSession
+        && root.editSession.hasSession
+        && root.editSession.coverAction !== "remove"
+    ) ? root.editSession.draftCoverPreviewUrl : ""
+
+    signal collapseRequested()
 
     function sessionStateLabel(state) {
         if (state === "loading")
@@ -28,78 +37,146 @@ Rectangle {
         return "空会话"
     }
 
-    function draftSummary() {
-        if (!root.editSession || !root.editSession.hasSession)
-            return "当前没有编辑草稿"
-        if (!root.editSession.hasUnsavedDrafts)
-            return "没有未导出的修改"
-        return "未导出：" + root.editSession.unsavedDraftLabels.join("、")
+    function playbackMatchLabel() {
+        if (!root.fileSession || !root.fileSession.hasCurrentFile)
+            return "未选择编辑文件"
+        if (!root.audioPlayer || !root.audioPlayer.hasPlaybackSource)
+            return "播放器未载入"
+        return root.audioPlayer.playbackMatchesEditorFile
+            ? "播放文件与编辑文件一致"
+            : "播放文件与编辑文件不同"
     }
 
-    implicitHeight: content.implicitHeight + theme.spacing * 2
-    color: theme.panel
-    border.color: theme.border
+    function loadCurrentFileInPlayer() {
+        if (!root.fileSession || !root.fileSession.hasCurrentFile || !root.audioPlayer)
+            return
+        root.audioPlayer.loadEditorFile(
+            root.fileSession.currentFilePath,
+            root.fileSession.sessionGeneration,
+            "editor_file"
+        )
+    }
+
+    implicitHeight: expandedContent.implicitHeight + theme.spacing * 2
+    color: root.floatingMode ? theme.drawerBackground : theme.panel
+    border.color: root.floatingMode ? theme.borderStrong : theme.border
     border.width: 1
-    radius: theme.radiusSmall
+    radius: root.floatingMode ? theme.radiusMedium : theme.radiusSmall
+    clip: true
 
     ColumnLayout {
-        id: content
+        id: expandedContent
+        objectName: "currentFileBarExpandedContent"
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.margins: root.theme.spacing
         spacing: 7
 
-        GridLayout {
-            id: currentFileSummaryGrid
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.minimumWidth: 0
+
+            Text {
+                text: "当前编辑文件"
+                color: root.theme.textSecondary
+                font.family: root.typography.fontFamily
+                font.pixelSize: root.typography.sizeSmall
+                font.weight: root.typography.weightBold
+                Layout.fillWidth: true
+            }
+
+            FileActionButton {
+                objectName: "collapseCurrentFileBarButton"
+                visible: root.floatingMode
+                implicitWidth: 82
+                text: "收起"
+                onClicked: root.collapseRequested()
+            }
+        }
+
+        RowLayout {
+            id: currentFileSummary
             objectName: "currentFileSummaryGrid"
             Layout.fillWidth: true
             Layout.minimumWidth: 0
-            columns: width >= 720 ? 2 : 1
-            columnSpacing: root.theme.spacing
-            rowSpacing: 6
+            spacing: root.theme.spacing
 
-            FileSummaryRow {
-                label: "当前编辑文件"
-                value: root.fileSession && root.fileSession.hasCurrentFile
-                    ? root.fileSession.currentFileName : "未导入音频"
-                strong: true
+            Rectangle {
+                objectName: "currentEditCoverThumbnail"
+                Layout.preferredWidth: 64
+                Layout.preferredHeight: 64
+                Layout.alignment: Qt.AlignTop
+                color: root.theme.surface
+                border.color: root.theme.border
+                border.width: 1
+                radius: root.theme.radiusSmall
+                clip: true
+
+                Image {
+                    anchors.fill: parent
+                    anchors.margins: 3
+                    visible: root.effectiveCoverSource.length > 0
+                    source: root.effectiveCoverSource
+                    fillMode: Image.PreserveAspectFit
+                    asynchronous: true
+                    cache: false
+                }
+
+                Text {
+                    anchors.centerIn: parent
+                    visible: root.effectiveCoverSource.length === 0
+                    text: "♫"
+                    color: root.theme.muted
+                    font.family: root.typography.fontFamily
+                    font.pixelSize: 28
+                }
             }
-            FileSummaryRow {
-                label: "读取状态"
-                value: root.fileSession
-                    ? root.sessionStateLabel(root.fileSession.sessionState) : "空会话"
-            }
-            FileSummaryRow {
-                Layout.columnSpan: currentFileSummaryGrid.columns
-                label: "文件路径"
-                value: root.fileSession && root.fileSession.hasCurrentFile
-                    ? root.fileSession.currentFilePath : "未选择"
-                middleElide: true
-            }
-            FileSummaryRow {
-                label: "文件来源"
-                value: root.fileSession && root.fileSession.hasCurrentFile
-                    ? root.fileSession.currentFileSourceLabel : "未选择"
-            }
-            FileSummaryRow {
-                label: "文件格式"
-                value: root.fileSession && root.fileSession.hasCurrentFile
-                    ? root.fileSession.currentFileFormat : "-"
-            }
-            FileSummaryRow {
-                Layout.columnSpan: currentFileSummaryGrid.columns
-                label: "当前播放源"
-                value: root.audioPlayer
-                    ? root.audioPlayer.currentPlaybackSourceTypeLabel
-                        + " · " + root.audioPlayer.currentPlaybackSourceLabel
-                    : "未加载"
-                middleElide: true
-            }
-            FileSummaryRow {
-                Layout.columnSpan: currentFileSummaryGrid.columns
-                label: "草稿状态"
-                value: root.draftSummary()
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                spacing: 4
+
+                Text {
+                    text: root.fileSession && root.fileSession.hasCurrentFile
+                        ? root.fileSession.currentFileName : "未导入音频"
+                    color: root.theme.textPrimary
+                    font.family: root.typography.fontFamily
+                    font.pixelSize: root.typography.sizeMedium
+                    font.weight: root.typography.weightBold
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    elide: Text.ElideRight
+                    maximumLineCount: 1
+                }
+
+                Text {
+                    text: root.fileSession && root.fileSession.hasCurrentFile
+                        ? root.fileSession.currentFilePath : "选择音频后开始编辑"
+                    color: root.theme.textSecondary
+                    font.family: root.typography.fontFamily
+                    font.pixelSize: root.typography.sizeSmall
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    elide: Text.ElideMiddle
+                    maximumLineCount: 1
+                }
+
+                Text {
+                    text: root.fileSession && root.fileSession.hasCurrentFile
+                        ? root.fileSession.currentFileFormat + " · "
+                            + root.fileSession.currentFileSourceLabel + " · "
+                            + root.sessionStateLabel(root.fileSession.sessionState)
+                        : "空会话"
+                    color: root.theme.muted
+                    font.family: root.typography.fontFamily
+                    font.pixelSize: root.typography.sizeTiny
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
+                    elide: Text.ElideRight
+                    maximumLineCount: 1
+                }
             }
         }
 
@@ -108,22 +185,37 @@ Rectangle {
             spacing: 8
 
             StatusBadge {
+                objectName: "editorPlaybackMatchBadge"
                 theme: root.theme
                 typography: root.typography
-                label: root.fileSession && root.fileSession.hasCurrentFile
-                    ? (root.fileSession.currentFileExists ? "工作区已载入" : "源文件不可用")
-                    : "未加载"
-                tone: root.fileSession && root.fileSession.hasCurrentFile && root.fileSession.currentFileExists
-                    ? "accent"
+                label: root.playbackMatchLabel()
+                tone: root.audioPlayer && root.audioPlayer.hasPlaybackSource
+                    ? (root.audioPlayer.playbackMatchesEditorFile ? "success" : "warning")
                     : "muted"
             }
             StatusBadge {
+                objectName: "metadataDirtyBadge"
                 theme: root.theme
                 typography: root.typography
-                label: root.editSession && root.editSession.hasUnsavedDrafts
-                    ? "有未导出草稿"
-                    : "原文件保持不变"
-                tone: root.editSession && root.editSession.hasUnsavedDrafts ? "warning" : "muted"
+                label: root.editSession && root.editSession.dirty
+                    ? "Metadata 已修改" : "Metadata 未修改"
+                tone: root.editSession && root.editSession.dirty ? "warning" : "muted"
+            }
+            StatusBadge {
+                objectName: "coverDirtyBadge"
+                theme: root.theme
+                typography: root.typography
+                label: root.editSession && root.editSession.coverDirty
+                    ? "封面已修改" : "封面未修改"
+                tone: root.editSession && root.editSession.coverDirty ? "warning" : "muted"
+            }
+            StatusBadge {
+                objectName: "lyricsDirtyBadge"
+                theme: root.theme
+                typography: root.typography
+                label: root.editSession && root.editSession.lyricsDirty
+                    ? "歌词已修改" : "歌词未修改"
+                tone: root.editSession && root.editSession.lyricsDirty ? "warning" : "muted"
             }
         }
 
@@ -131,38 +223,48 @@ Rectangle {
             Layout.fillWidth: true
             spacing: 8
 
-            FileActionButton { text: "导入音频"; enabled: root.fileSession && root.fileSession.realFileAccessEnabled; onClicked: root.fileSession.chooseAudioFile("audio_editor") }
-            FileActionButton { text: "导入 .lrc 草稿"; enabled: root.fileSession && root.fileSession.hasCurrentFile; onClicked: root.fileSession.chooseLyricsFile() }
-            FileActionButton { text: "清除当前音频"; enabled: root.fileSession && root.fileSession.hasCurrentFile; onClicked: root.fileSession.clearCurrentFile() }
-            FileActionButton { text: "重新读取"; enabled: root.fileSession && root.fileSession.hasCurrentFile; onClicked: root.fileSession.reloadCurrentFile() }
-            FileActionButton { text: "查看文件信息"; enabled: root.fileSession && root.fileSession.hasCurrentFile; onClicked: appState.switchModule("metadata") }
-            FileActionButton { text: "查看歌词"; enabled: root.fileSession && root.fileSession.hasCurrentFile; onClicked: appState.switchModule("lyricsCover") }
-            FileActionButton { text: "导出编辑副本"; enabled: root.editSession && root.editSession.hasUnsavedDrafts && !root.editSession.anyExporting; onClicked: root.editSession.openUnifiedExportDialog("auto") }
-            FileActionButton { text: "前往单文件转换"; enabled: root.fileSession && root.fileSession.hasCurrentFile; onClicked: appState.switchModule("autoConvert") }
             FileActionButton {
-                text: "返回原音频"
-                enabled: root.fileSession && root.fileSession.hasCurrentFile && root.audioPlayer
-                onClicked: {
-                    if (root.processingSession)
-                        root.processingSession.returnToOriginal()
-                    else
-                        root.audioPlayer.returnToOriginal()
-                }
+                objectName: "importEditorAudioButton"
+                text: "导入音频"
+                enabled: root.fileSession && root.fileSession.realFileAccessEnabled
+                onClicked: root.fileSession.chooseAudioFile("audio_editor")
             }
-            FileActionButton { text: "打开文件位置"; enabled: root.fileSession && root.fileSession.hasCurrentFile; onClicked: root.fileSession.openCurrentFileLocation() }
+            FileActionButton {
+                objectName: "loadEditorFileInPlayerButton"
+                text: "载入播放器"
+                enabled: root.fileSession
+                    && root.fileSession.hasCurrentFile
+                    && root.audioPlayer
+                    && root.audioPlayer.audioPlaybackEnabled
+                onClicked: root.loadCurrentFileInPlayer()
+            }
+            FileActionButton {
+                objectName: "openEditorFileLocationButton"
+                text: "打开文件位置"
+                enabled: root.fileSession && root.fileSession.hasCurrentFile
+                onClicked: root.fileSession.openCurrentFileLocation()
+            }
+            FileActionButton {
+                objectName: "exportEditorDraftsButton"
+                text: "统一导出"
+                enabled: root.editSession
+                    && root.editSession.hasUnsavedDrafts
+                    && !root.editSession.anyExporting
+                onClicked: root.editSession.openUnifiedExportDialog("auto")
+            }
+            FileActionButton {
+                objectName: "reloadEditorFileButton"
+                text: "重新读取"
+                enabled: root.fileSession && root.fileSession.hasCurrentFile
+                onClicked: root.fileSession.reloadCurrentFile()
+            }
+            FileActionButton {
+                objectName: "clearEditorFileButton"
+                text: "清除"
+                enabled: root.fileSession && root.fileSession.hasCurrentFile
+                onClicked: root.fileSession.clearCurrentFile()
+            }
         }
-    }
-
-    component FileSummaryRow: RowLayout {
-        property string label: ""
-        property string value: ""
-        property bool strong: false
-        property bool middleElide: false
-        Layout.fillWidth: true
-        Layout.minimumWidth: 0
-        spacing: 8
-        Text { text: parent.label; color: root.theme.textSecondary; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeSmall; Layout.preferredWidth: 84 }
-        Text { text: parent.value; color: root.theme.textPrimary; font.family: root.typography.fontFamily; font.pixelSize: parent.strong ? root.typography.sizeMedium : root.typography.sizeSmall; font.weight: parent.strong ? root.typography.weightBold : root.typography.weightRegular; Layout.fillWidth: true; Layout.minimumWidth: 0; elide: parent.middleElide ? Text.ElideMiddle : Text.ElideRight; maximumLineCount: 1 }
     }
 
     component FileActionButton: Button {
@@ -170,7 +272,23 @@ Rectangle {
         implicitHeight: 30
         font.family: root.typography.fontFamily
         font.pixelSize: root.typography.sizeSmall
-        contentItem: Text { text: parent.text; color: parent.enabled ? root.theme.textPrimary : root.theme.muted; font: parent.font; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight; maximumLineCount: 1 }
-        background: Rectangle { color: parent.enabled ? root.theme.surface : Qt.rgba(root.theme.muted.r, root.theme.muted.g, root.theme.muted.b, 0.08); border.color: parent.enabled ? root.theme.border : Qt.rgba(root.theme.border.r, root.theme.border.g, root.theme.border.b, 0.5); radius: root.theme.radiusSmall }
+        contentItem: Text {
+            text: parent.text
+            color: parent.enabled ? root.theme.textPrimary : root.theme.muted
+            font: parent.font
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            elide: Text.ElideRight
+            maximumLineCount: 1
+        }
+        background: Rectangle {
+            color: parent.enabled
+                ? root.theme.surface
+                : Qt.rgba(root.theme.muted.r, root.theme.muted.g, root.theme.muted.b, 0.08)
+            border.color: parent.enabled
+                ? root.theme.border
+                : Qt.rgba(root.theme.border.r, root.theme.border.g, root.theme.border.b, 0.5)
+            radius: root.theme.radiusSmall
+        }
     }
 }

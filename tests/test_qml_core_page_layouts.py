@@ -15,7 +15,6 @@ from ui_next.bridge.audio_processing_session import ProcessingSessionViewModel
 from ui_next.bridge.capabilities import CapabilityGate
 from ui_next.bridge.cover_viewmodel import CoverViewModel
 from ui_next.bridge.edit_session import EditSessionViewModel
-from ui_next.bridge.editor_file_browser_viewmodel import EditorFileBrowserViewModel
 from ui_next.bridge.file_session_viewmodel import FileSessionViewModel
 from ui_next.bridge.lyrics_viewmodel import LyricsViewModel
 from ui_next.bridge.metadata_viewmodel import MetadataViewModel
@@ -44,20 +43,17 @@ class QmlCorePageLayoutTests(unittest.TestCase):
             edit_session,
             capability_gate=gate,
         )
-        file_browser = EditorFileBrowserViewModel(gate)
         self._bridge_objects = (
             file_session,
             edit_session,
             audio_player,
             processing_session,
-            file_browser,
         )
         self.context = {
             "fileSessionViewModel": file_session,
             "editSessionViewModel": edit_session,
             "audioPlayerViewModel": audio_player,
             "processingSessionViewModel": processing_session,
-            "editorFileBrowserViewModel": file_browser,
             "metadataViewModel": MetadataViewModel(),
             "lyricsViewModel": LyricsViewModel(),
             "coverViewModel": CoverViewModel(),
@@ -65,11 +61,10 @@ class QmlCorePageLayoutTests(unittest.TestCase):
         }
 
     def tearDown(self):
-        file_session, _edit, audio_player, processing_session, file_browser = (
+        file_session, _edit, audio_player, processing_session = (
             self._bridge_objects
         )
         processing_session.shutdown()
-        file_browser.shutdown()
         file_session.shutdown()
         audio_player.shutdown()
 
@@ -86,12 +81,8 @@ class QmlCorePageLayoutTests(unittest.TestCase):
         height: int = 892,
     ):
         editor_property = ""
-        if page_type == "AudioEditorPage":
+        if page_type == "AudioProcessingPage":
             editor_property = """
-        fileSession: fileSessionViewModel
-        fileBrowser: editorFileBrowserViewModel
-        audioPlayer: audioPlayerViewModel
-        editSession: editSessionViewModel
         processingSession: processingSessionViewModel
 """
         elif page_type in {"MetadataPage", "LyricsCoverPage"}:
@@ -170,8 +161,10 @@ Item {{
                 float(scroll.property("height")),
             )
 
-    def test_audio_editor_uses_one_outer_scroll_and_orders_every_card(self):
-        source = self._source("ui_next/qml/pages/AudioEditorPage.qml")
+    def test_audio_processing_page_owns_its_scroll_without_retired_workspace_cards(self):
+        workspace = self._source(
+            "ui_next/qml/components/AudioEditorWorkspace.qml"
+        )
         processing = self._source("ui_next/qml/pages/AudioProcessingPage.qml")
         player = self._source("ui_next/qml/components/GlobalPlayerDock.qml")
         timeline = self._source("ui_next/qml/components/PlayerTimeline.qml")
@@ -179,28 +172,28 @@ Item {{
             "ui_next/qml/components/PlaybackDeviceControl.qml"
         )
         pitch = self._source("ui_next/qml/components/PitchShiftCard.qml")
-        browser = self._source("ui_next/qml/components/EditorFileBrowser.qml")
         current_file = self._source("ui_next/qml/components/CurrentFileBar.qml")
-        self.assertEqual(1, source.count("Flickable {"))
-        self.assertIn("AudioProcessingPage", source)
-        self.assertIn("DropArea {", source)
-        self.assertIn("handleDroppedUrls(drop.urls)", source)
-        self.assertIn("EditorFileBrowser", source)
+        self.assertEqual(1, processing.count("Flickable {"))
+        self.assertIn("AudioProcessingPage", workspace)
+        self.assertIn("DropArea {", workspace)
+        self.assertIn("handleDroppedUrls(drop.urls)", workspace)
+        self.assertNotIn("EditorFileBrowser", workspace)
+        self.assertNotIn("WaveformPlaceholder", workspace)
+        self.assertNotIn("TabPill", workspace)
         self.assertIn("PitchShiftCard", processing)
         self.assertNotIn("PreviewCachePanel", processing)
         self.assertNotIn("ExportResultPanel", processing)
-        self.assertNotIn("PlayerBar {", source)
-        self.assertNotIn('objectName: "audioEditorPlayerCard"', source)
+        self.assertNotIn("PlayerBar {", workspace)
         self.assertIn("Layout.minimumWidth: 0", player)
         self.assertIn("refreshOutputDevices()", device)
         self.assertIn("selectOutputDevice", device)
         self.assertIn("onPressedChanged", timeline)
-        self.assertIn("载入选中文件", browser)
-        self.assertIn("currentPlaybackSourceTypeLabel", current_file)
+        self.assertIn("载入播放器", current_file)
+        self.assertIn("playbackMatchesEditorFile", current_file)
         self.assertNotIn(
             "mock",
             (
-                source
+                workspace
                 + processing
                 + player
                 + timeline
@@ -211,26 +204,16 @@ Item {{
         self.assertIn("Flow {", pitch)
 
         view, component, container, scroll, content = self._create_page(
-            "AudioEditorPage", "audioEditorPageScroll", "audioEditorPageContent"
+            "AudioProcessingPage",
+            "audioProcessingPageScroll",
+            "audioProcessingPageContent",
+            height=420,
         )
         try:
             self._assert_viewport_width(scroll, content)
-            cards = [
-                container.findChild(QObject, name)
-                for name in (
-                    "audioEditorCurrentFileCard",
-                    "audioEditorFileBrowser",
-                    "audioEditorWaveformCard",
-                    "audioEditorTabsCard",
-                    "audioEditorProcessingStack",
-                )
-            ]
-            self.assertTrue(all(cards))
-            self.assertIsNone(
-                container.findChild(QObject, "audioEditorPlayerCard")
+            self.assertIsNotNone(
+                container.findChild(QObject, "audioEditorPitchCard")
             )
-            positions = [self._rect(card, container)[1] for card in cards]
-            self.assertEqual(positions, sorted(positions))
         finally:
             self._dispose(view, component, container)
 
@@ -382,6 +365,9 @@ Item {{
         self.assertIn("wrapMode: Text.WordWrap", path_field)
         self.assertIn("text: label", source)
         self.assertIn('objectName: "settingsSectionsGrid"', source)
+        self.assertIn('objectName: "editorFileBarModeCombo"', source)
+        self.assertIn('{"value": "fixed", "label": "固定"}', source)
+        self.assertIn('{"value": "floating", "label": "悬浮（可收起）"}', source)
         self.assertNotIn('objectName: "settingsDraftActionsCard"', source)
 
         view, component, container, scroll, content = self._create_page(

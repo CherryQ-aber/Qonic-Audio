@@ -11,7 +11,9 @@ class Phase595GlobalPlayerDockContractTests(unittest.TestCase):
 
     def test_app_shell_owns_the_only_production_player_view(self):
         shell = self._source("ui_next/qml/AppShell.qml")
-        editor = self._source("ui_next/qml/pages/AudioEditorPage.qml")
+        editor = self._source(
+            "ui_next/qml/components/AudioEditorWorkspace.qml"
+        )
         compatibility = self._source(
             "ui_next/qml/components/PlayerBar.qml"
         )

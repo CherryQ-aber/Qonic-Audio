@@ -74,9 +74,6 @@ Item {
                         spacing: 8
                         StatusBadge { theme: root.theme; typography: root.typography; label: root.pageCapabilityLabel(); tone: root.pageHasLiveCapability() ? "accent" : "muted" }
                         StatusBadge { visible: root.audioPlayer && root.audioPlayer.playerState === "playing"; theme: root.theme; typography: root.typography; label: "当前文件播放中"; tone: "success" }
-                        ReadOnlyButton { label: "选择音频文件"; onClicked: fileSessionViewModel.chooseAudioFile("metadata_page") }
-                        ReadOnlyButton { label: "重新读取"; enabled: fileSessionViewModel.hasCurrentFile; onClicked: fileSessionViewModel.reloadCurrentFile() }
-                        ReadOnlyButton { label: "清除当前文件"; enabled: fileSessionViewModel.hasCurrentFile; onClicked: fileSessionViewModel.clearCurrentFile() }
                     }
                     Text { text: root.pageSafetyMessage(); color: root.theme.textPrimary; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeBody; Layout.fillWidth: true; wrapMode: Text.WordWrap }
                     Text {

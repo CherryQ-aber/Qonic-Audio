@@ -24,6 +24,10 @@ Item {
         {"value": "standard", "label": "标准"},
         {"value": "compact", "label": "紧凑"}
     ]
+    property var editorFileBarModeOptions: [
+        {"value": "fixed", "label": "固定"},
+        {"value": "floating", "label": "悬浮（可收起）"}
+    ]
 
     function optionIndex(model, value) {
         for (var index = 0; index < model.length; index += 1) {
@@ -38,6 +42,10 @@ Item {
         targetFormatCombo.currentIndex = optionIndex(settingsViewModel.targetFormatOptions, settingsViewModel.targetFormat)
         logLevelCombo.currentIndex = optionIndex(logLevelOptions, settingsViewModel.logLevel)
         densityCombo.currentIndex = optionIndex(densityOptions, settingsViewModel.uiDensity)
+        editorFileBarModeCombo.currentIndex = optionIndex(
+            editorFileBarModeOptions,
+            settingsViewModel.editorFileBarMode
+        )
     }
 
     Component.onCompleted: syncCombos()
@@ -413,8 +421,8 @@ Item {
                     Layout.alignment: Qt.AlignTop
                     theme: root.theme
                     typography: root.typography
-                    title: "主题设置"
-                    subtitle: "主题切换只作用于本次 QML 运行会话；不会切换旧 Widgets UI，也不会写入 config.json。UI 密度仍是页面草稿。"
+                    title: "主题与界面"
+                    subtitle: "主题切换只作用于本次 QML 运行会话。UI 密度和公共文件栏布局先进入页面草稿。"
                     statusLabel: "会话内生效"
                     statusTone: "muted"
 
@@ -454,6 +462,32 @@ Item {
                             options: densityOptions
                             value: settingsViewModel.uiDensity
                             onFormatSelected: settingsViewModel.updatePendingValue("ui_density", value)
+                        }
+                    }
+
+                    SettingRow {
+                        theme: root.theme
+                        typography: root.typography
+                        label: "公共文件栏"
+
+                        FormatSelector {
+                            id: editorFileBarModeCombo
+                            objectName: "editorFileBarModeCombo"
+                            Layout.preferredWidth: 220
+                            theme: root.theme
+                            typography: root.typography
+                            options: editorFileBarModeOptions
+                            value: settingsViewModel.editorFileBarMode
+                            onFormatSelected: settingsViewModel.setEditorFileBarMode(value)
+                        }
+
+                        Text {
+                            text: "切换后立即预览；固定模式保留当前布局，悬浮模式默认藏在顶部，通过“编辑页面”行右侧按钮展开。保存确认后作为下次启动默认值。"
+                            color: theme.muted
+                            font.family: typography.fontFamily
+                            font.pixelSize: typography.sizeSmall
+                            Layout.fillWidth: true
+                            wrapMode: Text.WordWrap
                         }
                     }
                 }
