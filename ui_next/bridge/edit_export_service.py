@@ -81,6 +81,7 @@ class LrcExportRequest:
     output_path: str
     lyrics_text: str
     original_lrc_path: str = ""
+    overwrite_existing: bool = False
     cancel_event: Event | None = field(default=None, repr=False, compare=False)
 
 
@@ -211,7 +212,7 @@ class EditExportService:
             )
 
     def export_lrc(self, request: LrcExportRequest) -> dict[str, object]:
-        """Publish a UTF-8 (without BOM) LRC file without overwriting a path."""
+        """Publish a verified UTF-8 LRC, with one explicit overwrite path."""
         result = _base_lrc_result(request)
         raw_output = str(request.output_path or "").strip()
         text = str(request.lyrics_text or "")
@@ -230,13 +231,29 @@ class EditExportService:
         if output.suffix.lower() != ".lrc":
             return _fail(result, "lrc_extension_invalid", "LRC 输出文件必须使用 .lrc 扩展名。")
         original_lrc = str(request.original_lrc_path or "").strip()
+        overwrite_existing = bool(request.overwrite_existing)
+        original_path: Path | None = None
         if original_lrc:
             try:
-                if _same_path(Path(original_lrc).expanduser().resolve(), output):
+                original_path = Path(original_lrc).expanduser().resolve()
+                if _same_path(original_path, output) and not overwrite_existing:
                     return _fail(result, "lrc_output_exists", "不能覆盖原始 .lrc 文件；请选择新的输出路径。")
             except OSError:
-                pass
-        if output.exists():
+                original_path = None
+        if overwrite_existing:
+            if original_path is None or not _same_path(original_path, output):
+                return _fail(
+                    result,
+                    "lrc_overwrite_target_invalid",
+                    "只能显式覆盖当前歌词来源的 .lrc 文件。",
+                )
+            if not output.is_file():
+                return _fail(
+                    result,
+                    "lrc_overwrite_target_missing",
+                    "当前歌词来源的 .lrc 文件已不存在，不能覆盖。",
+                )
+        elif output.exists():
             return _fail(result, "lrc_output_exists", "输出路径已存在，系统不会覆盖已有 .lrc 文件。")
         try:
             output.parent.mkdir(parents=True, exist_ok=True)
@@ -245,6 +262,15 @@ class EditExportService:
 
         temp_path = output.parent / f".{output.stem}.cherryq_lyrics_{uuid4().hex}.tmp.lrc"
         temp_identity: tuple[int, int] | None = None
+        try:
+            original_identity = _identity(output) if overwrite_existing else None
+            original_bytes = output.read_bytes() if overwrite_existing else b""
+        except OSError as exc:
+            return _fail(
+                result,
+                "lrc_overwrite_target_missing",
+                f"无法读取当前 .lrc 文件，不能覆盖：{exc}",
+            )
         try:
             temp_path.write_bytes(text.encode("utf-8"))
             temp_identity = _identity(temp_path)
@@ -258,6 +284,68 @@ class EditExportService:
                 )
             if _cancelled(request):
                 return _cancelled_with_cleanup(result, temp_path, temp_identity)
+            if overwrite_existing:
+                try:
+                    target_unchanged = (
+                        _identity(output) == original_identity
+                        and output.read_bytes() == original_bytes
+                    )
+                except OSError:
+                    target_unchanged = False
+                if not target_unchanged:
+                    return _fail_with_cleanup(
+                        result,
+                        temp_path,
+                        temp_identity,
+                        "lrc_overwrite_target_changed",
+                        "当前 .lrc 文件在确认后发生变化，已取消覆盖。",
+                    )
+                try:
+                    temp_path.replace(output)
+                except OSError as exc:
+                    return _fail_with_cleanup(
+                        result,
+                        temp_path,
+                        temp_identity,
+                        "lrc_overwrite_failed",
+                        f"无法覆盖当前 .lrc 文件：{exc}",
+                    )
+                verification = read_lrc_file_preview(str(output))
+                if (
+                    not verification.get("ok")
+                    or str(verification.get("lyrics_text") or "") != text
+                ):
+                    restore_path = output.parent / (
+                        f".{output.stem}.cherryq_restore_{uuid4().hex}.tmp.lrc"
+                    )
+                    restored = False
+                    try:
+                        restore_path.write_bytes(original_bytes)
+                        restore_path.replace(output)
+                        restored = output.read_bytes() == original_bytes
+                    except OSError:
+                        restored = False
+                    finally:
+                        if restore_path.exists():
+                            restore_path.unlink(missing_ok=True)
+                    return _fail(
+                        result,
+                        "lyrics_verification_failed",
+                        "覆盖后 LRC 内容校验失败；已恢复原文件。"
+                        if restored
+                        else "覆盖后 LRC 内容校验失败，且自动恢复未完成。",
+                    )
+                result.update({
+                    "success": True,
+                    "message": "已覆盖当前 LRC 文件；音频源文件未修改。",
+                    "verification_success": True,
+                    "encoding": "UTF-8（无 BOM）",
+                    "sourceUnchanged": True,
+                    "overwrote_original_lrc": True,
+                    "finalization_strategy": "explicit_atomic_lrc_replace",
+                    "temp_cleanup_success": True,
+                })
+                return result
             published = publish_no_clobber(temp_path, output)
             result["finalization_strategy"] = published["finalization_strategy"]
             result["temp_cleanup_success"] = published["temp_cleanup_success"]
@@ -506,6 +594,7 @@ def _base_lrc_result(request: LrcExportRequest) -> dict[str, object]:
         "verification_success": False,
         "warnings": [],
         "encoding": "UTF-8（无 BOM）",
+        "overwrote_original_lrc": False,
         "appliedModules": ["lrc"],
         "skippedModules": [],
         "failedModules": [],

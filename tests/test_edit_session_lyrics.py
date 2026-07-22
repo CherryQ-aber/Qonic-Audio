@@ -93,6 +93,36 @@ class EditSessionLyricsTests(unittest.TestCase):
         self.assertFalse(session._check_lyrics_exportable())
         self.assertEqual("lyrics_draft_empty", session.lastLyricsExportResult["error_code"])
 
+    def test_status_label_and_undo_follow_current_lyrics_state(self):
+        session = EditSessionViewModel(CapabilityGate((LYRICS_READ,)))
+        path = "D:/CherryQ_Test/demo.flac"
+        session.loadLyricsResult(self._result(path))
+        self.assertEqual("原始歌词", session.lyricsDraftStatusLabel)
+        self.assertFalse(session.canUndoLyrics)
+
+        session.updateLyricsDraft("first edit")
+        session.updateLyricsDraft("second edit")
+        self.assertEqual("已修改歌词", session.lyricsDraftStatusLabel)
+        self.assertTrue(session.canUndoLyrics)
+        session.undoLyricsDraft()
+        self.assertEqual("first edit", session.draftLyrics)
+        session.undoLyricsDraft()
+        self.assertEqual("[00:01.00]Embedded", session.draftLyrics)
+        self.assertEqual("原始歌词", session.lyricsDraftStatusLabel)
+        self.assertFalse(session.canUndoLyrics)
+
+        imported = session.applyImportedLyricsDraft(
+            {
+                "ok": True,
+                "audio_path": path,
+                "session_generation": session.sessionGeneration,
+                "path": "D:/CherryQ_Test/imported.lrc",
+                "lyrics_text": "[00:03.00]Imported",
+            }
+        )
+        self.assertTrue(imported)
+        self.assertEqual("导入歌词", session.lyricsDraftStatusLabel)
+
     def test_timestamp_insert_targets_selection_start_line_and_preserves_files(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -290,6 +320,47 @@ class EditSessionLyricsTests(unittest.TestCase):
             session.exportLyricsToLrcPath(str(output))
             self._wait(session)
             self.assertEqual("lrc_output_exists", session.lastLyricsExportResult["error_code"])
+
+    def test_explicit_current_lrc_overwrite_keeps_audio_and_resets_state(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source = root / "source.flac"
+            original = root / "source.lrc"
+            source.write_bytes(b"audio-source")
+            original.write_text("original", encoding="utf-8")
+            source_hash = hashlib.sha256(source.read_bytes()).hexdigest()
+            service = EditExportService(CapabilityGate((LYRICS_WRITE,)))
+            session = EditSessionViewModel(
+                CapabilityGate((LYRICS_READ, LYRICS_WRITE)),
+                export_service=service,
+            )
+            session.loadLyricsResult(
+                self._result(str(source), embedded="", external="original")
+            )
+            session.updateLyricsDraft("[00:01.00]覆盖后的歌词")
+            self.assertTrue(session.canOverwriteCurrentLrc)
+
+            session.overwriteCurrentLrc()
+            self._wait(session)
+
+            self.assertTrue(
+                session.lastLyricsExportResult["success"],
+                session.lastLyricsExportResult,
+            )
+            self.assertTrue(
+                session.lastLyricsExportResult["overwrote_original_lrc"]
+            )
+            self.assertEqual(
+                "[00:01.00]覆盖后的歌词",
+                original.read_text(encoding="utf-8"),
+            )
+            self.assertEqual(
+                source_hash,
+                hashlib.sha256(source.read_bytes()).hexdigest(),
+            )
+            self.assertFalse(session.lyricsDirty)
+            self.assertEqual("原始歌词", session.lyricsDraftStatusLabel)
+            self.assertFalse(session.canUndoLyrics)
 
 
 if __name__ == "__main__":

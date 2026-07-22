@@ -252,6 +252,41 @@ class EditExportServiceTests(unittest.TestCase):
                 EditExportService(CapabilityGate((LYRICS_WRITE,))).export_lrc(request)["error_code"],
             )
 
+            same_path = LrcExportRequest(
+                str(source),
+                str(original_lrc),
+                "[00:02.00]默认流程不可覆盖",
+                str(original_lrc),
+            )
+            rejected = EditExportService(
+                CapabilityGate((LYRICS_WRITE,))
+            ).export_lrc(same_path)
+            self.assertEqual("lrc_output_exists", rejected["error_code"])
+            self.assertEqual(original_hash, self._sha(original_lrc))
+
+            source_hash = self._sha(source)
+            explicit_overwrite = LrcExportRequest(
+                str(source),
+                str(original_lrc),
+                "[00:03.00]明确覆盖",
+                str(original_lrc),
+                overwrite_existing=True,
+            )
+            overwritten = EditExportService(
+                CapabilityGate((LYRICS_WRITE,))
+            ).export_lrc(explicit_overwrite)
+            self.assertTrue(overwritten["success"], overwritten)
+            self.assertTrue(overwritten["overwrote_original_lrc"])
+            self.assertEqual(
+                "explicit_atomic_lrc_replace",
+                overwritten["finalization_strategy"],
+            )
+            self.assertEqual(
+                "[00:03.00]明确覆盖",
+                original_lrc.read_text(encoding="utf-8"),
+            )
+            self.assertEqual(source_hash, self._sha(source))
+
     def test_service_uses_no_replace_and_has_no_session_config_or_watcher_dependencies(self):
         root = Path(__file__).resolve().parents[1]
         service_source = (root / "ui_next/bridge/edit_export_service.py").read_text(encoding="utf-8")
@@ -260,6 +295,48 @@ class EditExportServiceTests(unittest.TestCase):
         self.assertNotIn("import watcher", service_source)
         self.assertNotIn("save_config", service_source)
         self.assertNotIn("fileSession", service_source)
+
+    def test_lrc_overwrite_stops_if_confirmed_target_changes(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source = self._source(root)
+            original_lrc = root / "source.lrc"
+            original_lrc.write_text("confirmed content", encoding="utf-8")
+            request = LrcExportRequest(
+                str(source),
+                str(original_lrc),
+                "new editor content",
+                str(original_lrc),
+                overwrite_existing=True,
+            )
+
+            def preview_with_external_change(path):
+                preview_path = Path(path)
+                text = preview_path.read_text(encoding="utf-8")
+                if preview_path != original_lrc:
+                    original_lrc.write_text(
+                        "external change after confirmation",
+                        encoding="utf-8",
+                    )
+                return {"ok": True, "lyrics_text": text}
+
+            with patch(
+                "ui_next.bridge.edit_export_service.read_lrc_file_preview",
+                side_effect=preview_with_external_change,
+            ):
+                result = EditExportService(
+                    CapabilityGate((LYRICS_WRITE,))
+                ).export_lrc(request)
+
+            self.assertEqual(
+                "lrc_overwrite_target_changed",
+                result["error_code"],
+            )
+            self.assertEqual(
+                "external change after confirmation",
+                original_lrc.read_text(encoding="utf-8"),
+            )
+            self.assertEqual([], list(root.glob("*.tmp.lrc")))
 
 
 if __name__ == "__main__":

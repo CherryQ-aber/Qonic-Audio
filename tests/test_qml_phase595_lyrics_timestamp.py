@@ -186,6 +186,21 @@ Item {
         self.assertTrue(text_area.property("activeFocus"))
         self.assertEqual(0, player_stub.property("playCallCount"))
 
+    def test_undo_button_restores_text_without_touching_player(self):
+        original = "first\nsecond"
+        _text_area, insert_button, player_stub = self._load(original)
+        undo_button = self.container.findChild(QQuickItem, "undoLyricsButton")
+        self.assertIsNotNone(undo_button)
+        self.assertFalse(undo_button.property("enabled"))
+
+        self._click(insert_button)
+        self.assertTrue(undo_button.property("enabled"))
+        self._click(undo_button)
+
+        self.assertEqual(original, self.edit_session.draftLyrics)
+        self.assertFalse(undo_button.property("enabled"))
+        self.assertEqual(0, player_stub.property("playCallCount"))
+
 
 class Phase595LyricsTimestampSourceContractTests(unittest.TestCase):
     def test_lyrics_page_uses_real_player_position_without_shortcut(self):
@@ -203,6 +218,43 @@ class Phase595LyricsTimestampSourceContractTests(unittest.TestCase):
         self.assertIn("editSession.insertLyricsTimestamp(", editor)
         self.assertNotIn("Shortcut {", editor)
         self.assertNotIn("Keys.on", editor)
+
+    def test_editor_uses_one_current_lyrics_pane_and_compact_actions(self):
+        page = (
+            PROJECT_ROOT / "ui_next/qml/pages/LyricsCoverPage.qml"
+        ).read_text(encoding="utf-8")
+        editor = (
+            PROJECT_ROOT / "ui_next/qml/components/LyricsDraftEditor.qml"
+        ).read_text(encoding="utf-8")
+
+        for label in (
+            'text: "导入 .lrc"',
+            'text: "导出"',
+            'text: "撤回"',
+            'text: "插入时间点"',
+            'text: "嵌入歌词"',
+            'text: "另存 .lrc 文件"',
+            'text: "覆盖 .lrc 文件"',
+            'text: "导出音频副本"',
+            'text: "当前歌词"',
+        ):
+            self.assertIn(label, editor)
+        for removed in (
+            "原始歌词预览",
+            "当前草稿",
+            "保存内存草稿",
+            "恢复原始歌词",
+            "清空草稿",
+            "选择 .lrc 作为草稿来源",
+            "导出到音频副本",
+        ):
+            self.assertNotIn(removed, editor)
+            self.assertNotIn(removed, page)
+        self.assertIn('objectName: "currentLyricsPane"', editor)
+        self.assertNotIn('objectName: "originalLyricsPane"', editor)
+        self.assertIn("root.editSession.lyricsDraftStatusLabel", editor)
+        self.assertIn("root.editSession.lyricsDraftStatusLabel", page)
+        self.assertIn("root.editSession.overwriteCurrentLrc()", page)
 
     def test_settings_exposes_both_precision_choices_and_runtime_wiring(self):
         settings = (

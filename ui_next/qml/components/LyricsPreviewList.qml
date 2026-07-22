@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 
 import "../theme"
@@ -47,11 +48,28 @@ Rectangle {
             Layout.fillHeight: true
 
             ListView {
+                id: lyricsPreviewListView
+                objectName: "lyricsPreviewListView"
                 anchors.fill: parent
+                anchors.rightMargin: lyricsPreviewVerticalScrollBar.width + 4
                 clip: true
                 spacing: 6
                 model: root.lines
                 visible: root.lines && root.lines.length > 0
+                boundsBehavior: Flickable.StopAtBounds
+
+                ScrollBar.vertical: ThemeScrollBar {
+                    id: lyricsPreviewVerticalScrollBar
+                    objectName: "lyricsPreviewVerticalScrollBar"
+                    parent: lyricsPreviewListView.parent
+                    anchors.top: parent.top
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    anchors.margins: 2
+                    z: 2
+                    theme: root.theme
+                    policy: ScrollBar.AlwaysOn
+                }
 
                 delegate: Rectangle {
                     required property var modelData

@@ -12,14 +12,23 @@ Item {
     property QtObject typography: Typography {}
     property var processingSession
 
+    function resetPageScrollIfContentFits() {
+        if (pageScroll.contentHeight <= pageScroll.height + 0.5
+                && pageScroll.contentY !== 0) {
+            pageScroll.contentY = 0
+        }
+    }
+
     Flickable {
         id: pageScroll
         objectName: "audioProcessingPageScroll"
         anchors.fill: parent
         clip: true
         contentWidth: width
-        contentHeight: processingContent.implicitHeight + root.theme.spacing * 2
+        contentHeight: Math.max(height, processingContent.implicitHeight)
         boundsBehavior: Flickable.StopAtBounds
+        onHeightChanged: root.resetPageScrollIfContentFits()
+        onContentHeightChanged: root.resetPageScrollIfContentFits()
 
         ScrollBar.vertical: ThemeScrollBar {
             theme: root.theme
@@ -40,10 +49,6 @@ Item {
                 theme: root.theme
                 typography: root.typography
                 processingSession: root.processingSession
-            }
-
-            Item {
-                Layout.minimumHeight: root.theme.spacing
             }
         }
     }

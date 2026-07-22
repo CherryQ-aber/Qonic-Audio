@@ -294,15 +294,7 @@ Item {{
                 finally:
                     self._dispose(view, component, container)
 
-    def test_lyrics_body_and_both_inner_scrollbars_remain_accessible(self):
-        expected_inner_columns = {
-            "1080x680": 1,
-            "1280x720": 2,
-            "1440x900": 2,
-            "1536x982": 2,
-            "1900x1200": 2,
-            "1920x1080": 2,
-        }
+    def test_lyrics_preview_and_current_editor_scrollbars_remain_accessible(self):
         properties = """
         audioPlayer: audioPlayerViewModel
         editSession: editSessionViewModel
@@ -326,20 +318,23 @@ Item {{
                     editor = container.findChild(
                         QQuickItem, "lyricsCoverDraftEditor"
                     )
-                    body_grid = container.findChild(
-                        QQuickItem, "lyricsBodyGrid"
+                    current_pane = container.findChild(
+                        QQuickItem, "currentLyricsPane"
+                    )
+                    page_scroll = container.findChild(
+                        QQuickItem, "lyricsCoverPageScroll"
                     )
                     page_bar = container.findChild(
                         QQuickItem, "lyricsCoverPageVerticalScrollBar"
                     )
-                    original_scroll = container.findChild(
-                        QQuickItem, "originalLyricsScrollView"
+                    preview_scroll = container.findChild(
+                        QQuickItem, "lyricsPreviewListView"
+                    )
+                    preview_bar = container.findChild(
+                        QQuickItem, "lyricsPreviewVerticalScrollBar"
                     )
                     draft_scroll = container.findChild(
                         QQuickItem, "lyricsDraftScrollView"
-                    )
-                    original_bar = container.findChild(
-                        QQuickItem, "originalLyricsVerticalScrollBar"
                     )
                     draft_bar = container.findChild(
                         QQuickItem, "draftLyricsVerticalScrollBar"
@@ -351,21 +346,36 @@ Item {{
                                 workspace,
                                 preview,
                                 editor,
-                                body_grid,
+                                current_pane,
+                                page_scroll,
                                 page_bar,
-                                original_scroll,
+                                preview_scroll,
+                                preview_bar,
                                 draft_scroll,
-                                original_bar,
                                 draft_bar,
                             )
                         )
                     )
-                    self.assertEqual(2, int(workspace.property("columns")))
-                    self.assertEqual(
-                        expected_inner_columns[label],
-                        int(body_grid.property("columns")),
+                    self.assertIsNone(
+                        container.findChild(QQuickItem, "originalLyricsPane")
                     )
+                    self.assertIsNone(
+                        container.findChild(
+                            QQuickItem, "originalLyricsScrollView"
+                        )
+                    )
+                    self.assertEqual(2, int(workspace.property("columns")))
                     self.assertGreater(workspace.height(), height * 0.60)
+                    if height >= 575:
+                        self.assertLessEqual(
+                            float(page_scroll.property("contentHeight")),
+                            page_scroll.height() + 0.5,
+                        )
+                    else:
+                        self.assertGreater(
+                            float(page_scroll.property("contentHeight")),
+                            page_scroll.height(),
+                        )
                     self.assertAlmostEqual(
                         self._rect(preview, page)[1],
                         self._rect(editor, page)[1],
@@ -373,25 +383,80 @@ Item {{
                     )
                     self._assert_no_intersection(preview, editor, page)
                     self._assert_horizontal_fit(workspace, page)
-                    for scroll, bar in (
-                        (original_scroll, original_bar),
-                        (draft_scroll, draft_bar),
-                    ):
-                        scroll_rect = self._rect(scroll, page)
-                        bar_rect = self._rect(bar, page)
-                        self.assertGreater(
-                            float(scroll.property("contentHeight")),
-                            scroll.height(),
-                        )
-                        self.assertAlmostEqual(
-                            bar_rect[0] + bar_rect[2],
-                            scroll_rect[0] + scroll_rect[2] - 2,
-                            delta=0.5,
-                        )
-                        self.assertLessEqual(
-                            bar_rect[0] + bar_rect[2] + 1,
-                            self._rect(page_bar, page)[0],
-                        )
+                    preview_scroll_rect = self._rect(preview_scroll, page)
+                    preview_bar_rect = self._rect(preview_bar, page)
+                    preview_right = (
+                        self._rect(preview, page)[0]
+                        + self._rect(preview, page)[2]
+                    )
+                    self.assertLessEqual(
+                        preview_bar_rect[0] + preview_bar_rect[2],
+                        preview_right,
+                    )
+                    self.assertGreaterEqual(
+                        preview_bar_rect[0] + preview_bar_rect[2],
+                        preview_right - 24,
+                    )
+                    self.assertLessEqual(
+                        preview_scroll_rect[0] + preview_scroll_rect[2] + 1,
+                        preview_bar_rect[0],
+                    )
+                    scroll_rect = self._rect(draft_scroll, page)
+                    bar_rect = self._rect(draft_bar, page)
+                    self.assertGreater(
+                        float(draft_scroll.property("contentHeight")),
+                        draft_scroll.height(),
+                    )
+                    self.assertAlmostEqual(
+                        bar_rect[0] + bar_rect[2],
+                        scroll_rect[0] + scroll_rect[2] - 2,
+                        delta=0.5,
+                    )
+                    self.assertLessEqual(
+                        bar_rect[0] + bar_rect[2] + 1,
+                        self._rect(page_bar, page)[0],
+                    )
+                finally:
+                    self._dispose(view, component, container)
+
+    def test_editor_pages_do_not_force_outer_scroll_when_content_fits(self):
+        cases = (
+            (
+                "MetadataPage",
+                "metadataPageScroll",
+                """
+        audioPlayer: audioPlayerViewModel
+        editSession: editSessionViewModel
+""",
+            ),
+            (
+                "AudioProcessingPage",
+                "audioProcessingPageScroll",
+                """
+        processingSession: processingSessionViewModel
+""",
+            ),
+        )
+        for page_type, scroll_name, properties in cases:
+            with self.subTest(page=page_type):
+                view, component, container = self._create_page(
+                    page_type,
+                    1512,
+                    760,
+                    properties,
+                )
+                try:
+                    scroll = container.findChild(QQuickItem, scroll_name)
+                    self.assertIsNotNone(scroll, scroll_name)
+                    self.assertLessEqual(
+                        float(scroll.property("contentHeight")),
+                        scroll.height() + 0.5,
+                    )
+                    self.assertAlmostEqual(
+                        0.0,
+                        float(scroll.property("contentY")),
+                        delta=0.5,
+                    )
                 finally:
                     self._dispose(view, component, container)
 

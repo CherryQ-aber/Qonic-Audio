@@ -15,7 +15,7 @@ Rectangle {
     color: theme.panel
     border.color: theme.border
     radius: theme.radiusSmall
-    implicitHeight: metadataContent.implicitHeight + (theme.spacing + 4) * 2
+    implicitHeight: metadataContent.implicitHeight + theme.spacing * 2
 
     function draftValue(fieldName) {
         if (!editSession || !editSession.hasSession)
@@ -34,8 +34,8 @@ Rectangle {
     ColumnLayout {
         id: metadataContent
         anchors.fill: parent
-        anchors.margins: theme.spacing + 4
-        spacing: theme.spacing
+        anchors.margins: theme.spacing
+        spacing: theme.spacingSm
 
         RowLayout {
             Layout.fillWidth: true

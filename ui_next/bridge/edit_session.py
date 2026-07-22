@@ -151,6 +151,7 @@ class EditSessionViewModel(BaseViewModel):
         self._lyrics_clear_requested = False
         self._lyrics_imported_as_draft = False
         self._lyrics_source_before_import = "none"
+        self._lyrics_undo_stack: list[str] = []
         self._lyrics_last_export_result: dict[str, object] = {}
         self._lyrics_state = "empty"
         self._lyrics_export_worker: _LyricsExportWorker | None = None
@@ -340,6 +341,35 @@ class EditSessionViewModel(BaseViewModel):
             self._lyrics_clear_requested
             or self._lyrics_imported_as_draft
             or self._draft_lyrics != self._original_lyrics
+        )
+
+    @Property(str, notify=stateChanged)
+    def lyricsDraftStatusLabel(self) -> str:
+        if not self.hasSession:
+            return "等待读取"
+        if self._lyrics_imported_as_draft:
+            return "导入歌词"
+        return "已修改歌词" if self.lyricsDirty else "原始歌词"
+
+    @Property(bool, notify=stateChanged)
+    def canUndoLyrics(self) -> bool:
+        return bool(self._lyrics_undo_stack) and not self.lyricsExporting
+
+    @Property(str, notify=stateChanged)
+    def selectedLyricsLrcPath(self) -> str:
+        source = self._lyrics_sources.get(self._selected_lyrics_source, {})
+        return str(source.get("path") or "")
+
+    @Property(bool, notify=stateChanged)
+    def canOverwriteCurrentLrc(self) -> bool:
+        path = self.selectedLyricsLrcPath
+        return bool(
+            self.hasSession
+            and self.lyricsDirty
+            and self.lyricsWriteEnabled
+            and not self.anyExporting
+            and path
+            and Path(path).is_file()
         )
 
     @Property(int, notify=stateChanged)
@@ -1009,6 +1039,7 @@ class EditSessionViewModel(BaseViewModel):
         self._external_lrc_path = external_path
         self._lyrics_imported_as_draft = False
         self._lyrics_source_before_import = "none"
+        self._lyrics_undo_stack.clear()
         if "embedded" in sources:
             self._apply_lyrics_source("embedded")
         elif "sibling_lrc" in sources:
@@ -1050,6 +1081,7 @@ class EditSessionViewModel(BaseViewModel):
         self._draft_lyrics = lyrics_text
         self._lyrics_clear_requested = False
         self._lyrics_imported_as_draft = True
+        self._lyrics_undo_stack.clear()
         self._lyrics_last_export_result = {}
         self._lyrics_state = "modified"
         self.set_status_message(
@@ -1065,6 +1097,7 @@ class EditSessionViewModel(BaseViewModel):
         normalized = str(text or "")
         if normalized == self._draft_lyrics and not self._lyrics_clear_requested:
             return
+        self._remember_lyrics_undo()
         self._draft_lyrics = normalized
         self._lyrics_clear_requested = False
         self._lyrics_state = "modified" if self.lyricsDirty else "loaded"
@@ -1101,6 +1134,7 @@ class EditSessionViewModel(BaseViewModel):
         )
         updated_text = str(result["text"])
         if bool(result["changed"]):
+            self._remember_lyrics_undo()
             self._draft_lyrics = updated_text
             self._lyrics_clear_requested = False
             self._lyrics_last_export_result = {}
@@ -1136,6 +1170,7 @@ class EditSessionViewModel(BaseViewModel):
             self._draft_lyrics = self._original_lyrics
             self._external_lrc_path = str(source_data.get("path") or "")
         self._lyrics_source_before_import = "none"
+        self._lyrics_undo_stack.clear()
         self._lyrics_state = "loaded"
         self._lyrics_last_export_result = {}
         self.set_status_message("已恢复当前歌词来源的原始文本；未写入文件。")
@@ -1145,6 +1180,7 @@ class EditSessionViewModel(BaseViewModel):
     def clearLyricsDraft(self) -> None:
         if not self.hasSession or self.lyricsExporting:
             return
+        self._remember_lyrics_undo()
         self._draft_lyrics = ""
         self._lyrics_clear_requested = True
         self._lyrics_state = "modified"
@@ -1286,6 +1322,36 @@ class EditSessionViewModel(BaseViewModel):
             original_lrc_path=self._lyrics_sources.get(self._selected_lyrics_source, {}).get("path", ""),
         )
         self._start_lyrics_export(request, lrc_only=True)
+
+    @Slot()
+    def overwriteCurrentLrc(self) -> None:
+        if not self.canOverwriteCurrentLrc:
+            self.set_status_message(
+                "当前歌词不是来自可覆盖的 .lrc 文件，或歌词没有待导出修改。"
+            )
+            return
+        if not self._check_lyrics_exportable():
+            return
+        target_path = self.selectedLyricsLrcPath
+        request = LrcExportRequest(
+            source_path=self._source_path,
+            output_path=target_path,
+            lyrics_text=self._draft_lyrics,
+            original_lrc_path=target_path,
+            overwrite_existing=True,
+        )
+        self._start_lyrics_export(request, lrc_only=True)
+
+    @Slot()
+    def undoLyricsDraft(self) -> None:
+        if not self.canUndoLyrics:
+            return
+        self._draft_lyrics = self._lyrics_undo_stack.pop()
+        self._lyrics_clear_requested = False
+        self._lyrics_last_export_result = {}
+        self._lyrics_state = "modified" if self.lyricsDirty else "loaded"
+        self.set_status_message("已撤回上一步歌词编辑；尚未写入任何文件。")
+        self.stateChanged.emit()
 
     @Slot(str, str)
     def updateField(self, field: str, value: str) -> None:
@@ -1451,8 +1517,13 @@ class EditSessionViewModel(BaseViewModel):
     def _start_lyrics_export(self, request, *, lrc_only: bool) -> None:
         self._lyrics_state = "writing"
         self.set_status_message(
-            "正在安全导出新的 .lrc 文件；不会覆盖原始歌词文件。"
-            if lrc_only else "正在安全导出含歌词的新音频副本；原文件不会被覆盖。"
+            (
+                "正在校验并覆盖当前 .lrc 文件；音频源文件不会修改。"
+                if bool(getattr(request, "overwrite_existing", False))
+                else "正在安全导出新的 .lrc 文件；不会覆盖原始歌词文件。"
+            )
+            if lrc_only
+            else "正在安全导出含歌词的新音频副本；原文件不会被覆盖。"
         )
         try:
             worker = _LyricsExportWorker(
@@ -1493,9 +1564,19 @@ class EditSessionViewModel(BaseViewModel):
             self._record_unified_export_result(result)
         if result.get("success"):
             self._lyrics_state = "success"
-            self.set_status_message(
-                f"已生成新输出：{result.get('output_path')}。当前工作区仍保持原文件。"
-            )
+            if result.get("overwrote_original_lrc"):
+                self._original_lyrics = self._draft_lyrics
+                self._lyrics_clear_requested = False
+                self._lyrics_imported_as_draft = False
+                self._lyrics_undo_stack.clear()
+                source = self._lyrics_sources.get(self._selected_lyrics_source)
+                if source is not None:
+                    source["text"] = self._draft_lyrics
+                self.set_status_message(str(result.get("message") or "当前 LRC 已覆盖。"))
+            else:
+                self.set_status_message(
+                    f"已生成新输出：{result.get('output_path')}。当前工作区仍保持原文件。"
+                )
         else:
             self._lyrics_state = "failed"
             self.set_status_message(str(result.get("message") or "歌词导出失败。"))
@@ -1684,6 +1765,7 @@ class EditSessionViewModel(BaseViewModel):
         self._lyrics_clear_requested = False
         self._lyrics_imported_as_draft = False
         self._lyrics_source_before_import = "none"
+        self._lyrics_undo_stack.clear()
         self._lyrics_last_export_result = {}
         self._lyrics_state = "loaded"
 
@@ -1697,8 +1779,19 @@ class EditSessionViewModel(BaseViewModel):
         self._lyrics_clear_requested = False
         self._lyrics_imported_as_draft = False
         self._lyrics_source_before_import = "none"
+        self._lyrics_undo_stack.clear()
         self._lyrics_last_export_result = {}
         self._lyrics_state = "empty"
+
+    def _remember_lyrics_undo(self) -> None:
+        if (
+            self._lyrics_undo_stack
+            and self._lyrics_undo_stack[-1] == self._draft_lyrics
+        ):
+            return
+        self._lyrics_undo_stack.append(self._draft_lyrics)
+        if len(self._lyrics_undo_stack) > 100:
+            del self._lyrics_undo_stack[:-100]
 
     @classmethod
     def _lyrics_lines(cls, text: str) -> list[dict[str, object]]:

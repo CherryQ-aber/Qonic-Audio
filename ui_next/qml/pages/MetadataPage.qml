@@ -40,15 +40,23 @@ Item {
         return "预览模式"
     }
     function pageHasLiveCapability() { return metadataViewModel.metadataReadEnabled || coverViewModel.coverReadEnabled }
+    function resetPageScrollIfContentFits() {
+        if (pageScroll.contentHeight <= pageScroll.height + 0.5
+                && pageScroll.contentY !== 0) {
+            pageScroll.contentY = 0
+        }
+    }
 
-        Flickable {
-            id: pageScroll
-            objectName: "metadataPageScroll"
+    Flickable {
+        id: pageScroll
+        objectName: "metadataPageScroll"
         anchors.fill: parent
         clip: true
         contentWidth: width
-        contentHeight: pageContent.implicitHeight + root.theme.spacing * 2
+        contentHeight: Math.max(height, pageContent.implicitHeight)
         boundsBehavior: Flickable.StopAtBounds
+        onHeightChanged: root.resetPageScrollIfContentFits()
+        onContentHeightChanged: root.resetPageScrollIfContentFits()
         ScrollBar.vertical: ThemeScrollBar { theme: root.theme; policy: ScrollBar.AsNeeded }
 
         ColumnLayout {
@@ -181,7 +189,6 @@ Item {
                     Text { visible: !!(root.editSession && root.editSession.unifiedExportResult.success === true); text: root.editSession ? "输出路径：" + root.editSession.unifiedExportResult.output_path : ""; color: root.theme.textSecondary; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeSmall; Layout.fillWidth: true; wrapMode: Text.WordWrap }
                 }
             }
-            Item { Layout.minimumHeight: root.theme.spacing }
         }
     }
 

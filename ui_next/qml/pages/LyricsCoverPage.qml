@@ -17,33 +17,29 @@ Item {
     onPageActiveChanged: {
         if (!pageActive && sourceDiscardDialog.visible)
             sourceDiscardDialog.close()
+        if (!pageActive && lrcOverwriteDialog.visible)
+            lrcOverwriteDialog.close()
     }
 
-    function requestSource(source) {
-        if (!editSession)
-            return
-        if (editSession.selectLyricsSource(source, false) === "unsaved_changes") {
-            sourceDiscardDialog.source = source
-            sourceDiscardDialog.manual = false
-            sourceDiscardDialog.open()
-        }
-    }
     function requestManualSource() {
         if (!editSession || !fileSessionViewModel)
             return
         if (editSession.lyricsDirty) {
-            sourceDiscardDialog.manual = true
             sourceDiscardDialog.open()
             return
         }
         fileSessionViewModel.chooseLyricsFile()
+    }
+    function requestEmbeddedLyricsExport() {
+        if (editSession)
+            editSession.chooseLyricsAudioExport(false)
     }
     function requestAudioExport() {
         if (editSession)
             editSession.openUnifiedExportDialog("lyrics")
     }
     function pageSafetyMessage() {
-        if (editSession && editSession.hasSession) return "当前歌词修改仅保存在内存草稿中；导出只会生成新的音频副本或新的 .lrc 文件。"
+        if (editSession && editSession.hasSession) return "当前歌词修改仅保存在内存中；导出可生成新文件，覆盖 .lrc 时会再次确认。"
         return lyricsViewModel.lyricsReadEnabled ? "歌词可供查看和编辑；外置 .lrc 会先载入草稿。" : "预览模式不会读取真实歌词。"
     }
     function pageCapabilityLabel() {
@@ -51,15 +47,23 @@ Item {
         return "预览模式"
     }
     function pageHasLiveCapability() { return lyricsViewModel.lyricsReadEnabled }
+    function resetPageScrollIfContentFits() {
+        if (pageScroll.contentHeight <= pageScroll.height + 0.5
+                && pageScroll.contentY !== 0) {
+            pageScroll.contentY = 0
+        }
+    }
 
-        Flickable {
-            id: pageScroll
-            objectName: "lyricsCoverPageScroll"
+    Flickable {
+        id: pageScroll
+        objectName: "lyricsCoverPageScroll"
         anchors.fill: parent
         clip: true
         contentWidth: width
-        contentHeight: pageContent.implicitHeight + root.theme.spacing * 2
+        contentHeight: Math.max(height, pageContent.implicitHeight)
         boundsBehavior: Flickable.StopAtBounds
+        onHeightChanged: root.resetPageScrollIfContentFits()
+        onContentHeightChanged: root.resetPageScrollIfContentFits()
         ScrollBar.vertical: ThemeScrollBar {
             objectName: "lyricsCoverPageVerticalScrollBar"
             theme: root.theme
@@ -90,11 +94,13 @@ Item {
                         StatusBadge {
                             theme: root.theme
                             typography: root.typography
-                            label: root.editSession && root.editSession.lyricsDirty
-                                ? "歌词草稿已修改" : "歌词草稿未修改"
-                            tone: root.editSession && root.editSession.lyricsDirty ? "warning" : "muted"
+                            label: root.editSession
+                                ? root.editSession.lyricsDraftStatusLabel : "等待读取"
+                            tone: !root.editSession || !root.editSession.hasSession ? "muted"
+                                : root.editSession.lyricsDraftStatusLabel === "导入歌词" ? "accent"
+                                : root.editSession.lyricsDraftStatusLabel === "已修改歌词" ? "warning"
+                                : "muted"
                         }
-                        ActionButton { text: "选择 .lrc 作为草稿来源"; onClicked: root.requestManualSource() }
                     }
                     Text {
                         text: (fileSessionViewModel.currentFilePath === ""
@@ -134,7 +140,8 @@ Item {
                 Layout.fillWidth: true
                 Layout.minimumWidth: 0
                 Layout.preferredHeight: root.splitLyricsWorkspace
-                    ? Math.max(470, pageScroll.height - compactHeader.implicitHeight - root.theme.spacing * 2)
+                    ? Math.max(470, pageScroll.height
+                        - compactHeader.implicitHeight - root.theme.spacing)
                     : 920
                 columns: root.splitLyricsWorkspace ? 2 : 1
                 columnSpacing: root.theme.spacing
@@ -168,28 +175,26 @@ Item {
                     typography: root.typography
                     audioPlayer: root.audioPlayer
                     editSession: root.editSession
-                    onSourceRequested: function(source) { root.requestSource(source) }
                     onManualSourceRequested: root.requestManualSource()
+                    onEmbeddedLyricsExportRequested: root.requestEmbeddedLyricsExport()
                     onAudioExportRequested: root.requestAudioExport()
                     onLrcExportRequested: if (root.editSession) root.editSession.chooseLrcExport()
+                    onLrcOverwriteRequested: lrcOverwriteDialog.open()
                 }
             }
-            Item { Layout.minimumHeight: root.theme.spacing }
         }
     }
 
     Dialog {
         id: sourceDiscardDialog
-        property string source: ""
-        property bool manual: false
         modal: true
-        title: "放弃当前歌词草稿？"
+        title: "放弃当前歌词修改？"
         standardButtons: Dialog.NoButton
         anchors.centerIn: parent
         width: Math.min(420, root.width - root.theme.spacing * 4)
         contentItem: ColumnLayout {
             spacing: root.theme.spacing
-            Text { text: "当前歌词有未导出的修改。切换来源会丢弃这些内存草稿，磁盘文件不会修改。"; color: root.theme.textPrimary; font.family: root.typography.fontFamily; wrapMode: Text.WordWrap; Layout.fillWidth: true }
+            Text { text: "导入新的 .lrc 会替换当前内存中的歌词修改；磁盘文件不会在此步骤被改动。"; color: root.theme.textPrimary; font.family: root.typography.fontFamily; wrapMode: Text.WordWrap; Layout.fillWidth: true }
             RowLayout {
                 Layout.fillWidth: true
                 Item { Layout.fillWidth: true }
@@ -198,23 +203,47 @@ Item {
                     text: "放弃并继续"
                     onClicked: {
                         sourceDiscardDialog.close()
-                        if (sourceDiscardDialog.manual) {
-                            root.editSession.restoreOriginalLyrics()
-                            fileSessionViewModel.chooseLyricsFile()
-                        } else {
-                            root.editSession.selectLyricsSource(sourceDiscardDialog.source, true)
-                        }
+                        root.editSession.restoreOriginalLyrics()
+                        fileSessionViewModel.chooseLyricsFile()
                     }
                 }
             }
         }
     }
 
-    component ActionButton: Button {
-        implicitHeight: 31; implicitWidth: 142
-        font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeSmall
-        contentItem: Text { text: parent.text; color: parent.enabled ? root.theme.textPrimary : root.theme.muted; font: parent.font; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight; maximumLineCount: 1 }
-        background: Rectangle { color: parent.enabled ? root.theme.surface : Qt.rgba(root.theme.surface.r, root.theme.surface.g, root.theme.surface.b, 0.55); border.color: parent.enabled ? root.theme.border : Qt.rgba(root.theme.border.r, root.theme.border.g, root.theme.border.b, 0.55); radius: root.theme.radiusSmall }
+    Dialog {
+        id: lrcOverwriteDialog
+        objectName: "lrcOverwriteDialog"
+        modal: true
+        title: "确认覆盖当前 .lrc？"
+        standardButtons: Dialog.NoButton
+        anchors.centerIn: parent
+        width: Math.min(460, root.width - root.theme.spacing * 4)
+        contentItem: ColumnLayout {
+            spacing: root.theme.spacing
+            Text {
+                text: "将用当前歌词覆盖这一个 .lrc 文件：\n"
+                    + (root.editSession ? root.editSession.selectedLyricsLrcPath : "")
+                    + "\n\n音频源文件不会修改。"
+                color: root.theme.textPrimary
+                font.family: root.typography.fontFamily
+                wrapMode: Text.WrapAnywhere
+                Layout.fillWidth: true
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                Item { Layout.fillWidth: true }
+                Button { text: "取消"; onClicked: lrcOverwriteDialog.close() }
+                Button {
+                    text: "确认覆盖"
+                    enabled: root.editSession && root.editSession.canOverwriteCurrentLrc
+                    onClicked: {
+                        lrcOverwriteDialog.close()
+                        root.editSession.overwriteCurrentLrc()
+                    }
+                }
+            }
+        }
     }
-    component DisabledAction: ActionButton { enabled: false; implicitWidth: 126; implicitHeight: 28; font.pixelSize: root.typography.sizeTiny }
+
 }
