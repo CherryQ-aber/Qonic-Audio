@@ -480,8 +480,8 @@ Item {
                             if (mouse.button === Qt.LeftButton
                                     && root.folderBrowserModel
                                     && !treeDelegate.isDirectory
-                                    && treeDelegate.isPlayable) {
-                                root.folderBrowserModel.requestPlayback(
+                                    && treeDelegate.canEdit) {
+                                root.folderBrowserModel.requestOpenInEditor(
                                     treeDelegate.filePath
                                 )
                             }
@@ -497,8 +497,8 @@ Item {
                                 treeDelegate.treeView.toggleExpanded(
                                     treeDelegate.row
                                 )
-                            } else if (treeDelegate.isPlayable) {
-                                root.folderBrowserModel.requestPlayback(
+                            } else if (treeDelegate.canEdit) {
+                                root.folderBrowserModel.requestOpenInEditor(
                                     treeDelegate.filePath
                                 )
                             }
@@ -721,7 +721,7 @@ Item {
         property bool targetQueueable: false
 
         Action {
-            text: "载入播放器"
+            text: "仅载入播放器"
             enabled: browserContextMenu.targetPlayable
             onTriggered: root.folderBrowserModel.requestPlayback(
                 browserContextMenu.targetPath

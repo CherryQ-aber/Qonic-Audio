@@ -449,9 +449,9 @@ Item {
                 return_value=self._empty_config(),
             ):
                 model = FolderBrowserModel(self._live_gate())
-            playback_requests = []
-            model.playbackRequested.connect(
-                lambda *args: playback_requests.append(args)
+            editor_requests = []
+            model.editorRequested.connect(
+                lambda *args: editor_requests.append(args)
             )
             self.assertTrue(model.openDirectory(temp_dir))
             self.assertTrue(self._wait_until(lambda: model.count == 2))
@@ -594,10 +594,10 @@ Item {
                     center.toPoint(),
                 )
                 self.assertTrue(
-                    self._wait_until(lambda: len(playback_requests) == 1)
+                    self._wait_until(lambda: len(editor_requests) == 1)
                 )
                 self.assertTrue(
-                    os.path.samefile(source, playback_requests[0][0])
+                    os.path.samefile(source, editor_requests[0][0])
                 )
                 self.assertTrue(
                     self._wait_until(
@@ -782,6 +782,10 @@ Item {
             main_source,
         )
         self.assertIn(
+            'open_source_in_editor(path, "folder_tree")',
+            main_source,
+        )
+        self.assertIn(
             "folder_browser_model.enqueueRequested.connect(",
             main_source,
         )
@@ -795,6 +799,19 @@ Item {
         self.assertIn("reuseItems: false", pane_source)
         self.assertIn("required property int treeDepth", pane_source)
         self.assertIn("validTreeDepth", pane_source)
+        double_click_source = pane_source.split(
+            "onDoubleClicked: function(mouse)",
+            1,
+        )[1].split("Keys.onReturnPressed:", 1)[0]
+        return_key_source = pane_source.split(
+            "Keys.onReturnPressed:",
+            1,
+        )[1].split("Keys.onMenuPressed:", 1)[0]
+        self.assertIn("requestOpenInEditor(", double_click_source)
+        self.assertNotIn("requestPlayback(", double_click_source)
+        self.assertIn("requestOpenInEditor(", return_key_source)
+        self.assertNotIn("requestPlayback(", return_key_source)
+        self.assertIn('text: "仅载入播放器"', pane_source)
         self.assertIn("beginInternalDrag(", pane_source)
         self.assertIn("rowMouse.drag.active", pane_source)
         self.assertIn("onCanceled:", pane_source)

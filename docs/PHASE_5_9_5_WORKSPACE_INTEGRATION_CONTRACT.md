@@ -1051,10 +1051,11 @@ Phase B 已按精确文件清单提交为 `9a01869`，未推送；`.reasonix/`�
 - 单击目录或音频只更新选择摘要；箭头只展开/折叠。筛选和原生目录刷新不会播放、编辑、入队或转换。
 - 选中文件按规范化路径身份显示明显高亮；底部摘要封面只允许后台只读解析、代次隔离和有限内存缓存，不写磁盘。
 - TreeView 禁用 delegate 复用并校验真实相对深度，异步展开时错误层级 delegate 不显示；不得以载入瞬间可能失配的扁平行索引决定可见性。
-- 双击普通音频发出 `path / filename / original / folder_tree`，组合层调用唯一 `AudioPlayerViewModel.setPlaybackSourceWithOrigin(..., autoplay=false, position=0)`；EditorSession 不变。
+- 双击或 Enter 打开可编辑普通音频时，组合层调用 `FileSessionViewModel.setCurrentFile(path, "folder_tree")` 并进入“音频编辑 / 文件信息”；文件会话沿既有 `editorFilePlaybackRequested` 同步唯一 `AudioPlayerViewModel`，固定 `autoplay=false, position=0`。
+- 当前编辑文件存在未导出 Metadata / Lyrics / Cover 草稿时，目标文件先保存在 FileSession pending 状态，必须显示“放弃修改并载入 / 导出 / 取消”三种选择。取消保留当前文件和草稿；放弃后载入目标；导出复用唯一 `EditExportDialog`，默认选择全部 dirty 模块，只有导出成功才自动放弃旧内存草稿并载入目标。导出取消或失败不得切换文件。
 - 普通音频可拖入当前编辑或转码主工作区；NCM 只可拖入转码区。拖入继续调用既有 FileSession dirty guard 或唯一队列入口，工作区外释放不执行。拖动提示必须由 AppShell 窗口级浮层持有并持续到真实释放；取消只清理状态，不触发投放。
 - TopStatusBar 不再实例化运行模式或功能能力摘要 StatusBadge；不得因此删除底层 runtime mode、capability gate 或安全守卫。
-- 右键“在音频编辑中打开”调用 `FileSessionViewModel.setCurrentFile(path, "audio_editor")`，统一 dirty guard 和 blocker 继续生效。
+- 右键“在音频编辑中打开”与双击使用同一 `folder_tree` 编辑入口和 dirty guard；右键“仅载入播放器”继续作为明确的 PlayerSession-only 操作，不改变当前编辑文件。
 - 右键“加入转码队列”调用 `AutoConvertViewModel.enqueue_folder_browser_file()`，以 `folder_browser` 来源进入同一 watcher 队列。任务列表来源显示“文件夹树”。
 - `folder_browser` 作为显式用户来源可读取输出目录范围内的选择文件；自动 watcher 防回灌、运行时目录排除、重复识别、状态机和转换算法不变。
 - 右键另提供打开文件位置和复制文件路径；全部动作在目标缺失或格式不支持时拒绝并显示状态。
@@ -1062,7 +1063,7 @@ Phase B 已按精确文件清单提交为 `9a01869`，未推送；`.reasonix/`�
 ### 27.4 验证与边界
 
 - 自动化覆盖中文/空格根目录、目录/音频/NCM 角色、搜索、原生目录新增删除刷新、收藏/最近目录、配置恢复、Pane 宽度与显示恢复、封面后台读取和文件 URL 拖放桥接。
-- QML 鼠标级覆盖连续展开/折叠路径唯一、箭头展开、双击载入请求、选中高亮和右键菜单；真实 AppShell 覆盖 1080 px 全局按钮可达、跨工作区常驻、收起后主内容完整扩展。
+- QML 鼠标级覆盖连续展开/折叠路径唯一、箭头展开、双击/Enter 编辑载入请求、显式“仅载入播放器”、选中高亮和右键菜单；FileSession 专项覆盖 dirty 时取消、放弃后同步唯一播放器，以及来源标签和一次播放请求。真实 AppShell 覆盖 1080 px 全局按钮可达、跨工作区常驻、收起后主内容完整扩展。
 - 最终完整无缓存回归：`553 passed, 2 warnings, 70 subtests passed`；warning 仍为既有 Qt `QMouseEvent` 弃用提示。
-- 未修改 `converter.py`、任务生命周期、FFmpeg/NCM/Pitch 算法、编辑/导出服务、no-clobber、源文件保护、Legacy Widgets 或发行打包。
+- 本次绑定只复用既有统一导出和 no-clobber，不修改 `converter.py`、任务生命周期、FFmpeg/NCM/Pitch 算法、编辑/导出服务、源文件保护、Legacy Widgets 或发行打包。
 - Phase F/F2 已于 2026-07-22 根据用户提交授权提交为 `f4445d7`，未推送；已通过界面审核的顶部工作区与全局工具语义优化另提交为 `b22b1e5`。

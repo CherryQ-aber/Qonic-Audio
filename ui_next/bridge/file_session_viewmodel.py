@@ -130,6 +130,7 @@ class FileSessionViewModel(BaseViewModel):
         "file_dialog": "手动选择",
         "scan_preview": "目录预览",
         "file_browser": "文件浏览",
+        "folder_tree": "文件夹树",
         "drag_drop": "拖入文件",
         "audio_editor": "音频编辑",
         "metadata_page": "文件信息",

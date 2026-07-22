@@ -10,6 +10,7 @@ Dialog {
     property QtObject theme: Theme {}
     property QtObject typography: Typography {}
     property var editSession: null
+    property bool selectAllDraftsOnOpen: false
     property bool metadataSelected: false
     property bool lyricsSelected: false
     property bool coverSelected: false
@@ -32,6 +33,12 @@ Dialog {
     function resetSelections() {
         if (!root.editSession)
             return
+        if (root.selectAllDraftsOnOpen) {
+            root.metadataSelected = root.editSession.dirty
+            root.lyricsSelected = root.editSession.lyricsDirty
+            root.coverSelected = root.editSession.coverDirty
+            return
+        }
         root.metadataSelected = root.editSession.unifiedExportDefaultModule === "metadata" && root.editSession.dirty
         root.lyricsSelected = root.editSession.unifiedExportDefaultModule === "lyrics" && root.editSession.lyricsDirty
         root.coverSelected = root.editSession.unifiedExportDefaultModule === "cover" && root.editSession.coverDirty

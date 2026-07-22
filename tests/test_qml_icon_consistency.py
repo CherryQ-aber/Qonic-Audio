@@ -47,6 +47,7 @@ class QmlIconConsistencyTests(unittest.TestCase):
                 qml_root / "components" / "CoverPreviewCard.qml",
                 qml_root / "components" / "CurrentFileBar.qml",
                 qml_root / "components" / "FolderBrowserPane.qml",
+                qml_root / "components" / "TopStatusBar.qml",
             ],
             image_uses,
         )

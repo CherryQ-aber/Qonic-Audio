@@ -44,6 +44,13 @@ QtObject {
     readonly property color selectedIndicator: isLight ? "#1e8a7a" : "#60b7a7"
     readonly property color disabledBackground: isLight ? "#e8ece9" : "#2a2e2c"
 
+    // Custom window chrome
+    readonly property color titleBarInactiveText: isLight ? "#7a8580" : "#8a928e"
+    readonly property color windowControlHover: isLight ? "#18251f14" : "#ffffff14"
+    readonly property color windowControlPressed: isLight ? "#18251f24" : "#ffffff24"
+    readonly property color windowCloseHover: "#c42b1c"
+    readonly property color windowClosePressed: "#9f2218"
+
     // Semantic states. Backgrounds are deliberately soft; labels remain legible.
     readonly property color info: isLight ? "#2c6e9b" : "#68a9cf"
     readonly property color infoBackground: isLight ? "#dcecf7" : "#234052"

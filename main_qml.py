@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 from PySide6.QtCore import QTimer, QUrl
+from PySide6.QtGui import QIcon
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtQuickControls2 import QQuickStyle
 from PySide6.QtWidgets import QApplication
@@ -26,6 +27,7 @@ from ui_next.bridge.task_queue_filter_proxy_model import (
     TaskQueueFilterProxyModel,
 )
 from ui_next.bridge.task_queue_model import TaskQueueModel
+from ui_next.bridge.window_controller import WindowController
 
 try:
     from app_info import APP_DISPLAY_NAME, APP_VERSION
@@ -77,6 +79,10 @@ def main(argv: list[str] | None = None) -> int:
     project_root = Path(__file__).resolve().parent
     qml_root = project_root / "ui_next" / "qml"
     qml_entry = qml_root / "AppShell.qml"
+    application_icon = project_root / "Assets" / "icon.ico"
+
+    if application_icon.exists():
+        app.setWindowIcon(QIcon(str(application_icon)))
 
     if not qml_entry.exists():
         _print_startup_error(f"QML entry not found: {qml_entry}")
@@ -93,6 +99,11 @@ def main(argv: list[str] | None = None) -> int:
 
     log_model = LogModel()
     install_log_model_handler(log_model)
+    window_controller = WindowController(
+        app,
+        icon_path=application_icon if application_icon.exists() else None,
+        smoke_test=runtime_config.smoke_test,
+    )
 
     app_state = AppStateViewModel(capability_gate=capability_gate)
     if runtime_config.requested_module:
@@ -206,10 +217,16 @@ def main(argv: list[str] | None = None) -> int:
         load_task_source_in_player
     )
 
-    def open_task_source_in_editor(path: str) -> None:
-        result = file_session_view_model.setCurrentFile(path, "audio_editor")
+    def open_source_in_editor(path: str, source: str) -> None:
+        result = file_session_view_model.setCurrentFile(path, source)
         if result not in {"blocked", "rejected"}:
             app_state.switchEditorPage("fileInfo")
+
+    def open_task_source_in_editor(path: str) -> None:
+        open_source_in_editor(path, "audio_editor")
+
+    def open_folder_source_in_editor(path: str) -> None:
+        open_source_in_editor(path, "folder_tree")
 
     auto_convert_view_model.editorFileRequested.connect(
         open_task_source_in_editor
@@ -219,7 +236,7 @@ def main(argv: list[str] | None = None) -> int:
         load_task_source_in_player
     )
     folder_browser_model.editorRequested.connect(
-        open_task_source_in_editor
+        open_folder_source_in_editor
     )
     folder_browser_model.enqueueRequested.connect(
         auto_convert_view_model.enqueue_folder_browser_file
@@ -232,6 +249,8 @@ def main(argv: list[str] | None = None) -> int:
     app.aboutToQuit.connect(edit_session_view_model.shutdown)
     app.aboutToQuit.connect(audio_player_view_model.shutdown)
     app.aboutToQuit.connect(file_session_view_model.shutdown)
+    app.aboutToQuit.connect(window_controller.shutdown)
+    window_controller.settingsRequested.connect(app_state.openSettings)
 
     engine.rootContext().setContextProperty("appState", app_state)
     engine.rootContext().setContextProperty(
@@ -261,6 +280,11 @@ def main(argv: list[str] | None = None) -> int:
     engine.rootContext().setContextProperty("coverViewModel", cover_view_model)
     engine.rootContext().setContextProperty("settingsViewModel", settings_view_model)
     engine.rootContext().setContextProperty("logModel", log_model)
+    engine.rootContext().setContextProperty("windowController", window_controller)
+    engine.rootContext().setContextProperty(
+        "qmlApplicationIconUrl",
+        QUrl.fromLocalFile(str(application_icon)) if application_icon.exists() else QUrl(),
+    )
     engine.rootContext().setContextProperty("capabilityGate", capability_gate)
     engine.rootContext().setContextProperty("qmlThemeMode", qml_theme_mode)
     engine.rootContext().setContextProperty(
@@ -280,6 +304,9 @@ def main(argv: list[str] | None = None) -> int:
     if not engine.rootObjects():
         _print_startup_error(f"Failed to load QML entry: {qml_entry}")
         return 1
+
+    window_controller.attach_window(engine.rootObjects()[0])
+    window_controller.showInitialWindow()
 
     if runtime_config.smoke_test:
         QTimer.singleShot(250, app.quit)

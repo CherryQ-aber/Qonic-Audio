@@ -15,9 +15,17 @@ ApplicationWindow {
     height: 982
     minimumWidth: 1080
     minimumHeight: 680
-    visible: true
+    visible: !(root.windowControlBridge && root.windowControlBridge.deferInitialShow)
     color: theme.background
-    title: appState.appName + " - " + capabilityGate.userModeLabel
+    title: appState.appName + " " + appState.versionLabel
+    flags: root.nativeWindowChrome
+        ? Qt.Window
+            | Qt.FramelessWindowHint
+            | Qt.WindowSystemMenuHint
+            | Qt.WindowMinimizeButtonHint
+            | Qt.WindowMaximizeButtonHint
+            | Qt.WindowCloseButtonHint
+        : Qt.Window
 
     Theme {
         id: theme
@@ -30,7 +38,22 @@ ApplicationWindow {
 
     property bool logDrawerOpened: false
     property bool editorFileBarExpanded: false
+    property bool pendingFileExportFlowActive: false
+    property bool pendingFileExportStarted: false
     property int minimumWorkspaceWidth: 620
+    property var windowControlBridge:
+        typeof windowController !== "undefined"
+        ? windowController
+        : null
+    property url applicationIconSource:
+        typeof qmlApplicationIconUrl !== "undefined"
+        ? qmlApplicationIconUrl
+        : ""
+    readonly property bool nativeWindowChrome:
+        Boolean(root.windowControlBridge
+            && root.windowControlBridge.framelessEnabled)
+    readonly property bool workspaceInteractionEnabled:
+        !root.logDrawerOpened && !appState.settingsOverlayOpen
     property var folderBrowserBridge:
         typeof folderBrowserModel !== "undefined"
         ? folderBrowserModel
@@ -70,6 +93,41 @@ ApplicationWindow {
         Qt.callLater(topStatusBar.focusLogButton)
     }
 
+    function beginPendingFileExport() {
+        if (!fileSessionViewModel.hasPendingFileChange
+                || !editSessionViewModel.hasUnsavedDrafts
+                || editSessionViewModel.anyExporting) {
+            return
+        }
+        pendingFileExportFlowActive = true
+        pendingFileExportStarted = false
+        editSessionViewModel.openUnifiedExportDialog("auto")
+        Qt.callLater(root.resolvePendingFileExportFlow)
+    }
+
+    function resolvePendingFileExportFlow() {
+        if (!pendingFileExportFlowActive)
+            return
+        if (editSessionViewModel.unifiedExporting) {
+            pendingFileExportStarted = true
+            return
+        }
+        if (pendingFileExportStarted
+                && editSessionViewModel.unifiedExportResult.success === true) {
+            pendingFileExportFlowActive = false
+            pendingFileExportStarted = false
+            Qt.callLater(function() {
+                if (fileSessionViewModel.hasPendingFileChange)
+                    fileSessionViewModel.discardPendingFileChange()
+            })
+            return
+        }
+        if (!editSessionViewModel.unifiedExportDialogOpen) {
+            pendingFileExportFlowActive = false
+            pendingFileExportStarted = false
+        }
+    }
+
     function handleFolderFileDragRelease(
         fileUrl,
         editable,
@@ -105,7 +163,6 @@ ApplicationWindow {
         id: shellContent
         anchors.fill: parent
         spacing: 0
-        enabled: !root.logDrawerOpened && !appState.settingsOverlayOpen
 
         TopStatusBar {
             id: topStatusBar
@@ -129,6 +186,15 @@ ApplicationWindow {
                 && root.folderBrowserBridge.available
             )
             folderPaneVisible: root.folderPaneVisible
+            navigationEnabled: root.workspaceInteractionEnabled
+            nativeWindowChrome: root.nativeWindowChrome
+            windowController: root.windowControlBridge
+            windowActive: root.windowControlBridge
+                ? root.windowControlBridge.active : root.active
+            windowMaximized: root.windowControlBridge
+                ? root.windowControlBridge.maximized
+                : root.visibility === Window.Maximized
+            applicationIconSource: root.applicationIconSource
             onWorkspaceRequested: function(workspaceKey) {
                 appState.switchWorkspace(workspaceKey)
             }
@@ -143,6 +209,7 @@ ApplicationWindow {
         WorkspaceSubNavigation {
             id: workspaceSubNavigation
             Layout.fillWidth: true
+            enabled: root.workspaceInteractionEnabled
             theme: theme
             typography: typography
             currentWorkspaceKey: appState.currentWorkspaceKey
@@ -171,6 +238,7 @@ ApplicationWindow {
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.minimumWidth: 0
+            enabled: root.workspaceInteractionEnabled
             orientation: Qt.Horizontal
 
             handle: Rectangle {
@@ -271,6 +339,7 @@ ApplicationWindow {
             Layout.preferredHeight: requestedHeight
             Layout.minimumHeight: requestedHeight
             Layout.maximumHeight: requestedHeight
+            enabled: root.workspaceInteractionEnabled
             theme: theme
             typography: typography
             audioPlayer: audioPlayerViewModel
@@ -351,6 +420,14 @@ ApplicationWindow {
         }
     }
 
+    Connections {
+        target: editSessionViewModel
+
+        function onStateChanged() {
+            root.resolvePendingFileExportFlow()
+        }
+    }
+
     LogDrawer {
         id: logDrawer
         objectName: "logDrawer"
@@ -383,6 +460,7 @@ ApplicationWindow {
         theme: theme
         typography: typography
         editSession: editSessionViewModel
+        selectAllDraftsOnOpen: root.pendingFileExportFlowActive
     }
 
     Dialog {
@@ -423,6 +501,7 @@ ApplicationWindow {
         objectName: "unsavedEditDraftsDialog"
         modal: true
         visible: fileSessionViewModel.hasPendingFileChange
+            && !root.pendingFileExportFlowActive
         title: "未导出编辑草稿"
         standardButtons: Dialog.NoButton
         closePolicy: Popup.NoAutoClose
@@ -447,7 +526,7 @@ ApplicationWindow {
                 Layout.fillWidth: true
             }
             Text {
-                text: "草稿只保存在本次运行内存中；取消会保留当前文件和草稿。"
+                text: "选择导出会先保存全部修改到新的音频副本；导出成功后自动载入目标文件。取消或导出失败都会保留当前文件和草稿。"
                 color: theme.textSecondary
                 font.family: typography.fontFamily
                 font.pixelSize: typography.sizeSmall
@@ -462,7 +541,15 @@ ApplicationWindow {
                     onClicked: fileSessionViewModel.cancelPendingFileChange()
                 }
                 Button {
-                    text: "放弃草稿并继续"
+                    text: "导出"
+                    enabled: editSessionViewModel.hasUnsavedDrafts
+                        && !editSessionViewModel.anyExporting
+                    onClicked: root.beginPendingFileExport()
+                }
+                Button {
+                    text: fileSessionViewModel.pendingFileName.length > 0
+                        ? "放弃修改并载入"
+                        : "放弃修改并清除"
                     onClicked: fileSessionViewModel.discardPendingFileChange()
                 }
             }

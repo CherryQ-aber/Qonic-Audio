@@ -373,3 +373,25 @@ def test_phase584_qml_exposes_cancel_result_summary_and_explicit_load():
     assert "confirmDraftWarning(false)" in shell
     assert "confirmDraftWarning(true)" in shell
     assert "pitchDraftWarningDialog" not in pitch
+
+
+def test_pending_file_change_offers_discard_export_or_cancel():
+    root = Path(__file__).resolve().parents[1]
+    shell = (root / "ui_next/qml/AppShell.qml").read_text(encoding="utf-8")
+    dialog = (root / "ui_next/qml/components/EditExportDialog.qml").read_text(
+        encoding="utf-8"
+    )
+
+    assert 'objectName: "unsavedEditDraftsDialog"' in shell
+    assert 'text: "取消"' in shell
+    assert 'text: "导出"' in shell
+    assert '"放弃修改并载入"' in shell
+    assert "beginPendingFileExport()" in shell
+    assert "pendingFileExportStarted" in shell
+    assert "unifiedExportResult.success === true" in shell
+    assert "fileSessionViewModel.discardPendingFileChange()" in shell
+    assert "selectAllDraftsOnOpen: root.pendingFileExportFlowActive" in shell
+    assert "property bool selectAllDraftsOnOpen" in dialog
+    assert "root.metadataSelected = root.editSession.dirty" in dialog
+    assert "root.lyricsSelected = root.editSession.lyricsDirty" in dialog
+    assert "root.coverSelected = root.editSession.coverDirty" in dialog

@@ -328,6 +328,60 @@ class EditorWorkspacePhase583Tests(unittest.TestCase):
                     hashlib.sha256(path.read_bytes()).hexdigest(),
                 )
 
+    def test_folder_tree_editor_load_waits_for_dirty_choice_and_syncs_player(self):
+        session, edit = self._wire_session()
+        playback_requests = []
+        session.editorFilePlaybackRequested.connect(
+            lambda *args: playback_requests.append(args)
+        )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            first = root / "first.wav"
+            second = root / "second.wav"
+            first.write_bytes(b"first")
+            second.write_bytes(b"second")
+
+            self.assertEqual(
+                "loaded",
+                session.setCurrentFile(str(first), "audio_editor"),
+            )
+            playback_requests.clear()
+            edit.loadMetadataResult(
+                {
+                    "ok": True,
+                    "path": session.currentFilePath,
+                    "session_generation": session.sessionGeneration,
+                    "title": "Original",
+                }
+            )
+            edit.updateField("title", "Draft")
+
+            self.assertEqual(
+                "confirmation_required",
+                session.setCurrentFile(str(second), "folder_tree"),
+            )
+            self.assertEqual(str(first.resolve()), session.currentFilePath)
+            self.assertEqual([], playback_requests)
+            self.assertEqual(second.name, session.pendingFileName)
+
+            session.cancelPendingFileChange()
+            self.assertEqual(str(first.resolve()), session.currentFilePath)
+            self.assertTrue(edit.hasUnsavedDrafts)
+
+            self.assertEqual(
+                "confirmation_required",
+                session.setCurrentFile(str(second), "folder_tree"),
+            )
+            session.discardPendingFileChange()
+            self.assertEqual(str(second.resolve()), session.currentFilePath)
+            self.assertEqual("folder_tree", session.currentFileSource)
+            self.assertEqual("文件夹树", session.currentFileSourceLabel)
+            self.assertFalse(edit.hasUnsavedDrafts)
+            self.assertEqual(1, len(playback_requests))
+            self.assertEqual(str(second.resolve()), playback_requests[0][0])
+            self.assertEqual("editor_file", playback_requests[0][2])
+        session.shutdown()
+
     def test_same_file_noop_preserves_drafts_and_stale_results_are_ignored(self):
         session, edit = self._wire_session()
         with tempfile.TemporaryDirectory() as temp_dir:

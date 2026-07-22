@@ -496,7 +496,7 @@ class FolderBrowserModel(QFileSystemModel):
         if not normalized_path:
             return False
         self.editorRequested.emit(normalized_path)
-        self._set_status("已请求在音频编辑中打开。")
+        self._set_status("已请求载入音频编辑区与全局播放器。")
         return True
 
     @Slot(str, result=bool)
