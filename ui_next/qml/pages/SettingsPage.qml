@@ -56,6 +56,15 @@ Item {
         )
     }
 
+    function settingChanged(key) {
+        var items = settingsViewModel.pendingChangeItems
+        for (var index = 0; index < items.length; index += 1) {
+            if (items[index].key === key)
+                return true
+        }
+        return false
+    }
+
     Component.onCompleted: syncCombos()
 
     Connections {
@@ -63,6 +72,10 @@ Item {
 
         function onSettingsChanged() {
             syncCombos()
+        }
+
+        function onCleanupDialogRequested() {
+            cleanupConfirmDialog.open()
         }
     }
 
@@ -93,8 +106,10 @@ Item {
                     objectName: "settingsHeaderCard"
                     Layout.fillWidth: true
                     implicitHeight: headerContent.implicitHeight + theme.spacing * 2
-                    color: Qt.rgba(theme.warning.r, theme.warning.g, theme.warning.b, 0.08)
-                    border.color: settingsViewModel.previewMode ? theme.warning : theme.accent
+                    color: settingsViewModel.hasPendingChanges
+                        ? Qt.rgba(theme.warning.r, theme.warning.g, theme.warning.b, 0.08)
+                        : theme.panel
+                    border.color: settingsViewModel.hasPendingChanges ? theme.warning : theme.border
                     radius: theme.radiusMedium
 
                     ColumnLayout {
@@ -119,18 +134,7 @@ Item {
                             }
 
                             Text {
-                                text: settingsViewModel.previewMode
-                                    ? settingsViewModel.previewSafetyMessage
-                                    : "设置修改会先进入页面草稿，只有确认后才写入 config.json。"
-                                color: settingsViewModel.previewMode ? theme.warning : theme.accent
-                                font.family: typography.fontFamily
-                                font.pixelSize: typography.sizeBody
-                                Layout.fillWidth: true
-                                wrapMode: Text.WordWrap
-                                maximumLineCount: 2
-                            }
-
-                            Text {
+                                visible: settingsViewModel.saveStatus.length > 0
                                 text: settingsViewModel.saveStatus
                                 color: theme.textSecondary
                                 font.family: typography.fontFamily
@@ -141,32 +145,74 @@ Item {
                             }
                         }
 
-                        DraftStatusBadge {
-                            theme: root.theme
-                            typography: root.typography
-                            hasChanges: settingsViewModel.hasPendingChanges
-                            previewMode: settingsViewModel.previewMode
-                            Layout.alignment: Qt.AlignLeft
+                        Text {
+                            visible: settingsViewModel.hasPendingChanges
+                            text: settingsViewModel.draftStateText
+                            color: theme.warning
+                            font.family: typography.fontFamily
+                            font.pixelSize: typography.sizeBody
+                            font.weight: typography.weightBold
+                            Layout.fillWidth: true
+                        }
+
+                        ColumnLayout {
+                            visible: settingsViewModel.hasPendingChanges
+                            Layout.fillWidth: true
+                            spacing: 5
+
+                            Repeater {
+                                model: settingsViewModel.pendingChangeItems
+
+                                RowLayout {
+                                    required property var modelData
+                                    Layout.fillWidth: true
+                                    spacing: 8
+
+                                    Text {
+                                        text: modelData.label
+                                        color: theme.textPrimary
+                                        font.family: typography.fontFamily
+                                        font.pixelSize: typography.sizeSmall
+                                        Layout.preferredWidth: 130
+                                        elide: Text.ElideRight
+                                    }
+                                    Text {
+                                        text: modelData.before + "  →  " + modelData.after
+                                        color: theme.textSecondary
+                                        font.family: typography.fontFamily
+                                        font.pixelSize: typography.sizeSmall
+                                        Layout.fillWidth: true
+                                        elide: Text.ElideMiddle
+                                    }
+                                    StatusBadge {
+                                        visible: modelData.automaticConversion
+                                        theme: root.theme
+                                        typography: root.typography
+                                        label: "自动转码"
+                                        tone: "warning"
+                                    }
+                                }
+                            }
                         }
 
                         Text {
-                            text: settingsViewModel.draftStateText
-                            color: settingsViewModel.hasPendingChanges ? theme.warning : theme.textSecondary
+                            visible: settingsViewModel.hasAutoConvertChanges
+                                && settingsViewModel.autoConvertBusy
+                            text: settingsViewModel.applyBlockedReason
+                            color: theme.warning
                             font.family: typography.fontFamily
                             font.pixelSize: typography.sizeSmall
                             Layout.fillWidth: true
                             wrapMode: Text.WordWrap
-                            maximumLineCount: 2
                         }
 
                         Flow {
                             objectName: "settingsDraftActions"
                             Layout.fillWidth: true
                             spacing: 8
-                            SettingsButton { theme: root.theme; typography: root.typography; label: settingsViewModel.previewMode ? "模拟保存草稿" : "检查当前草稿"; preferredWidth: 142; enabled: settingsViewModel.hasPendingChanges; onClicked: settingsViewModel.simulateSaveDraft() }
-                            SettingsButton { theme: root.theme; typography: root.typography; label: "放弃草稿"; preferredWidth: 104; enabled: settingsViewModel.hasPendingChanges; onClicked: settingsViewModel.discardPendingChanges() }
-                            SettingsButton { theme: root.theme; typography: root.typography; label: "重新读取真实配置"; preferredWidth: 154; onClicked: settingsViewModel.reloadConfig() }
-                            SettingsButton { theme: root.theme; typography: root.typography; label: "保存设置"; preferredWidth: 218; tone: settingsViewModel.previewMode ? "warning" : "error"; enabled: settingsViewModel.canPersistConfig && settingsViewModel.hasPendingChanges; disabledReason: settingsViewModel.previewMode ? "预览模式不会写入配置。" : "当前无需要保存的草稿。"; onClicked: settingsViewModel.savePendingChanges() }
+                            SettingsButton { theme: root.theme; typography: root.typography; label: "放弃修改"; preferredWidth: 112; enabled: settingsViewModel.hasPendingChanges; onClicked: settingsViewModel.discardPendingChanges() }
+                            SettingsButton { theme: root.theme; typography: root.typography; label: "重新载入"; preferredWidth: 112; enabled: !settingsViewModel.hasPendingChanges; disabledReason: "请先应用或放弃当前修改。"; onClicked: settingsViewModel.reloadConfig() }
+                            SettingsButton { theme: root.theme; typography: root.typography; label: "应用修改"; preferredWidth: 156; tone: "warning"; enabled: settingsViewModel.canApplyPendingChanges; disabledReason: settingsViewModel.applyBlockedReason; onClicked: settingsViewModel.savePendingChanges() }
                         }
                     }
                 }
@@ -186,16 +232,18 @@ Item {
                     theme: root.theme
                     typography: root.typography
                     title: "路径设置"
-                    subtitle: settingsViewModel.previewMode ? "所有路径仅为页面草稿，不写入 config.json，也不会改变旧 Widgets UI 或后台任务使用的目录。" : "路径选择先进入页面草稿，保存并确认后才写入 config.json。"
-                    statusLabel: settingsViewModel.previewMode ? "草稿不生效" : "待确认后保存"
-                    statusTone: settingsViewModel.previewMode ? "warning" : "accent"
+                    subtitle: "选择新路径后，需在页面顶部确认应用。"
+                    statusLabel: root.settingChanged("watch_folder")
+                        || root.settingChanged("output_folder")
+                        || root.settingChanged("editor_output_folder") ? "未保存" : ""
+                    statusTone: "warning"
 
                     PathField {
                         theme: root.theme
                         typography: root.typography
                         label: "监听目录"
                         path: settingsViewModel.watchFolder
-                        helperText: "页面草稿：当前不会改变后台监听目录。"
+                        helperText: "自动转码监听的来源目录。"
                         draftOnly: true
                         browseEnabled: true
                         onBrowseRequested: settingsViewModel.choosePendingWatchFolder()
@@ -206,7 +254,7 @@ Item {
                         typography: root.typography
                         label: "转码输出"
                         path: settingsViewModel.outputFolder
-                        helperText: "页面草稿：当前不会改变后台转码输出目录。"
+                        helperText: "自动转码生成文件的默认目录。"
                         draftOnly: true
                         browseEnabled: true
                         onBrowseRequested: settingsViewModel.choosePendingOutputFolder()
@@ -217,7 +265,7 @@ Item {
                         typography: root.typography
                         label: "编辑输出"
                         path: settingsViewModel.editorOutputFolder
-                        helperText: "页面草稿：当前不会改变旧 Widgets UI 的音频编辑输出目录。"
+                        helperText: "音频编辑导出时使用的默认目录。"
                         draftOnly: true
                         browseEnabled: true
                         onBrowseRequested: settingsViewModel.choosePendingEditorOutputFolder()
@@ -229,8 +277,7 @@ Item {
                         label: "缓存目录"
                         path: settingsViewModel.cacheFolder
                         browseEnabled: false
-                        helperText: "只读占位；当前不提供清理操作。"
-                        tone: "warning"
+                        helperText: "程序临时缓存位置；清理功能位于“日志与缓存”。"
                     }
                 }
 
@@ -240,9 +287,9 @@ Item {
                     theme: root.theme
                     typography: root.typography
                     title: "自动转码设置"
-                    subtitle: settingsViewModel.previewMode ? "草稿不生效：仅更新本页内容，不会写入 config.json，也不会启动、停止或改变后台任务。" : "设置只更新草稿，点击保存并确认后才写入 config.json。"
-                    statusLabel: settingsViewModel.previewMode ? "不影响后台任务" : "待确认草稿"
-                    statusTone: settingsViewModel.previewMode ? "warning" : "accent"
+                    subtitle: "修改需确认后生效；转换进行中不可应用，已创建任务保留原参数。"
+                    statusLabel: settingsViewModel.hasAutoConvertChanges ? "未保存" : ""
+                    statusTone: "warning"
 
                     SettingRow {
                         theme: root.theme
@@ -264,7 +311,7 @@ Item {
                         theme: root.theme
                         typography: root.typography
                         label: "启动后自动监听"
-                        helperText: "草稿项，当前不会启动监听或影响旧 Widgets UI。"
+                        helperText: "应用后在下次启动时自动开启目录监听。"
                         checked: settingsViewModel.autoStartMonitor
                         onToggled: settingsViewModel.updatePendingValue("auto_start_monitor", checked)
                     }
@@ -273,7 +320,7 @@ Item {
                         theme: root.theme
                         typography: root.typography
                         label: "启动监听时扫描已有文件"
-                        helperText: "草稿项，当前不会扫描目录或改变后台队列。"
+                        helperText: "启动监听时将目录内已有文件加入扫描。"
                         checked: settingsViewModel.scanExistingOnStart
                         onToggled: settingsViewModel.updatePendingValue("scan_existing_on_start", checked)
                     }
@@ -282,7 +329,7 @@ Item {
                         theme: root.theme
                         typography: root.typography
                         label: "按目标格式创建子文件夹"
-                        helperText: "草稿项，当前不会改变后台输出目录结构。"
+                        helperText: "在输出目录下按格式创建分类子目录。"
                         checked: settingsViewModel.createFormatSubfolder
                         onToggled: settingsViewModel.updatePendingValue("create_format_subfolder", checked)
                     }
@@ -291,7 +338,7 @@ Item {
                         theme: root.theme
                         typography: root.typography
                         label: "保持输入目录结构"
-                        helperText: "仅影响保存后新加入的 QML 批量任务；已有任务保留创建时的参数快照。"
+                        helperText: "在输出目录中保留来源文件的相对目录层级。"
                         checked: settingsViewModel.preserveRelativeStructure
                         onToggled: settingsViewModel.updatePendingValue("preserve_relative_structure", checked)
                     }
@@ -312,8 +359,11 @@ Item {
                     theme: root.theme
                     typography: root.typography
                     title: "歌词设置"
-                    subtitle: "时间点精度会立即作用于本次会话；其余转换歌词选项仍只进入页面草稿。"
-                    statusLabel: "时间点精度即时预览"
+                    subtitle: "修改会保存在当前设置草稿中，确认后应用。"
+                    statusLabel: root.settingChanged("lyrics_timestamp_precision")
+                        || root.settingChanged("embed_lyrics_after_convert")
+                        || root.settingChanged("copy_lrc_to_output")
+                        || root.settingChanged("overwrite_existing_lyrics") ? "未保存" : ""
                     statusTone: "warning"
 
                     SettingRow {
@@ -334,7 +384,7 @@ Item {
 
                         Text {
                             Layout.fillWidth: true
-                            text: "默认千分之一秒，例如 [03:21.450]；也可切换为百分之一秒 [03:21.45]。保存确认后作为下次启动默认值。"
+                            text: "千分之一秒示例 [03:21.450]；百分之一秒示例 [03:21.45]。"
                             color: theme.muted
                             font.family: typography.fontFamily
                             font.pixelSize: typography.sizeSmall
@@ -346,7 +396,7 @@ Item {
                         theme: root.theme
                         typography: root.typography
                         label: "转换后写入内嵌歌词"
-                        helperText: "草稿项，当前不会接入转换流程。"
+                        helperText: "转码完成后将歌词写入支持的音频容器。"
                         checked: settingsViewModel.embedLyricsAfterConvert
                         onToggled: settingsViewModel.updatePendingValue("embed_lyrics_after_convert", checked)
                     }
@@ -355,7 +405,7 @@ Item {
                         theme: root.theme
                         typography: root.typography
                         label: "同时保留外置 .lrc"
-                        helperText: "草稿项，当前仅用于 UI 预览。"
+                        helperText: "转码输出旁同时保留同名 .lrc 文件。"
                         checked: settingsViewModel.copyLrcToOutput
                         onToggled: settingsViewModel.updatePendingValue("copy_lrc_to_output", checked)
                     }
@@ -364,7 +414,7 @@ Item {
                         theme: root.theme
                         typography: root.typography
                         label: "覆盖已有歌词"
-                        helperText: "草稿项；覆盖已有歌词的功能暂未开放。"
+                        helperText: "写入时允许替换输出文件内已有的歌词标签。"
                         checked: settingsViewModel.overwriteExistingLyrics
                         danger: true
                         onToggled: settingsViewModel.updatePendingValue("overwrite_existing_lyrics", checked)
@@ -377,9 +427,7 @@ Item {
                     theme: root.theme
                     typography: root.typography
                     title: "播放设置"
-                    subtitle: "设备设置占位，当前不会切换播放设备。WASAPI / WaveOut / ASIO 均未接入。"
-                    statusLabel: "设备设置占位"
-                    statusTone: "muted"
+                    subtitle: "当前由系统管理音频输出设备。"
 
                     SettingRow {
                         theme: root.theme
@@ -407,46 +455,6 @@ Item {
                             }
                         }
 
-                        StatusBadge {
-                            theme: root.theme
-                            typography: root.typography
-                            label: "只读占位"
-                            tone: "muted"
-                        }
-                    }
-
-                    Flow {
-                        Layout.fillWidth: true
-                        spacing: 8
-
-                        StatusBadge {
-                            theme: root.theme
-                            typography: root.typography
-                            label: "WASAPI 预留"
-                            tone: "muted"
-                        }
-
-                        StatusBadge {
-                            theme: root.theme
-                            typography: root.typography
-                            label: "WaveOut 预留"
-                            tone: "muted"
-                        }
-
-                        StatusBadge {
-                            theme: root.theme
-                            typography: root.typography
-                            label: "ASIO 待接入"
-                            tone: "warning"
-                        }
-                    }
-
-                    Text {
-                        text: "设备设置占位，当前不会切换播放设备。"
-                        color: theme.muted
-                        font.family: typography.fontFamily
-                        font.pixelSize: typography.sizeSmall
-                        Layout.fillWidth: true
                     }
                 }
 
@@ -456,9 +464,11 @@ Item {
                     theme: root.theme
                     typography: root.typography
                     title: "主题与界面"
-                    subtitle: "主题切换只作用于本次 QML 运行会话。UI 密度和公共文件栏布局先进入页面草稿。"
-                    statusLabel: "会话内生效"
-                    statusTone: "muted"
+                    subtitle: "主题可立即预览；确认应用后保留为下次启动设置。"
+                    statusLabel: root.settingChanged("theme_mode")
+                        || root.settingChanged("ui_density")
+                        || root.settingChanged("editor_file_bar_mode") ? "未保存" : ""
+                    statusTone: "warning"
 
                     SettingRow {
                         theme: root.theme
@@ -532,9 +542,9 @@ Item {
                     theme: root.theme
                     typography: root.typography
                     title: "日志与缓存"
-                    subtitle: "日志级别只进入页面草稿；缓存清理功能暂未开放。"
-                    statusLabel: "缓存清理禁用"
-                    statusTone: "warning"
+                    subtitle: "显示当前磁盘占用；清理前会先列出文件或缓存分类。"
+                    statusLabel: settingsViewModel.storageBusy ? "读取中" : ""
+                    statusTone: "muted"
 
                     SettingRow {
                         theme: root.theme
@@ -552,6 +562,50 @@ Item {
                         }
                     }
 
+                    Rectangle {
+                        Layout.fillWidth: true
+                        implicitHeight: 62
+                        color: theme.surface
+                        border.color: theme.border
+                        radius: theme.radiusSmall
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: 10
+                            spacing: 12
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 2
+                                Text { text: "日志"; color: theme.textPrimary; font.family: typography.fontFamily; font.pixelSize: typography.sizeBody; font.weight: typography.weightBold }
+                                Text { text: settingsViewModel.logFileCount + " 个文件"; color: theme.textSecondary; font.family: typography.fontFamily; font.pixelSize: typography.sizeSmall }
+                            }
+                            Text { text: settingsViewModel.logUsageText; color: theme.accent; font.family: typography.fontFamily; font.pixelSize: typography.sizeMedium; font.weight: typography.weightBold }
+                        }
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        implicitHeight: 62
+                        color: theme.surface
+                        border.color: theme.border
+                        radius: theme.radiusSmall
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: 10
+                            spacing: 12
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 2
+                                Text { text: "缓存"; color: theme.textPrimary; font.family: typography.fontFamily; font.pixelSize: typography.sizeBody; font.weight: typography.weightBold }
+                                Text { text: settingsViewModel.cacheFileCount + " 个文件"; color: theme.textSecondary; font.family: typography.fontFamily; font.pixelSize: typography.sizeSmall }
+                            }
+                            Text { text: settingsViewModel.cacheUsageText; color: theme.accent; font.family: typography.fontFamily; font.pixelSize: typography.sizeMedium; font.weight: typography.weightBold }
+                        }
+                    }
+
                     Flow {
                         Layout.fillWidth: true
                         spacing: 8
@@ -560,7 +614,7 @@ Item {
                             theme: root.theme
                             typography: root.typography
                             label: "打开日志位置"
-                            enabled: false
+                            onClicked: settingsViewModel.openLogFolder()
                         }
 
                         SettingsButton {
@@ -573,27 +627,35 @@ Item {
                         SettingsButton {
                             theme: root.theme
                             typography: root.typography
-                            label: "清空日志抽屉"
+                            label: "清理日志"
                             tone: "warning"
-                            onClicked: settingsViewModel.clearLogPreview()
+                            enabled: settingsViewModel.canPrepareLogCleanup
+                            disabledReason: settingsViewModel.storageBusy ? "正在读取占用空间。" : "当前没有可清理的日志。"
+                            onClicked: settingsViewModel.prepareLogCleanup()
                         }
 
                         SettingsButton {
                             theme: root.theme
                             typography: root.typography
-                            label: "清理缓存（当前不可用）"
-                            preferredWidth: 184
-                            tone: "error"
-                            enabled: false
+                            label: "清理缓存"
+                            preferredWidth: 128
+                            tone: "warning"
+                            enabled: settingsViewModel.canPrepareCacheCleanup
+                            disabledReason: settingsViewModel.cacheCleanupBlocked
+                                ? settingsViewModel.cacheCleanupBlockedReason
+                                : settingsViewModel.storageBusy
+                                    ? "正在读取占用空间。"
+                                    : "当前没有可清理的缓存。"
+                            onClicked: settingsViewModel.prepareCacheCleanup()
                         }
-                    }
 
-                    Text {
-                        text: "当前不提供缓存清理操作。"
-                        color: theme.warning
-                        font.family: typography.fontFamily
-                        font.pixelSize: typography.sizeSmall
-                        Layout.fillWidth: true
+                        SettingsButton {
+                            theme: root.theme
+                            typography: root.typography
+                            label: "刷新占用"
+                            enabled: !settingsViewModel.storageBusy
+                            onClicked: settingsViewModel.refreshStorageUsage()
+                        }
                     }
                 }
                 }
@@ -602,6 +664,117 @@ Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 8
                 }
+        }
+    }
+
+    Dialog {
+        id: cleanupConfirmDialog
+        objectName: "settingsStorageCleanupDialog"
+        parent: Overlay.overlay
+        anchors.centerIn: parent
+        width: Math.min(620, root.width - root.theme.spacing * 4)
+        modal: true
+        title: settingsViewModel.cleanupTitle
+        standardButtons: Dialog.NoButton
+        closePolicy: Popup.CloseOnEscape
+        onClosed: {
+            if (settingsViewModel.cleanupTarget.length > 0)
+                settingsViewModel.cancelPreparedCleanup()
+        }
+
+        background: Rectangle {
+            color: root.theme.panel
+            border.color: root.theme.border
+            radius: root.theme.radiusMedium
+        }
+
+        contentItem: ColumnLayout {
+            spacing: root.theme.spacing
+
+            Text {
+                text: settingsViewModel.cleanupSummary
+                color: root.theme.textPrimary
+                font.family: root.typography.fontFamily
+                font.pixelSize: root.typography.sizeBody
+                font.weight: root.typography.weightBold
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+            }
+
+            ScrollView {
+                id: cleanupScroll
+                Layout.fillWidth: true
+                Layout.preferredHeight: Math.min(260, cleanupList.implicitHeight)
+                clip: true
+
+                ColumnLayout {
+                    id: cleanupList
+                    width: cleanupScroll.availableWidth
+                    spacing: 6
+
+                    Repeater {
+                        model: settingsViewModel.cleanupItems
+
+                        Rectangle {
+                            required property var modelData
+                            Layout.fillWidth: true
+                            implicitHeight: 58
+                            color: root.theme.surface
+                            border.color: root.theme.border
+                            radius: root.theme.radiusSmall
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.margins: 8
+                                spacing: 10
+
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 2
+                                    Text { text: modelData.label; color: root.theme.textPrimary; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeBody; Layout.fillWidth: true; elide: Text.ElideRight }
+                                    Text { text: modelData.detail; color: root.theme.textSecondary; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeTiny; Layout.fillWidth: true; elide: Text.ElideMiddle }
+                                }
+                                Text { text: modelData.sizeText; color: root.theme.warning; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeSmall; font.weight: root.typography.weightBold }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Text {
+                text: "确认后将删除上列程序日志或临时缓存，此操作不可撤回。"
+                color: root.theme.warning
+                font.family: root.typography.fontFamily
+                font.pixelSize: root.typography.sizeSmall
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Item { Layout.fillWidth: true }
+                SettingsButton {
+                    theme: root.theme
+                    typography: root.typography
+                    label: "取消"
+                    preferredWidth: 96
+                    onClicked: {
+                        settingsViewModel.cancelPreparedCleanup()
+                        cleanupConfirmDialog.close()
+                    }
+                }
+                SettingsButton {
+                    theme: root.theme
+                    typography: root.typography
+                    label: "确认清理"
+                    preferredWidth: 112
+                    tone: "error"
+                    onClicked: {
+                        settingsViewModel.confirmPreparedCleanup()
+                        cleanupConfirmDialog.close()
+                    }
+                }
+            }
         }
     }
 
@@ -680,34 +853,6 @@ Item {
         typography: root.typography
         text: label
         disabledReason: "当前设置在此状态下不可用。"
-    }
-
-    component DraftStatusBadge: Rectangle {
-        property QtObject theme
-        property QtObject typography
-        property bool hasChanges: false
-        property bool previewMode: true
-
-        Layout.preferredWidth: 172
-        implicitHeight: 34
-        color: hasChanges
-            ? Qt.rgba(theme.warning.r, theme.warning.g, theme.warning.b, 0.12)
-            : Qt.rgba(theme.success.r, theme.success.g, theme.success.b, 0.10)
-        border.color: hasChanges ? theme.warning : theme.success
-        radius: theme.radiusSmall
-
-        Text {
-            anchors.centerIn: parent
-            text: hasChanges
-                ? (previewMode ? "草稿未写入磁盘" : "等待保存确认")
-                : "当前无草稿修改"
-            color: hasChanges ? theme.warning : theme.success
-            font.family: typography.fontFamily
-            font.pixelSize: typography.sizeSmall
-            font.weight: typography.weightMedium
-            elide: Text.ElideRight
-            maximumLineCount: 1
-        }
     }
 
     component DraftSettingBlock: Rectangle {

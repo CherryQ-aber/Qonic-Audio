@@ -138,7 +138,7 @@ Item {
         finally:
             self._dispose_probe(view, container)
 
-    def test_runtime_settings_actions_keep_their_original_visible_labels(self):
+    def test_runtime_settings_actions_use_current_product_labels(self):
         view_model = SettingsViewModel()
         source = '''import QtQuick
 import "ui_next/qml/pages"
@@ -157,17 +157,19 @@ Item {
         try:
             actions = container.findChildren(QObject, "settingsActionButton")
             labels = {str(action.property("text")) for action in actions}
-            self.assertEqual(8, len(actions))
+            self.assertEqual(10, len(actions))
             self.assertEqual(
                 {
-                    "模拟保存草稿",
-                    "放弃草稿",
-                    "重新读取真实配置",
-                    "保存设置",
+                    "放弃修改",
+                    "重新载入",
+                    "应用修改",
                     "打开日志位置",
                     "复制最近日志",
-                    "清空日志抽屉",
-                    "清理缓存（当前不可用）",
+                    "清理日志",
+                    "清理缓存",
+                    "刷新占用",
+                    "取消",
+                    "确认清理",
                 },
                 labels,
             )

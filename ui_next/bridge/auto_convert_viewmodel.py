@@ -606,6 +606,10 @@ class AutoConvertViewModel(BaseViewModel):
         return self._is_thread_running(self._convert_thread)
 
     @Property(bool, notify=busyChanged)
+    def isConverting(self) -> bool:
+        return self._is_thread_running(self._convert_thread)
+
+    @Property(bool, notify=busyChanged)
     def canStopAfterCurrentTask(self) -> bool:
         return self._is_thread_running(self._convert_thread)
 

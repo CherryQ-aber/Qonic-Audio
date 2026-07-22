@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import logging
 import os
+from collections.abc import Callable
 
-from PySide6.QtCore import Property, QUrl, Signal, Slot
+from PySide6.QtCore import Property, QThread, QUrl, Signal, Slot
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 
@@ -16,8 +17,29 @@ from config import (
 from formats import DEFAULT_TARGET_FORMAT, SUPPORTED_TARGET_FORMATS, normalize_target_format
 from logger import LOG_DIR, LOG_FILE
 from ui_next.bridge.base_viewmodel import BaseViewModel
-from ui_next.bridge.capabilities import CONFIG_WRITE, CapabilityGate
+from cache_manager import format_size
+from ui_next.bridge.capabilities import CACHE_CLEANUP, CONFIG_WRITE, CapabilityGate
 from ui_next.bridge.log_model import LogModel
+from ui_next.bridge.settings_storage import (
+    clear_log_storage,
+    clear_selected_cache,
+    scan_settings_storage,
+)
+
+
+class _StorageWorker(QThread):
+    resultReady = Signal(object)
+    errorReady = Signal(str)
+
+    def __init__(self, action: Callable[[], dict], parent=None) -> None:
+        super().__init__(parent)
+        self._action = action
+
+    def run(self) -> None:
+        try:
+            self.resultReady.emit(self._action())
+        except Exception as exc:  # pragma: no cover - surfaced in the UI
+            self.errorReady.emit(str(exc))
 
 
 class SettingsViewModel(BaseViewModel):
@@ -25,13 +47,18 @@ class SettingsViewModel(BaseViewModel):
     saveStatusChanged = Signal(str)
     hasPendingChangesChanged = Signal(bool)
     configPersisted = Signal()
+    runtimeStateChanged = Signal()
+    storageChanged = Signal()
+    storageBusyChanged = Signal(bool)
+    cleanupPlanChanged = Signal()
+    cleanupDialogRequested = Signal()
 
     _PATH_KEYS = {
         "watch_folder": "监听目录",
         "output_folder": "自动转码输出目录",
         "editor_output_folder": "音频编辑输出目录",
     }
-    _KNOWN_KEYS = {
+    _SETTING_ORDER = (
         "watch_folder",
         "output_folder",
         "editor_output_folder",
@@ -48,7 +75,40 @@ class SettingsViewModel(BaseViewModel):
         "ui_density",
         "editor_file_bar_mode",
         "lyrics_timestamp_precision",
+    )
+    _KNOWN_KEYS = frozenset(_SETTING_ORDER)
+    _SETTING_LABELS = {
+        "watch_folder": "监听目录",
+        "output_folder": "转码输出目录",
+        "editor_output_folder": "编辑输出目录",
+        "target_format": "目标格式",
+        "auto_start_monitor": "启动时自动监听",
+        "scan_existing_on_start": "启动时扫描已有文件",
+        "create_format_subfolder": "按格式创建子目录",
+        "preserve_relative_structure": "保留相对目录结构",
+        "embed_lyrics_after_convert": "转码后嵌入歌词",
+        "copy_lrc_to_output": "复制同名 LRC",
+        "overwrite_existing_lyrics": "覆盖已有歌词",
+        "theme_mode": "界面主题",
+        "log_level": "日志级别",
+        "ui_density": "界面密度",
+        "editor_file_bar_mode": "公共文件栏",
+        "lyrics_timestamp_precision": "歌词时间精度",
     }
+    _AUTO_CONVERT_KEYS = frozenset(
+        {
+            "watch_folder",
+            "output_folder",
+            "target_format",
+            "auto_start_monitor",
+            "scan_existing_on_start",
+            "create_format_subfolder",
+            "preserve_relative_structure",
+            "embed_lyrics_after_convert",
+            "copy_lrc_to_output",
+            "overwrite_existing_lyrics",
+        }
+    )
     _PREVIEW_SAFETY_MESSAGE = (
         "预览模式：设置修改只保存为页面草稿，不会写入 config.json，"
         "也不会影响旧 Widgets UI 或后台任务。"
@@ -67,7 +127,21 @@ class SettingsViewModel(BaseViewModel):
         self._current_config = load_config()
         self._pending_config = dict(self._current_config)
         self._has_pending_changes = False
-        self._save_status = self._PREVIEW_SAFETY_MESSAGE
+        self._save_status = ""
+        self._auto_convert_view_model = None
+        self._processing_session_view_model = None
+        self._edit_session_view_model = None
+        self._storage_worker: _StorageWorker | None = None
+        self._storage_operation = ""
+        self._storage_result: dict | None = None
+        self._storage_error = ""
+        self._storage_busy = False
+        self._log_storage = self._empty_log_storage()
+        self._cache_storage = self._empty_cache_storage()
+        self._cleanup_target = ""
+        self._cleanup_title = ""
+        self._cleanup_summary = ""
+        self._cleanup_items: list[dict] = []
         if gate.allows(CONFIG_WRITE):
             self._apply_log_level(self.logLevel)
 
@@ -215,10 +289,131 @@ class SettingsViewModel(BaseViewModel):
     @Property(str, notify=hasPendingChangesChanged)
     def draftStateText(self) -> str:
         if not self._has_pending_changes:
-            return "当前无草稿修改"
-        if self.previewMode:
-            return "有未应用草稿 · 草稿未写入磁盘 · 预览模式不会保存"
-        return "有未应用草稿 · 确认后才会写入 config.json"
+            return ""
+        return f"{self.pendingChangeCount} 项修改未应用"
+
+    @Property(int, notify=hasPendingChangesChanged)
+    def pendingChangeCount(self) -> int:
+        return len(self._changed_keys())
+
+    @Property("QVariantList", notify=hasPendingChangesChanged)
+    def pendingChangeItems(self) -> list[dict]:
+        return [self._change_item(key) for key in self._changed_keys()]
+
+    @Property(str, notify=hasPendingChangesChanged)
+    def pendingChangeSummary(self) -> str:
+        return "\n".join(
+            f'{item["label"]}：{item["before"]} → {item["after"]}'
+            for item in self.pendingChangeItems
+        )
+
+    @Property(bool, notify=hasPendingChangesChanged)
+    def hasAutoConvertChanges(self) -> bool:
+        return any(key in self._AUTO_CONVERT_KEYS for key in self._changed_keys())
+
+    @Property(bool, notify=runtimeStateChanged)
+    def autoConvertBusy(self) -> bool:
+        view_model = self._auto_convert_view_model
+        return bool(view_model is not None and getattr(view_model, "isConverting", False))
+
+    @Property(bool, notify=runtimeStateChanged)
+    def cacheCleanupBlocked(self) -> bool:
+        auto_busy = bool(
+            self._auto_convert_view_model is not None
+            and getattr(self._auto_convert_view_model, "hasBackgroundTask", False)
+        )
+        processing_busy = bool(
+            self._processing_session_view_model is not None
+            and getattr(self._processing_session_view_model, "isBusy", False)
+        )
+        exporting = bool(
+            self._edit_session_view_model is not None
+            and getattr(self._edit_session_view_model, "anyExporting", False)
+        )
+        return auto_busy or processing_busy or exporting
+
+    @Property(str, notify=runtimeStateChanged)
+    def cacheCleanupBlockedReason(self) -> str:
+        if not self.cacheCleanupBlocked:
+            return ""
+        return "当前有转换、扫描、音频处理或导出任务，暂不能清理缓存。"
+
+    @Property(bool, notify=runtimeStateChanged)
+    def canApplyPendingChanges(self) -> bool:
+        return bool(
+            self.canPersistConfig
+            and self.hasPendingChanges
+            and not (self.hasAutoConvertChanges and self.autoConvertBusy)
+        )
+
+    @Property(str, notify=runtimeStateChanged)
+    def applyBlockedReason(self) -> str:
+        if not self.canPersistConfig:
+            return "当前运行模式不允许保存设置。"
+        if not self.hasPendingChanges:
+            return "当前没有需要应用的修改。"
+        if self.hasAutoConvertChanges and self.autoConvertBusy:
+            return "自动转码正在运行，结束后才能应用相关设置。"
+        return ""
+
+    @Property(bool, notify=storageBusyChanged)
+    def storageBusy(self) -> bool:
+        return self._storage_busy
+
+    @Property(str, notify=storageChanged)
+    def logUsageText(self) -> str:
+        return str(self._log_storage.get("total_size_text") or "0 B")
+
+    @Property(int, notify=storageChanged)
+    def logFileCount(self) -> int:
+        return int(self._log_storage.get("total_files") or 0)
+
+    @Property(str, notify=storageChanged)
+    def cacheUsageText(self) -> str:
+        return format_size(self._cache_storage.get("total_size") or 0)
+
+    @Property(int, notify=storageChanged)
+    def cacheFileCount(self) -> int:
+        return int(self._cache_storage.get("total_files") or 0)
+
+    @Property(str, notify=storageChanged)
+    def storageSummary(self) -> str:
+        if self.storageBusy:
+            return "正在读取占用空间…"
+        return f"日志 {self.logUsageText} · 缓存 {self.cacheUsageText}"
+
+    @Property(bool, notify=storageChanged)
+    def canPrepareLogCleanup(self) -> bool:
+        return bool(
+            self.allows_capability(CACHE_CLEANUP)
+            and not self.storageBusy
+            and self.logFileCount > 0
+        )
+
+    @Property(bool, notify=storageChanged)
+    def canPrepareCacheCleanup(self) -> bool:
+        return bool(
+            self.allows_capability(CACHE_CLEANUP)
+            and not self.storageBusy
+            and not self.cacheCleanupBlocked
+            and int(self._cache_storage.get("cleanable_files") or 0) > 0
+        )
+
+    @Property(str, notify=cleanupPlanChanged)
+    def cleanupTarget(self) -> str:
+        return self._cleanup_target
+
+    @Property(str, notify=cleanupPlanChanged)
+    def cleanupTitle(self) -> str:
+        return self._cleanup_title
+
+    @Property(str, notify=cleanupPlanChanged)
+    def cleanupSummary(self) -> str:
+        return self._cleanup_summary
+
+    @Property("QVariantList", notify=cleanupPlanChanged)
+    def cleanupItems(self) -> list[dict]:
+        return list(self._cleanup_items)
 
     @Property("QVariantMap", notify=settingsChanged)
     def currentConfig(self) -> dict:
@@ -227,6 +422,72 @@ class SettingsViewModel(BaseViewModel):
     @Property("QVariantMap", notify=settingsChanged)
     def pendingConfig(self) -> dict:
         return dict(self._pending_config)
+
+    def attach_runtime(
+        self,
+        auto_convert_view_model=None,
+        processing_session_view_model=None,
+        edit_session_view_model=None,
+    ) -> None:
+        self._auto_convert_view_model = auto_convert_view_model
+        self._processing_session_view_model = processing_session_view_model
+        self._edit_session_view_model = edit_session_view_model
+
+        if auto_convert_view_model is not None:
+            auto_convert_view_model.busyChanged.connect(self._emit_runtime_state)
+        if processing_session_view_model is not None:
+            processing_session_view_model.stateChanged.connect(self._emit_runtime_state)
+        if edit_session_view_model is not None:
+            edit_session_view_model.stateChanged.connect(self._emit_runtime_state)
+        self._emit_runtime_state()
+
+    @Slot()
+    def refreshStorageUsage(self) -> None:
+        self._start_storage_operation("scan", scan_settings_storage)
+
+    @Slot()
+    def prepareLogCleanup(self) -> None:
+        self._start_storage_operation("prepare_logs", scan_settings_storage)
+
+    @Slot()
+    def prepareCacheCleanup(self) -> None:
+        if self.cacheCleanupBlocked:
+            self._set_save_status(self.cacheCleanupBlockedReason, level="warning")
+            return
+        self._start_storage_operation("prepare_cache", scan_settings_storage)
+
+    @Slot()
+    def cancelPreparedCleanup(self) -> None:
+        self._clear_cleanup_plan()
+
+    @Slot()
+    def confirmPreparedCleanup(self) -> None:
+        if not self._cleanup_target or not self._cleanup_items:
+            self._set_save_status("没有可清理的项目。")
+            return
+        if not self.allows_capability(CACHE_CLEANUP):
+            self._set_save_status(
+                self.block_capability(CACHE_CLEANUP), level="warning"
+            )
+            return
+        if self._cleanup_target == "cache" and self.cacheCleanupBlocked:
+            self._set_save_status(self.cacheCleanupBlockedReason, level="warning")
+            return
+
+        target = self._cleanup_target
+        if target == "logs":
+            action = clear_log_storage
+        else:
+            category_ids = [item["id"] for item in self._cleanup_items]
+            action = lambda: clear_selected_cache(category_ids)
+        self._clear_cleanup_plan()
+        self._start_storage_operation(f"clear_{target}", action)
+
+    @Slot()
+    def shutdown(self) -> None:
+        worker = self._storage_worker
+        if worker is not None and worker.isRunning():
+            worker.wait()
 
     @Slot()
     def reload(self) -> None:
@@ -238,9 +499,7 @@ class SettingsViewModel(BaseViewModel):
         self._pending_config = dict(self._current_config)
         self._set_pending_changes(False)
         self.settingsChanged.emit()
-        self._set_save_status(
-            "已重新读取真实配置并恢复页面显示；未影响旧 Widgets UI 或后台任务。"
-        )
+        self._set_save_status("已重新载入设置。")
 
     @Slot(str)
     def chooseDirectory(self, key: str) -> None:
@@ -398,13 +657,9 @@ class SettingsViewModel(BaseViewModel):
     @Slot()
     def simulateSaveDraft(self) -> None:
         if self._has_pending_changes:
-            self._set_save_status(
-                "已模拟保存页面草稿；草稿未写入 config.json，"
-                "不会影响旧 Widgets UI 或后台任务。",
-                level="warning" if self.previewMode else "info",
-            )
+            self._set_save_status(self.pendingChangeSummary)
         else:
-            self._set_save_status("当前无草稿修改；没有需要模拟保存的内容。")
+            self._set_save_status("")
 
     @Slot()
     def saveConfig(self) -> None:
@@ -418,26 +673,26 @@ class SettingsViewModel(BaseViewModel):
     def savePendingChanges(self) -> None:
         if not self.allows_capability(CONFIG_WRITE):
             blocked_message = self.block_capability(CONFIG_WRITE)
-            self._set_save_status(
-                f"{blocked_message} 未调用 save_config；"
-                "config.json、旧 Widgets UI 和后台任务均未改变。",
-                level="warning",
-            )
+            self._set_save_status(blocked_message, level="warning")
             return
 
         if not self._has_pending_changes:
-            self._set_save_status("当前无草稿修改；config.json 未改变。")
+            self._set_save_status("")
+            return
+
+        if self.hasAutoConvertChanges and self.autoConvertBusy:
+            self._set_save_status(self.applyBlockedReason, level="warning")
             return
 
         if not self._confirm_live_save():
-            self._set_save_status("已取消写入 config.json；页面草稿仍保留。")
+            self._set_save_status("已取消应用，修改仍保留。")
             return
 
-        # Merge only QML-supported keys onto the newest on-disk config.  This
-        # keeps Legacy-only/unknown fields intact while preventing a stale UI
-        # draft from writing arbitrary fields back to disk.
+        # Merge only the confirmed changes onto the newest on-disk config.
+        # Unchanged keys may have been updated elsewhere while Settings was
+        # open and must not be overwritten by a stale page snapshot.
         config_to_save = load_config()
-        for key in self._KNOWN_KEYS:
+        for key in self._changed_keys():
             if key in self._pending_config:
                 config_to_save[key] = self._pending_config[key]
         self._current_config = save_config(config_to_save)
@@ -446,16 +701,14 @@ class SettingsViewModel(BaseViewModel):
         self.settingsChanged.emit()
         self._apply_log_level(self.logLevel)
         self.configPersisted.emit()
-        self._set_save_status(f"设置草稿已确认写入 {CONFIG_FILE}")
+        self._set_save_status("设置已应用。")
 
     @Slot()
     def discardPendingChanges(self) -> None:
         self._pending_config = dict(self._current_config)
         self._set_pending_changes(False)
         self.settingsChanged.emit()
-        self._set_save_status(
-            "已放弃页面草稿并恢复真实配置显示；config.json 未改变。"
-        )
+        self._set_save_status("已放弃修改。")
 
     @Slot(str, "QVariant")
     def updatePendingValue(self, key: str, value) -> None:
@@ -471,32 +724,18 @@ class SettingsViewModel(BaseViewModel):
         self._pending_config[normalized_key] = normalized_value
         self._set_pending_changes(self._pending_config != self._current_config)
         self.settingsChanged.emit()
-        if normalized_key == "lyrics_timestamp_precision":
-            self._set_save_status(
-                "时间点精度已在本次会话中预览；"
-                + (
-                    "未写入 config.json。"
-                    if self.previewMode
-                    else "保存并确认后才会作为下次启动默认值。"
-                ),
-                level="warning" if self.previewMode else "info",
-            )
-        elif self.previewMode:
-            self._set_save_status(
-                "草稿不生效：修改仅保存在当前页面内存，未写入 config.json，"
-                "不会影响旧 Widgets UI 或后台任务。",
-                level="warning",
-            )
-        else:
-            self._set_save_status(
-                "修改已进入页面草稿；仍需点击保存并二次确认。"
-            )
+        self._set_save_status(
+            f"已修改：{self._SETTING_LABELS.get(normalized_key, normalized_key)}"
+            if self._has_pending_changes
+            else ""
+        )
 
     def _set_pending_changes(self, value: bool) -> None:
         if self._has_pending_changes == value:
             return
         self._has_pending_changes = value
         self.hasPendingChangesChanged.emit(value)
+        self.runtimeStateChanged.emit()
 
     def _set_save_status(self, message: str, level: str = "info") -> None:
         self._save_status = message
@@ -544,11 +783,209 @@ class SettingsViewModel(BaseViewModel):
             )
         return value
 
+    def _changed_keys(self) -> list[str]:
+        return [
+            key
+            for key in self._SETTING_ORDER
+            if self._pending_config.get(key) != self._current_config.get(key)
+        ]
+
+    def _change_item(self, key: str) -> dict:
+        return {
+            "key": key,
+            "label": self._SETTING_LABELS.get(key, key),
+            "before": self._format_setting_value(key, self._current_config.get(key)),
+            "after": self._format_setting_value(key, self._pending_config.get(key)),
+            "automaticConversion": key in self._AUTO_CONVERT_KEYS,
+        }
+
+    @staticmethod
+    def _format_setting_value(key: str, value) -> str:
+        if isinstance(value, bool):
+            return "开启" if value else "关闭"
+        if value in (None, ""):
+            return "未设置"
+        normalized = str(value)
+        labels = {
+            "dark": "深色主题",
+            "light": "浅色主题",
+            "system": "跟随系统",
+            "standard": "标准",
+            "compact": "紧凑",
+            "fixed": "固定",
+            "floating": "悬浮",
+            "millisecond": "千分之一秒",
+            "centisecond": "百分之一秒",
+        }
+        if key == "target_format":
+            return normalized.upper()
+        return labels.get(normalized.lower(), normalized)
+
+    def _emit_runtime_state(self) -> None:
+        self.runtimeStateChanged.emit()
+        self.storageChanged.emit()
+
+    def _start_storage_operation(
+        self, operation: str, action: Callable[[], dict]
+    ) -> None:
+        if self._storage_worker is not None:
+            self._set_save_status("正在处理日志与缓存，请稍候。")
+            return
+        self._storage_operation = operation
+        self._storage_result = None
+        self._storage_error = ""
+        self._set_storage_busy(True)
+        worker = _StorageWorker(action, self)
+        self._storage_worker = worker
+        worker.resultReady.connect(self._store_storage_result)
+        worker.errorReady.connect(self._store_storage_error)
+        worker.finished.connect(self._finish_storage_operation)
+        worker.start()
+
+    @Slot(object)
+    def _store_storage_result(self, result: object) -> None:
+        self._storage_result = dict(result or {})
+
+    @Slot(str)
+    def _store_storage_error(self, message: str) -> None:
+        self._storage_error = str(message or "未知错误")
+
+    @Slot()
+    def _finish_storage_operation(self) -> None:
+        operation = self._storage_operation
+        result = self._storage_result or {}
+        error = self._storage_error
+        worker = self._storage_worker
+        self._storage_worker = None
+        self._storage_operation = ""
+        self._storage_result = None
+        self._storage_error = ""
+        self._set_storage_busy(False)
+        if worker is not None:
+            worker.deleteLater()
+
+        if error:
+            self._set_save_status(f"日志与缓存操作失败：{error}", level="warning")
+            return
+        if operation in {"scan", "prepare_logs", "prepare_cache"}:
+            self._apply_storage_scan(result)
+            if operation == "prepare_logs":
+                self._prepare_cleanup_plan("logs")
+            elif operation == "prepare_cache":
+                self._prepare_cleanup_plan("cache")
+            return
+
+        freed = format_size(result.get("freed_size") or 0)
+        failed_count = int(result.get("failed_count") or 0)
+        label = "日志" if operation == "clear_logs" else "缓存"
+        message = f"{label}清理完成，释放 {freed}。"
+        if failed_count:
+            message += f" {failed_count} 项未能清理。"
+        if operation == "clear_logs" and self._log_model is not None:
+            self._log_model.clear()
+        self._set_save_status(message, level="warning" if failed_count else "info")
+        self.refreshStorageUsage()
+
+    def _apply_storage_scan(self, result: dict) -> None:
+        self._log_storage = dict(result.get("logs") or self._empty_log_storage())
+        self._cache_storage = dict(result.get("cache") or self._empty_cache_storage())
+        self.storageChanged.emit()
+
+    def _prepare_cleanup_plan(self, target: str) -> None:
+        if not self.allows_capability(CACHE_CLEANUP):
+            self._set_save_status(self.block_capability(CACHE_CLEANUP), level="warning")
+            return
+        if target == "cache" and self.cacheCleanupBlocked:
+            self._set_save_status(self.cacheCleanupBlockedReason, level="warning")
+            return
+
+        if target == "logs":
+            items = [
+                {
+                    "id": item["id"],
+                    "label": item["label"],
+                    "sizeText": item["size_text"],
+                    "detail": item["path"],
+                }
+                for item in self._log_storage.get("items", [])
+            ]
+            title = "确认清理日志"
+            summary = f"将清理 {len(items)} 个日志文件，共 {self.logUsageText}。"
+        else:
+            items = []
+            for category in (self._cache_storage.get("categories") or {}).values():
+                cleanable_files = int(category.get("cleanable_files") or 0)
+                if cleanable_files <= 0:
+                    continue
+                paths = list(category.get("paths") or [])
+                items.append(
+                    {
+                        "id": category["id"],
+                        "label": category["label"],
+                        "sizeText": format_size(category.get("cleanable_size") or 0),
+                        "detail": f"{cleanable_files} 个文件"
+                        + (f" · {paths[0]}" if paths else ""),
+                    }
+                )
+            title = "确认清理缓存"
+            cleanable_size = format_size(
+                self._cache_storage.get("cleanable_size") or 0
+            )
+            summary = f"将清理 {len(items)} 类缓存，共 {cleanable_size}。"
+
+        if not items:
+            self._set_save_status("当前没有可清理的项目。")
+            return
+        self._cleanup_target = target
+        self._cleanup_title = title
+        self._cleanup_summary = summary
+        self._cleanup_items = items
+        self.cleanupPlanChanged.emit()
+        self.cleanupDialogRequested.emit()
+
+    def _clear_cleanup_plan(self) -> None:
+        self._cleanup_target = ""
+        self._cleanup_title = ""
+        self._cleanup_summary = ""
+        self._cleanup_items = []
+        self.cleanupPlanChanged.emit()
+
+    def _set_storage_busy(self, busy: bool) -> None:
+        if self._storage_busy == busy:
+            return
+        self._storage_busy = busy
+        self.storageBusyChanged.emit(busy)
+        self.storageChanged.emit()
+
+    @staticmethod
+    def _empty_log_storage() -> dict:
+        return {
+            "total_size": 0,
+            "total_size_text": "0 B",
+            "total_files": 0,
+            "items": [],
+        }
+
+    @staticmethod
+    def _empty_cache_storage() -> dict:
+        return {
+            "total_size": 0,
+            "total_files": 0,
+            "cleanable_size": 0,
+            "cleanable_files": 0,
+            "categories": {},
+        }
+
     def _confirm_live_save(self) -> bool:
+        change_summary = self.pendingChangeSummary
+        warning = ""
+        if self.hasAutoConvertChanges:
+            warning = "\n\n自动转码相关设置将在确认后生效。"
         result = QMessageBox.question(
             None,
-            "保存设置",
-            f"确定要将设置草稿写入 config.json 吗？\n\n{CONFIG_FILE}",
+            "应用设置",
+            f"确认应用以下 {self.pendingChangeCount} 项修改？\n\n"
+            f"{change_summary}{warning}",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )

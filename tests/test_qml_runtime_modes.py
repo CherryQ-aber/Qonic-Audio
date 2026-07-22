@@ -75,14 +75,15 @@ class RuntimeModeResolutionTests(unittest.TestCase):
             METADATA_WRITE,
             LYRICS_WRITE,
             COVER_WRITE,
+            CACHE_CLEANUP,
         ):
             self.assertTrue(gate.allows(capability), capability)
 
-    def test_default_user_profile_keeps_dangerous_capabilities_denied(self):
+    def test_default_user_profile_allows_confirmed_cleanup_but_denies_overwrite(self):
         gate = resolve_runtime_mode(["main_qml.py"], {}).create_capability_gate()
 
         self.assertFalse(gate.allows(OVERWRITE_FILE))
-        self.assertFalse(gate.allows(CACHE_CLEANUP))
+        self.assertTrue(gate.allows(CACHE_CLEANUP))
         self.assertTrue(gate.sourceFileProtectionEnabled)
 
     def test_preview_flag_overrides_legacy_environment_requests(self):

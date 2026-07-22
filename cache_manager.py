@@ -1,5 +1,6 @@
 import os
 import shutil
+import stat
 
 from config import (
     CACHE_DIR,
@@ -130,7 +131,7 @@ def ensure_cache_dirs():
             os.makedirs(path, exist_ok=True)
 
 
-def is_safe_cache_path(path):
+def is_safe_cache_path(path, protected_paths=None):
     if not path:
         return False
 
@@ -147,7 +148,7 @@ def is_safe_cache_path(path):
     if not any(_is_within_directory(normalized, root) for root in roots):
         return False
 
-    if _is_protected_runtime_path(normalized):
+    if _is_protected_runtime_path(normalized, protected_paths):
         return False
 
     if _is_reparse_or_symlink(normalized):
@@ -172,7 +173,7 @@ def _empty_category_summary(category_id, category_data):
     }
 
 
-def _scan_path(path):
+def _scan_path(path, protected_paths=None):
     result = {
         "size": 0,
         "files": 0,
@@ -187,7 +188,9 @@ def _scan_path(path):
     if not os.path.exists(path):
         return result
 
-    if not is_safe_cache_path(path):
+    protected_paths = protected_paths or _normalized_protected_paths()
+
+    if not is_safe_cache_path(path, protected_paths):
         logger.warning(f"缓存扫描跳过非安全路径: {path}")
         result["skipped"] += 1
         result["skipped_files"] += 1
@@ -205,47 +208,50 @@ def _scan_path(path):
             result["skipped_files"] += 1
         return result
 
-    for current_root, dirs, files in os.walk(path, topdown=True, followlinks=False):
-        safe_dirs = []
+    pending_directories = [path]
+    while pending_directories:
+        current_root = pending_directories.pop()
+        try:
+            entries = list(os.scandir(current_root))
+        except OSError:
+            result["skipped"] += 1
+            result["skipped_files"] += 1
+            continue
 
-        for directory in dirs:
-            directory_path = os.path.join(current_root, directory)
-
-            if _is_reparse_or_symlink(directory_path):
-                logger.warning(f"缓存扫描跳过链接目录: {directory_path}")
-                result["skipped"] += 1
-                result["skipped_files"] += 1
-                continue
-
-            if not is_safe_cache_path(directory_path):
-                logger.warning(f"缓存扫描跳过非安全目录: {directory_path}")
-                result["skipped"] += 1
-                result["skipped_files"] += 1
-                continue
-
-            result["directories"] += 1
-            safe_dirs.append(directory)
-
-        dirs[:] = safe_dirs
-
-        for filename in files:
-            file_path = os.path.join(current_root, filename)
-
-            if _is_reparse_or_symlink(file_path) or not is_safe_cache_path(file_path):
-                logger.warning(f"缓存扫描跳过非安全文件: {file_path}")
-                result["skipped"] += 1
-                result["skipped_files"] += 1
-                continue
-
+        for entry in entries:
+            entry_path = entry.path
             try:
-                size = os.path.getsize(file_path)
-                result["size"] += size
-                result["files"] += 1
-                result["cleanable_size"] += size
-                result["cleanable_files"] += 1
+                stat_result = entry.stat(follow_symlinks=False)
             except OSError:
                 result["skipped"] += 1
                 result["skipped_files"] += 1
+                continue
+
+            attributes = getattr(stat_result, "st_file_attributes", 0)
+            reparse_flag = getattr(os.stat_result, "FILE_ATTRIBUTE_REPARSE_POINT", 0x0400)
+            is_link = stat.S_ISLNK(stat_result.st_mode) or bool(
+                attributes & reparse_flag
+            )
+            if is_link or _is_protected_runtime_path(entry_path, protected_paths):
+                logger.warning(f"缓存扫描跳过非安全路径: {entry_path}")
+                result["skipped"] += 1
+                result["skipped_files"] += 1
+                continue
+
+            if stat.S_ISDIR(stat_result.st_mode):
+                result["directories"] += 1
+                pending_directories.append(entry_path)
+                continue
+            if not stat.S_ISREG(stat_result.st_mode):
+                result["skipped"] += 1
+                result["skipped_files"] += 1
+                continue
+
+            size = stat_result.st_size
+            result["size"] += size
+            result["files"] += 1
+            result["cleanable_size"] += size
+            result["cleanable_files"] += 1
 
     return result
 
@@ -325,7 +331,7 @@ def format_size(size_bytes):
     return f"{size:.1f} TB"
 
 
-def _delete_path(path):
+def _delete_path(path, protected_paths=None):
     if not os.path.exists(path):
         return {
             "deleted_files": 0,
@@ -336,7 +342,7 @@ def _delete_path(path):
             "failures": [],
         }
 
-    if not is_safe_cache_path(path):
+    if not is_safe_cache_path(path, protected_paths):
         logger.warning(f"拒绝清理非安全缓存路径: {path}")
         return {
             "deleted_files": 0,
@@ -370,7 +376,7 @@ def _delete_path(path):
                 "failures": [f"{path}: {e}"],
             }
 
-    scan_result = _scan_path(path)
+    scan_result = _scan_path(path, protected_paths)
 
     try:
         shutil.rmtree(path)
@@ -412,29 +418,35 @@ def _protected_paths():
     ]
 
 
-def _is_protected_runtime_path(path):
+def _normalized_protected_paths():
+    config_path = _normcase(CONFIG_FILE)
+    normalized_paths = []
+    for protected_path in _protected_paths():
+        if not protected_path:
+            continue
+        try:
+            protected = _normalize_path(protected_path)
+        except (TypeError, ValueError, OSError):
+            continue
+        normalized_paths.append(
+            (protected, os.path.normcase(protected) != config_path)
+        )
+    return tuple(normalized_paths)
+
+
+def _is_protected_runtime_path(path, protected_paths=None):
     try:
         normalized = _normalize_path(path)
     except (TypeError, ValueError, OSError):
         return True
 
-    for protected_path in _protected_paths():
-        if not protected_path:
-            continue
-
-        try:
-            protected = _normalize_path(protected_path)
-        except (TypeError, ValueError, OSError):
-            continue
+    protected_paths = protected_paths or _normalized_protected_paths()
+    for protected, protects_descendants in protected_paths:
 
         if os.path.normcase(normalized) == os.path.normcase(protected):
             return True
 
-        if os.path.normcase(protected) != os.path.normcase(_normalize_path(CONFIG_FILE)):
-            if _is_within_directory(normalized, protected):
-                return True
-
-        if os.path.isdir(protected) and _is_within_directory(normalized, protected):
+        if protects_descendants and _is_within_directory(normalized, protected):
             return True
 
     return False
@@ -455,6 +467,8 @@ def clear_cache(categories=None):
         "categories": {},
         "protected_paths": [_normalize_path(path) for path in _protected_paths() if path],
     }
+
+    protected_paths = _normalized_protected_paths()
 
     for category_id in selected:
         category_data = CACHE_CATEGORIES.get(category_id)
@@ -483,7 +497,7 @@ def clear_cache(categories=None):
 
             for entry_name in os.listdir(category_path):
                 entry_path = os.path.join(category_path, entry_name)
-                entry_result = _delete_path(entry_path)
+                entry_result = _delete_path(entry_path, protected_paths)
                 _merge_clear_result(category_result, entry_result)
 
         for path in _category_paths(category_data):

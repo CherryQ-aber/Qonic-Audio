@@ -35,7 +35,10 @@ Popup {
     }
 
     onOpenRequestedChanged: synchronizeOpenState()
-    onOpened: closeButton.forceActiveFocus()
+    onOpened: {
+        closeButton.forceActiveFocus()
+        settingsViewModel.refreshStorageUsage()
+    }
     onClosed: {
         if (openRequested)
             closeRequested()

@@ -79,6 +79,7 @@ PHASE57_ENABLED_CAPABILITIES = frozenset(
         LYRICS_WRITE,
         COVER_WRITE,
         CONFIG_WRITE,
+        CACHE_CLEANUP,
         WATCHER_CONTROL,
         QUEUE_MUTATION,
         BATCH_CONVERT,
@@ -86,14 +87,13 @@ PHASE57_ENABLED_CAPABILITIES = frozenset(
 )
 
 # The normal QML launch profile contains every currently implemented action
-# that stays non-destructive: all outputs are new files, and settings still
-# require an explicit user save/confirmation.  It intentionally omits every
-# destructive or not-yet-connected capability.
+# that is protected by an explicit confirmation boundary.  File outputs remain
+# new files; cache/log cleanup is limited to inspected application-owned paths.
 DEFAULT_USER_CAPABILITIES = PHASE57_ENABLED_CAPABILITIES
 
 # Human acceptance uses this fixed profile instead of treating a broad Live
-# switch as permission.  It deliberately excludes every write-back capability
-# except the separately confirmed settings save path.
+# switch as permission.  Settings writes and application-owned cache/log
+# cleanup remain behind separate confirmation paths.
 USER_TRIAL_CAPABILITIES = frozenset(
     {
         METADATA_READ,
@@ -102,6 +102,7 @@ USER_TRIAL_CAPABILITIES = frozenset(
         SCAN_PREVIEW,
         SINGLE_FILE_CONVERT,
         CONFIG_WRITE,
+        CACHE_CLEANUP,
         WATCHER_CONTROL,
         QUEUE_MUTATION,
         BATCH_CONVERT,
@@ -118,6 +119,7 @@ _USER_FEATURE_GROUPS = (
     ((QUEUE_MUTATION,), "队列"),
     ((WATCHER_CONTROL,), "监听"),
     ((CONFIG_WRITE,), "配置保存"),
+    ((CACHE_CLEANUP,), "日志与缓存清理"),
     ((METADATA_READ, LYRICS_READ, COVER_READ), "文件信息读取"),
     ((METADATA_WRITE, LYRICS_WRITE, COVER_WRITE), "文件信息编辑导出"),
     ((AUDIO_PLAYBACK,), "音频播放"),

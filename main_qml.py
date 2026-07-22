@@ -189,6 +189,11 @@ def main(argv: list[str] | None = None) -> int:
         log_model=log_model,
         capability_gate=capability_gate,
     )
+    settings_view_model.attach_runtime(
+        auto_convert_view_model,
+        processing_session_view_model,
+        edit_session_view_model,
+    )
     settings_view_model.configPersisted.connect(
         auto_convert_view_model.notify_settings_saved
     )
@@ -246,6 +251,7 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     app.aboutToQuit.connect(auto_convert_view_model.shutdown)
+    app.aboutToQuit.connect(settings_view_model.shutdown)
     app.aboutToQuit.connect(folder_browser_model.shutdown)
     app.aboutToQuit.connect(editor_file_browser_view_model.shutdown)
     app.aboutToQuit.connect(processing_session_view_model.shutdown)
