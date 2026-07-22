@@ -87,6 +87,8 @@ class AudioPlayerViewModel(BaseViewModel):
     """Single capability-gated Qt Multimedia owner for the QML process."""
 
     stateChanged = Signal()
+    _END_ERROR_TOLERANCE_MAX_MS = 2_000
+    _END_ERROR_TOLERANCE_MIN_MS = 250
 
     _SOURCE_TYPE_LABELS = {
         "none": "未加载",
@@ -961,19 +963,73 @@ class AudioPlayerViewModel(BaseViewModel):
                 self._duration = max(0, int(duration_getter() or 0))
             self._emit_state("音频已加载，可以播放。")
         elif status == QMediaPlayer.MediaStatus.EndOfMedia:
-            self._media_loaded = True
-            self._state = "finished"
-            self._position = self._duration
-            self._emit_state("播放已结束。")
+            self._mark_playback_finished()
         elif status == QMediaPlayer.MediaStatus.InvalidMedia:
+            if self._should_treat_backend_error_as_finished(
+                self._player.errorString(),
+                assume_decoder_error=True,
+            ):
+                self._mark_playback_finished()
+                return
             self._enter_terminal_error(
                 self._classify_error(self._player.errorString())
             )
 
-    def _on_error(self, token: int, _error, message: str) -> None:
+    def _on_error(self, token: int, error, message: str) -> None:
         if not self._accept_event(token):
             return
+        if self._should_treat_backend_error_as_finished(
+            message,
+            assume_decoder_error=(error == QMediaPlayer.Error.FormatError),
+        ):
+            self._mark_playback_finished()
+            return
         self._enter_terminal_error(self._classify_error(message))
+
+    def _should_treat_backend_error_as_finished(
+        self,
+        message: str = "",
+        *,
+        assume_decoder_error: bool = False,
+    ) -> bool:
+        """Ignore decoder tail errors only after a loaded track reached its end."""
+        if not self._media_loaded or not self._playback_source_path:
+            return False
+        if self._state == "finished":
+            return True
+        if self._duration <= 0:
+            return False
+        tolerance = min(
+            self._END_ERROR_TOLERANCE_MAX_MS,
+            max(
+                self._END_ERROR_TOLERANCE_MIN_MS,
+                self._duration // 100,
+            ),
+        )
+        if self._position < max(0, self._duration - tolerance):
+            return False
+        if assume_decoder_error:
+            return True
+        detail = str(message or "").casefold()
+        return any(
+            marker in detail
+            for marker in (
+                "decode",
+                "invalid data",
+                "invalid frame",
+                "sync code",
+                "end of file",
+                "eof",
+            )
+        )
+
+    def _mark_playback_finished(self) -> None:
+        self._media_loaded = True
+        self._state = "finished"
+        self._error = ""
+        if self._duration > 0:
+            self._position = self._duration
+        self._emit_state("播放已结束。")
 
     def _accept_event(self, token: int) -> bool:
         return (

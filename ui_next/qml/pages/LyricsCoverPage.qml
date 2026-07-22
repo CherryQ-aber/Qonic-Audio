@@ -11,6 +11,7 @@ Item {
     property QtObject typography: Typography {}
     property var audioPlayer: null
     property var editSession: null
+    property var lyricsSync: null
     property bool pageActive: true
     property bool splitLyricsWorkspace: pageScroll.width >= 720
 
@@ -39,7 +40,7 @@ Item {
             editSession.openUnifiedExportDialog("lyrics")
     }
     function pageSafetyMessage() {
-        if (editSession && editSession.hasSession) return "当前歌词修改仅保存在内存中；导出可生成新文件，覆盖 .lrc 时会再次确认。"
+        if (editSession && editSession.hasSession) return "当前歌词修改仅保存在内存中；带时间戳歌词可跟随全局播放器，导出时仍遵守文件安全边界。"
         return lyricsViewModel.lyricsReadEnabled ? "歌词可供查看和编辑；外置 .lrc 会先载入草稿。" : "预览模式不会读取真实歌词。"
     }
     function pageCapabilityLabel() {
@@ -107,8 +108,12 @@ Item {
                             ? "当前文件：尚未导入"
                             : "当前文件：" + fileSessionViewModel.currentFileName)
                             + " · 来源：" + (lyricsViewModel.lyricsSource || "无")
-                            + " · " + lyricsViewModel.lineCount + " 行"
-                            + " · 时间戳：" + (lyricsViewModel.hasTimestamps ? "有" : "无")
+                            + " · " + (root.editSession
+                                ? root.editSession.lyricsLineCount
+                                : lyricsViewModel.lineCount) + " 行"
+                            + " · 时间戳：" + ((root.editSession
+                                ? root.editSession.lyricsHasTimestamps
+                                : lyricsViewModel.hasTimestamps) ? "有" : "无")
                         color: root.theme.textSecondary
                         font.family: root.typography.fontFamily
                         font.pixelSize: root.typography.sizeSmall
@@ -158,8 +163,19 @@ Item {
                         : lyricsWorkspace.width
                     theme: root.theme
                     typography: root.typography
-                    lines: lyricsViewModel.lyricsLines
-                    mockCurrentLine: lyricsViewModel.isMockPreview && lyricsViewModel.lineCount > 1 ? 1 : -1
+                    lines: root.lyricsSync
+                        ? root.lyricsSync.lines : lyricsViewModel.lyricsLines
+                    currentLineIndex: root.lyricsSync
+                        ? root.lyricsSync.currentLineIndex : -1
+                    followCurrentLine: root.lyricsSync
+                        ? root.lyricsSync.followEnabled : true
+                    mockCurrentLine: !root.lyricsSync
+                        && lyricsViewModel.isMockPreview
+                        && lyricsViewModel.lineCount > 1 ? 1 : -1
+                    onFollowCurrentLineRequested: function(enabled) {
+                        if (root.lyricsSync)
+                            root.lyricsSync.setFollowEnabled(enabled)
+                    }
                 }
 
                 LyricsDraftEditor {
@@ -175,6 +191,7 @@ Item {
                     typography: root.typography
                     audioPlayer: root.audioPlayer
                     editSession: root.editSession
+                    lyricsSync: root.lyricsSync
                     onManualSourceRequested: root.requestManualSource()
                     onEmbeddedLyricsExportRequested: root.requestEmbeddedLyricsExport()
                     onAudioExportRequested: root.requestAudioExport()

@@ -16,6 +16,7 @@ Item {
     property var fileSession: null
     property var audioPlayer: null
     property var editSession: null
+    property var lyricsSync: null
     property var processingSession: null
     property var settings: null
     property bool floatingFileBarExpanded: false
@@ -65,6 +66,7 @@ Item {
             typography: root.typography
             audioPlayer: root.audioPlayer
             editSession: root.editSession
+            lyricsSync: root.lyricsSync
         }
 
         AudioProcessingPage {

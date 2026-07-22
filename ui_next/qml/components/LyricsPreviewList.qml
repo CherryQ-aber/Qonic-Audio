@@ -11,6 +11,29 @@ Rectangle {
     property QtObject typography: Typography {}
     property var lines: []
     property int mockCurrentLine: -1
+    property int currentLineIndex: -1
+    property bool followCurrentLine: true
+    readonly property int activeLineIndex: currentLineIndex >= 0
+        ? currentLineIndex : mockCurrentLine
+
+    signal followCurrentLineRequested(bool enabled)
+
+    function followActiveLine() {
+        if (!followCurrentLine
+                || activeLineIndex < 0
+                || activeLineIndex >= lyricsPreviewListView.count) {
+            return
+        }
+        lyricsPreviewListView.positionViewAtIndex(
+            activeLineIndex,
+            ListView.Center
+        )
+    }
+
+    onActiveLineIndexChanged: Qt.callLater(root.followActiveLine)
+    onFollowCurrentLineChanged: if (followCurrentLine)
+        Qt.callLater(root.followActiveLine)
+    onLinesChanged: Qt.callLater(root.followActiveLine)
 
     color: theme.panel
     border.color: theme.border
@@ -25,7 +48,7 @@ Rectangle {
             Layout.fillWidth: true
 
             Text {
-                text: "LRC 行只读预览"
+                text: "歌词滚动预览"
                 color: theme.textPrimary
                 font.family: typography.fontFamily
                 font.pixelSize: typography.sizeMedium
@@ -35,11 +58,15 @@ Rectangle {
                 maximumLineCount: 1
             }
 
-            Text {
-                text: "不接真实播放器 · 不做同步滚动"
-                color: theme.muted
-                font.family: typography.fontFamily
-                font.pixelSize: typography.sizeTiny
+            Button {
+                id: followLyricsButton
+                objectName: "lyricsFollowToggle"
+                implicitHeight: 28
+                text: root.followCurrentLine ? "跟随滚动：开" : "跟随滚动：关"
+                enabled: root.lines && root.lines.length > 0
+                onClicked: root.followCurrentLineRequested(
+                    !root.followCurrentLine
+                )
             }
         }
 
@@ -77,12 +104,12 @@ Rectangle {
 
                     width: ListView.view.width
                     implicitHeight: Math.max(52, lyricColumn.implicitHeight + 14)
-                    color: index === root.mockCurrentLine
+                    color: index === root.activeLineIndex
                         ? Qt.rgba(theme.warning.r, theme.warning.g, theme.warning.b, 0.16)
                         : modelData.hasTimestamp
                           ? Qt.rgba(theme.accent.r, theme.accent.g, theme.accent.b, 0.08)
                           : theme.surface
-                    border.color: index === root.mockCurrentLine
+                    border.color: index === root.activeLineIndex
                         ? theme.warning
                         : modelData.hasTimestamp
                           ? Qt.rgba(theme.accent.r, theme.accent.g, theme.accent.b, 0.36)
@@ -147,7 +174,7 @@ Rectangle {
                 anchors.centerIn: parent
                 width: Math.min(parent.width - 48, 560)
                 visible: !root.lines || root.lines.length === 0
-                text: "当前没有可预览歌词。可以选择 .lrc 进行内存预览；预览模式不会保存或写入。"
+                text: "当前没有可滚动预览的歌词。可导入 .lrc，或在当前歌词中输入带时间戳的内容。"
                 color: theme.textSecondary
                 font.family: typography.fontFamily
                 font.pixelSize: typography.sizeBody

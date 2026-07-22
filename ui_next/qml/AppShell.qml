@@ -239,6 +239,7 @@ ApplicationWindow {
                     fileBrowser: editorFileBrowserViewModel
                     audioPlayer: audioPlayerViewModel
                     editSession: editSessionViewModel
+                    lyricsSync: lyricsSyncViewModel
                     processingSession: processingSessionViewModel
                     settings: settingsViewModel
                     editorFileBarExpanded: root.editorFileBarExpanded
@@ -273,6 +274,8 @@ ApplicationWindow {
             theme: theme
             typography: typography
             audioPlayer: audioPlayerViewModel
+            lyricsSync: lyricsSyncViewModel
+            lyricsPreviewAllowed: true
             compactMode: root.height < 800
             narrowMode: root.width < 1320
         }

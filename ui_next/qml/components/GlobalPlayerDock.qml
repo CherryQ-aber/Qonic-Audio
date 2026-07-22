@@ -10,10 +10,20 @@ Rectangle {
     property QtObject theme: Theme {}
     property QtObject typography: Typography {}
     property var audioPlayer: null
+    property var lyricsSync: null
+    property bool lyricsPreviewAllowed: false
     property bool compactMode: false
     property bool narrowMode: false
 
-    readonly property int requestedHeight: compactMode ? 82 : 96
+    readonly property bool lyricsPreviewVisible: Boolean(
+        lyricsPreviewAllowed
+        && lyricsSync
+        && lyricsSync.availableForPlayback
+    )
+    readonly property int baseHeight: compactMode ? 82 : 96
+    readonly property int lyricsPreviewExtraHeight: compactMode ? 30 : 34
+    readonly property int requestedHeight: baseHeight
+        + (lyricsPreviewVisible ? lyricsPreviewExtraHeight : 0)
 
     implicitHeight: requestedHeight
     color: theme.panel
@@ -73,6 +83,18 @@ Rectangle {
                 compactMode: root.compactMode
                 narrowMode: root.narrowMode
             }
+        }
+
+        GlobalLyricsStrip {
+            objectName: "globalPlayerLyricsPreview"
+            Layout.fillWidth: true
+            Layout.preferredHeight: implicitHeight
+            Layout.minimumHeight: implicitHeight
+            visible: root.lyricsPreviewVisible
+            theme: root.theme
+            typography: root.typography
+            lyricsSync: root.lyricsSync
+            compactMode: root.compactMode
         }
 
         RowLayout {

@@ -18,6 +18,7 @@ from ui_next.bridge.editor_file_browser_viewmodel import EditorFileBrowserViewMo
 from ui_next.bridge.file_session_viewmodel import FileSessionViewModel
 from ui_next.bridge.folder_browser_model import FolderBrowserModel
 from ui_next.bridge.lyrics_viewmodel import LyricsViewModel
+from ui_next.bridge.lyrics_sync_viewmodel import LyricsSyncViewModel
 from ui_next.bridge.log_model import LogModel, install_log_model_handler
 from ui_next.bridge.metadata_viewmodel import MetadataViewModel
 from ui_next.bridge.settings_viewmodel import SettingsViewModel
@@ -151,6 +152,10 @@ def main(argv: list[str] | None = None) -> int:
         file_session_view_model,
         capability_gate=capability_gate,
     )
+    lyrics_sync_view_model = LyricsSyncViewModel(
+        edit_session_view_model,
+        audio_player_view_model,
+    )
     edit_session_view_model.attach_runtime(
         file_session_view_model,
         audio_player_view_model,
@@ -249,6 +254,10 @@ def main(argv: list[str] | None = None) -> int:
     engine.rootContext().setContextProperty("metadataViewModel", metadata_view_model)
     engine.rootContext().setContextProperty("editSessionViewModel", edit_session_view_model)
     engine.rootContext().setContextProperty("lyricsViewModel", lyrics_view_model)
+    engine.rootContext().setContextProperty(
+        "lyricsSyncViewModel",
+        lyrics_sync_view_model,
+    )
     engine.rootContext().setContextProperty("coverViewModel", cover_view_model)
     engine.rootContext().setContextProperty("settingsViewModel", settings_view_model)
     engine.rootContext().setContextProperty("logModel", log_model)

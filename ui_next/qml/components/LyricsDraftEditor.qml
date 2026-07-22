@@ -10,9 +10,34 @@ Rectangle {
     property QtObject typography: Typography {}
     property var audioPlayer: null
     property var editSession: null
+    property var lyricsSync: null
     property int rememberedCursorPosition: 0
     property int rememberedSelectionStart: 0
     property int rememberedSelectionEnd: 0
+    readonly property bool playbackLineAvailable: Boolean(
+        lyricsSync
+        && lyricsSync.availableForPlayback
+        && lyricsSync.currentLineIndex >= 0
+    )
+    readonly property int playbackLineStart: playbackLineAvailable
+        ? lyricsSync.currentLineSourceStart : -1
+    readonly property int playbackLineEnd: playbackLineAvailable
+        ? lyricsSync.currentLineSourceEnd : -1
+    readonly property real draftViewportOffsetY:
+        draftScrollView.contentItem
+        ? draftScrollView.contentItem.contentY : 0
+    readonly property rect playbackLineStartRect: {
+        var editorWidth = draftEditor.width
+        return draftEditor.positionToRectangle(
+            Math.max(0, Math.min(playbackLineStart, draftEditor.length))
+        )
+    }
+    readonly property rect playbackLineEndRect: {
+        var editorWidth = draftEditor.width
+        return draftEditor.positionToRectangle(
+            Math.max(0, Math.min(playbackLineEnd, draftEditor.length))
+        )
+    }
     signal manualSourceRequested()
     signal embeddedLyricsExportRequested()
     signal lrcExportRequested()
@@ -212,7 +237,45 @@ Rectangle {
                     onSelectionEndChanged: root.rememberDraftSelection(false)
                     onTextChanged: if (activeFocus && root.editSession)
                         root.editSession.updateLyricsDraft(text)
-                    background: null
+                    background: Item {
+                        Rectangle {
+                            id: draftCurrentLineHighlight
+                            objectName: "draftCurrentLineHighlight"
+                            visible: root.playbackLineAvailable
+                                && root.playbackLineStart >= 0
+                                && root.playbackLineEnd
+                                    >= root.playbackLineStart
+                            x: draftEditor.leftPadding
+                            y: root.playbackLineStartRect.y
+                                - root.draftViewportOffsetY
+                            width: Math.max(
+                                0,
+                                draftEditor.width
+                                    - draftEditor.leftPadding
+                                    - draftEditor.rightPadding
+                            )
+                            height: Math.max(
+                                root.playbackLineStartRect.height,
+                                root.playbackLineEndRect.y
+                                    - root.playbackLineStartRect.y
+                                    + root.playbackLineEndRect.height
+                            )
+                            color: Qt.rgba(
+                                theme.warning.r,
+                                theme.warning.g,
+                                theme.warning.b,
+                                0.16
+                            )
+                            border.color: Qt.rgba(
+                                theme.warning.r,
+                                theme.warning.g,
+                                theme.warning.b,
+                                0.72
+                            )
+                            border.width: 1
+                            radius: theme.radiusSmall
+                        }
+                    }
                 }
             }
         }

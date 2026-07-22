@@ -307,47 +307,45 @@ Item {{
             cover = container.findChild(QObject, "lyricsCoverCoverPreview")
             self.assertTrue(all((lyrics, actions)))
             self.assertIsNone(cover)
-            for scroll_name in ("originalLyricsScrollView", "lyricsDraftScrollView"):
-                lyrics_scroll = container.findChild(QObject, scroll_name)
-                self.assertIsNotNone(lyrics_scroll)
-                self.assertGreater(
-                    float(lyrics_scroll.property("contentHeight")),
-                    float(lyrics_scroll.property("height")),
-                )
+            lyrics_scroll = container.findChild(
+                QObject,
+                "lyricsDraftScrollView",
+            )
+            self.assertIsNotNone(lyrics_scroll)
+            self.assertGreater(
+                float(lyrics_scroll.property("contentHeight")),
+                float(lyrics_scroll.property("height")),
+            )
+            self.assertIsNone(
+                container.findChild(QObject, "originalLyricsScrollView")
+            )
             page_scroll_bar = container.findChild(
                 QQuickItem, "lyricsCoverPageVerticalScrollBar"
-            )
-            original_scroll_bar = container.findChild(
-                QQuickItem, "originalLyricsVerticalScrollBar"
             )
             draft_scroll_bar = container.findChild(
                 QQuickItem, "draftLyricsVerticalScrollBar"
             )
-            self.assertTrue(
-                all((page_scroll_bar, original_scroll_bar, draft_scroll_bar))
-            )
+            self.assertTrue(all((page_scroll_bar, draft_scroll_bar)))
             page_bar_left = self._rect(page_scroll_bar, container)[0]
-            for scroll_name, inner_scroll_bar in (
-                ("originalLyricsScrollView", original_scroll_bar),
-                ("lyricsDraftScrollView", draft_scroll_bar),
-            ):
-                lyrics_scroll = container.findChild(QQuickItem, scroll_name)
-                self.assertIsNotNone(lyrics_scroll)
-                scroll_rect = self._rect(lyrics_scroll, container)
-                inner_rect = self._rect(inner_scroll_bar, container)
-                self.assertAlmostEqual(
-                    inner_rect[0] + inner_rect[2],
-                    scroll_rect[0] + scroll_rect[2] - 2,
-                    delta=0.5,
-                )
-                self.assertGreaterEqual(
-                    inner_rect[3],
-                    scroll_rect[3] - 4.5,
-                )
-                self.assertLessEqual(
-                    inner_rect[0] + inner_rect[2] + 1,
-                    page_bar_left,
-                )
+            lyrics_scroll = container.findChild(
+                QQuickItem,
+                "lyricsDraftScrollView",
+            )
+            scroll_rect = self._rect(lyrics_scroll, container)
+            inner_rect = self._rect(draft_scroll_bar, container)
+            self.assertAlmostEqual(
+                inner_rect[0] + inner_rect[2],
+                scroll_rect[0] + scroll_rect[2] - 2,
+                delta=0.5,
+            )
+            self.assertGreaterEqual(
+                inner_rect[3],
+                scroll_rect[3] - 4.5,
+            )
+            self.assertLessEqual(
+                inner_rect[0] + inner_rect[2] + 1,
+                page_bar_left,
+            )
             lyrics_rect = self._rect(lyrics, container)
             actions_rect = self._rect(actions, container)
             self.assertAlmostEqual(actions_rect[1], lyrics_rect[1], delta=0.5)

@@ -475,10 +475,45 @@ class AudioPlayerViewModelTests(unittest.TestCase):
             self.assertEqual(9000, player.position)
             self.assertTrue(player.canPlay)
 
+            fake.errorOccurred.emit(0, "invalid frame header")
+            fake.mediaStatusChanged.emit(QMediaPlayer.MediaStatus.InvalidMedia)
+            self.assertEqual("finished", player.playerState)
+            self.assertEqual("", player.error)
+            self.assertEqual(source.resolve(), Path(
+                player.currentPlaybackSourcePath
+            ).resolve())
+
             fake.position = 9000
             player.play()
             self.assertEqual(0, fake.position)
             self.assertEqual("playing", player.playerState)
+
+    def test_decoder_tail_error_is_finished_but_earlier_error_is_terminal(self):
+        session, player, fake, _output = self._build_player()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            source = Path(temp_dir) / "tail-error.flac"
+            source.write_bytes(b"audio")
+            session.setCurrentFile(str(source), "audio_editor")
+            fake.durationChanged.emit(9_000)
+            fake.mediaStatusChanged.emit(QMediaPlayer.MediaStatus.LoadedMedia)
+            fake.positionChanged.emit(8_900)
+
+            fake.errorOccurred.emit(0, "decode_frame() failed")
+
+            self.assertEqual("finished", player.playerState)
+            self.assertEqual(9_000, player.position)
+            self.assertEqual("", player.error)
+            self.assertTrue(player.hasPlaybackSource)
+
+            session.setCurrentFile(str(source), "audio_editor")
+            fake.durationChanged.emit(9_000)
+            fake.mediaStatusChanged.emit(QMediaPlayer.MediaStatus.LoadedMedia)
+            fake.positionChanged.emit(8_000)
+            fake.errorOccurred.emit(0, "decode_frame() failed")
+
+            self.assertEqual("error", player.playerState)
+            self.assertFalse(player.hasPlaybackSource)
+            self.assertIn("音频加载或播放错误", player.error)
 
     def test_volume_and_seek_boundaries_survive_file_switch_without_rebuild(self):
         session, player, fake, output = self._build_player()

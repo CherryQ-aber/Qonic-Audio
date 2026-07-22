@@ -33,9 +33,11 @@ class Phase595GlobalPlayerDockContractTests(unittest.TestCase):
             "ui_next/qml/components/GlobalPlayerDock.qml"
         )
         self.assertIn(
-            "readonly property int requestedHeight: compactMode ? 82 : 96",
+            "readonly property int baseHeight: compactMode ? 82 : 96",
             dock,
         )
+        self.assertIn("lyricsPreviewExtraHeight", dock)
+        self.assertIn("lyricsPreviewVisible ? lyricsPreviewExtraHeight : 0", dock)
         for component_name in (
             "PlayerMediaInfo",
             "PlayerControls",
@@ -43,6 +45,7 @@ class Phase595GlobalPlayerDockContractTests(unittest.TestCase):
             "SeekStepControls",
             "PlaybackDeviceControl",
             "TimestampTools",
+            "GlobalLyricsStrip",
         ):
             self.assertEqual(
                 1,
