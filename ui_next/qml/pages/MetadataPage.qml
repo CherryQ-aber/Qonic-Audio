@@ -14,32 +14,6 @@ Item {
     property int workspaceColumns: pageScroll.width >= 880 ? 3
         : pageScroll.width >= 660 ? 2 : 1
 
-    function requestMetadataExport() {
-        if (editSession)
-            editSession.openUnifiedExportDialog("metadata")
-    }
-    function requestCoverExport() {
-        if (editSession)
-            editSession.openUnifiedExportDialog("cover")
-    }
-
-    function pageSafetyMessage() {
-        if (editSession && editSession.hasSession)
-            return "当前修改仅保存在编辑草稿中，不会立即修改音频文件。导出只会另存新文件。"
-        if (metadataViewModel.metadataReadEnabled && coverViewModel.coverReadEnabled)
-            return "文件信息与封面读取已启用；选择音频后可在内存草稿中编辑信息与封面。"
-        if (coverViewModel.coverReadEnabled)
-            return "封面读取已启用；选择音频后可在内存草稿中替换、移除或恢复封面。"
-        return metadataViewModel.metadataReadEnabled ? "文件信息可供查看，修改会保存在草稿中。" : "预览模式不会读取真实文件信息。"
-    }
-    function pageCapabilityLabel() {
-        if (editSession && editSession.hasSession) return "编辑草稿已创建"
-        if (metadataViewModel.metadataReadEnabled && coverViewModel.coverReadEnabled) return "信息已就绪"
-        if (metadataViewModel.metadataReadEnabled) return "文件信息已就绪"
-        if (coverViewModel.coverReadEnabled) return "封面预览已就绪"
-        return "预览模式"
-    }
-    function pageHasLiveCapability() { return metadataViewModel.metadataReadEnabled || coverViewModel.coverReadEnabled }
     function resetPageScrollIfContentFits() {
         if (pageScroll.contentHeight <= pageScroll.height + 0.5
                 && pageScroll.contentY !== 0) {
@@ -57,7 +31,11 @@ Item {
         boundsBehavior: Flickable.StopAtBounds
         onHeightChanged: root.resetPageScrollIfContentFits()
         onContentHeightChanged: root.resetPageScrollIfContentFits()
-        ScrollBar.vertical: ThemeScrollBar { theme: root.theme; policy: ScrollBar.AsNeeded }
+        ScrollBar.vertical: ThemeScrollBar {
+            theme: root.theme
+            policy: ScrollBar.AsNeeded
+            visible: size < 0.999
+        }
 
         ColumnLayout {
             id: pageContent
@@ -65,40 +43,6 @@ Item {
             width: pageScroll.width
             Layout.minimumWidth: 0
             spacing: root.theme.spacing
-
-            SectionCard {
-                objectName: "metadataSafetyCard"
-                Layout.fillWidth: true
-                Layout.minimumWidth: 0
-                tone: root.pageHasLiveCapability() ? "normal" : "warning"
-                implicitHeight: safetyContent.implicitHeight + root.theme.spacing * 2
-                ColumnLayout {
-                    id: safetyContent
-                    anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top
-                    anchors.margins: root.theme.spacing
-                    spacing: 7
-                    Flow {
-                        Layout.fillWidth: true
-                        spacing: 8
-                        StatusBadge { theme: root.theme; typography: root.typography; label: root.pageCapabilityLabel(); tone: root.pageHasLiveCapability() ? "accent" : "muted" }
-                        StatusBadge { visible: root.audioPlayer && root.audioPlayer.playerState === "playing"; theme: root.theme; typography: root.typography; label: "当前文件播放中"; tone: "success" }
-                    }
-                    Text { text: root.pageSafetyMessage(); color: root.theme.textPrimary; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeBody; Layout.fillWidth: true; wrapMode: Text.WordWrap }
-                    Text {
-                        objectName: "metadataInlineStatus"
-                        text: fileSessionViewModel.currentFilePath === ""
-                            ? "尚未导入音频。导入后可查看和编辑文件信息与封面。"
-                            : metadataViewModel.statusMessage
-                        color: fileSessionViewModel.currentFilePath === ""
-                            ? root.theme.warning : root.theme.textSecondary
-                        font.family: root.typography.fontFamily
-                        font.pixelSize: root.typography.sizeSmall
-                        Layout.fillWidth: true
-                        elide: Text.ElideRight
-                        maximumLineCount: 1
-                    }
-                }
-            }
 
             GridLayout {
                 id: metadataSummaryGrid
@@ -125,7 +69,6 @@ Item {
                     onReplaceRequested: if (root.editSession) root.editSession.chooseReplacementCover()
                     onRemoveRequested: if (root.editSession) root.editSession.removeCoverDraft()
                     onRestoreRequested: if (root.editSession) root.editSession.restoreOriginalCover()
-                    onExportRequested: root.requestCoverExport()
                 }
 
                 MetadataForm {
@@ -169,26 +112,6 @@ Item {
                 }
             }
 
-            SectionCard {
-                objectName: "metadataEditActionsCard"
-                Layout.fillWidth: true; Layout.minimumWidth: 0
-                implicitHeight: editActionsContent.implicitHeight + root.theme.spacing * 2
-                ColumnLayout {
-                    id: editActionsContent
-                    anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top; anchors.margins: root.theme.spacing
-                    spacing: 7
-                    Flow {
-                        Layout.fillWidth: true
-                        spacing: 8
-                        ReadOnlyButton { label: "保存草稿"; enabled: !!(root.editSession && root.editSession.hasSession); onClicked: root.editSession.saveDraft() }
-                        ReadOnlyButton { label: "恢复原始信息"; enabled: !!(root.editSession && root.editSession.dirty); onClicked: root.editSession.restoreOriginal() }
-                        ReadOnlyButton { label: "导出修改（另存新文件）"; enabled: !!(root.editSession && root.editSession.dirty && !root.editSession.anyExporting); onClicked: root.requestMetadataExport() }
-                    }
-                    Text { text: root.editSession && root.editSession.metadataWriteEnabled ? "导出只会生成您手动选择的新文件，不会覆盖原文件。" : "当前无法导出此草稿；不会创建临时副本或修改原文件。"; color: root.theme.muted; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeSmall; Layout.fillWidth: true; wrapMode: Text.WordWrap }
-                    Text { visible: !!(root.editSession && root.editSession.unifiedExportMessage.length > 0); text: root.editSession ? root.editSession.unifiedExportMessage : ""; color: root.editSession && root.editSession.unifiedExportResult.success === true ? root.theme.success : root.theme.warning; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeSmall; Layout.fillWidth: true; wrapMode: Text.WordWrap }
-                    Text { visible: !!(root.editSession && root.editSession.unifiedExportResult.success === true); text: root.editSession ? "输出路径：" + root.editSession.unifiedExportResult.output_path : ""; color: root.theme.textSecondary; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeSmall; Layout.fillWidth: true; wrapMode: Text.WordWrap }
-                }
-            }
         }
     }
 

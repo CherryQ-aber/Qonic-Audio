@@ -460,40 +460,8 @@ ApplicationWindow {
         theme: theme
         typography: typography
         editSession: editSessionViewModel
+        processingSession: processingSessionViewModel
         selectAllDraftsOnOpen: root.pendingFileExportFlowActive
-    }
-
-    Dialog {
-        id: pitchDraftWarningDialog
-        modal: true
-        visible: processingSessionViewModel.needsDraftConfirmation
-        title: "未导出的文件信息草稿"
-        standardButtons: Dialog.NoButton
-        closePolicy: Popup.NoAutoClose
-        anchors.centerIn: parent
-        width: Math.min(480, parent.width - theme.spacing * 4)
-        contentItem: ColumnLayout {
-            spacing: theme.spacing
-            Text {
-                text: "当前存在未导出的文件信息草稿。本次 Pitch Shift 将基于磁盘上的源文件生成，不会包含这些草稿。"
-                color: theme.textPrimary
-                font.family: typography.fontFamily
-                wrapMode: Text.WordWrap
-                Layout.fillWidth: true
-            }
-            RowLayout {
-                Layout.fillWidth: true
-                Item { Layout.fillWidth: true }
-                Button {
-                    text: "取消"
-                    onClicked: processingSessionViewModel.confirmDraftWarning(false)
-                }
-                Button {
-                    text: "继续导出"
-                    onClicked: processingSessionViewModel.confirmDraftWarning(true)
-                }
-            }
-        }
     }
 
     Dialog {

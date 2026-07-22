@@ -33,6 +33,7 @@ Item {
         ScrollBar.vertical: ThemeScrollBar {
             theme: root.theme
             policy: ScrollBar.AsNeeded
+            visible: size < 0.999
         }
 
         ColumnLayout {

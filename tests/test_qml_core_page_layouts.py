@@ -188,7 +188,7 @@ Item {{
         self.assertIn("refreshOutputDevices()", device)
         self.assertIn("selectOutputDevice", device)
         self.assertIn("onPressedChanged", timeline)
-        self.assertIn("载入播放器", current_file)
+        self.assertNotIn("载入播放器", current_file)
         self.assertIn("playbackMatchesEditorFile", current_file)
         self.assertNotIn(
             "mock",
@@ -210,14 +210,18 @@ Item {{
             height=420,
         )
         try:
-            self._assert_viewport_width(scroll, content)
+            self._assert_viewport_width(
+                scroll,
+                content,
+                expect_vertical_overflow=False,
+            )
             self.assertIsNotNone(
                 container.findChild(QObject, "audioEditorPitchCard")
             )
         finally:
             self._dispose(view, component, container)
 
-    def test_metadata_cards_do_not_overlap_and_actions_follow_content(self):
+    def test_metadata_cards_do_not_overlap_without_page_export_actions(self):
         source = self._source("ui_next/qml/pages/MetadataPage.qml")
         form = self._source("ui_next/qml/components/MetadataForm.qml")
         cover = self._source("ui_next/qml/components/CoverDraftEditor.qml")
@@ -241,7 +245,8 @@ Item {{
             metadata_form = container.findChild(QObject, "metadataTagSummaryCard")
             base = container.findChild(QObject, "metadataBaseInfoCard")
             actions = container.findChild(QObject, "metadataEditActionsCard")
-            self.assertTrue(all((cover_editor, metadata_form, base, actions)))
+            self.assertTrue(all((cover_editor, metadata_form, base)))
+            self.assertIsNone(actions)
             self.assertEqual(3, int(container.findChild(
                 QObject, "pageUnderTest"
             ).property("workspaceColumns")))
@@ -258,16 +263,7 @@ Item {{
             base_rect = self._rect(base, container)
             cover_rect = self._rect(cover_editor, container)
             form_rect = self._rect(metadata_form, container)
-            actions_rect = self._rect(actions, container)
             self.assertGreater(form_rect[2], cover_rect[2])
-            self.assertGreaterEqual(
-                actions_rect[1],
-                max(
-                    cover_rect[1] + cover_rect[3],
-                    form_rect[1] + form_rect[3],
-                    base_rect[1] + base_rect[3],
-                ),
-            )
         finally:
             self._dispose(view, component, container)
 

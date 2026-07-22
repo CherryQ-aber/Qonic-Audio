@@ -11,7 +11,14 @@ from PySide6.QtGui import QDesktopServices, QGuiApplication
 from PySide6.QtWidgets import QFileDialog
 
 from ui_next.bridge.base_viewmodel import BaseViewModel
-from ui_next.bridge.capabilities import COVER_WRITE, LYRICS_WRITE, METADATA_WRITE, CapabilityGate
+from ui_next.bridge.capabilities import (
+    AUDIO_EXPORT,
+    AUDIO_PROCESSING,
+    COVER_WRITE,
+    LYRICS_WRITE,
+    METADATA_WRITE,
+    CapabilityGate,
+)
 from ui_next.bridge.cover_validation import read_and_validate_cover_file, validate_cover_bytes
 from ui_next.bridge.edit_export_service import (
     EditExportRequest,
@@ -38,6 +45,9 @@ class _MetadataExportWorker(QThread):
 
     def cancel(self) -> None:
         self._cancel_event.set()
+        cancel_service = getattr(self._service, "cancel", None)
+        if callable(cancel_service):
+            cancel_service()
 
     def run(self) -> None:
         self.resultReady.emit(self._service.export(self._request))
@@ -74,6 +84,9 @@ class _CoverExportWorker(QThread):
 
     def cancel(self) -> None:
         self._cancel_event.set()
+        cancel_service = getattr(self._service, "cancel", None)
+        if callable(cancel_service):
+            cancel_service()
 
     def run(self) -> None:
         self.resultReady.emit(self._service.export(self._request))
@@ -90,17 +103,19 @@ class _UnifiedExportWorker(QThread):
 
     def cancel(self) -> None:
         self._cancel_event.set()
+        cancel_service = getattr(self._service, "cancel", None)
+        if callable(cancel_service):
+            cancel_service()
 
     def run(self) -> None:
         self.resultReady.emit(self._service.export(self._request))
 
 
 class EditSessionViewModel(BaseViewModel):
-    """In-memory metadata draft for one FileSession source file.
+    """Aggregate in-memory edit drafts for one FileSession source file.
 
-    The draft is deliberately independent from FileSession.  A successful
-    export leaves the current source file untouched and does not switch the
-    shared workspace to the generated copy.
+    Export defaults to a new output.  Replacing an existing or source file is
+    available only through the explicit confirmed-overwrite request path.
     """
 
     stateChanged = Signal()
@@ -177,6 +192,7 @@ class EditSessionViewModel(BaseViewModel):
         self._unified_export_worker: _UnifiedExportWorker | None = None
         self._unified_export_dialog_open = False
         self._unified_export_default_module = "metadata"
+        self._unified_export_target = "audio"
         self._unified_export_state = "idle"
         self._unified_export_output_path = ""
         self._unified_export_result: dict[str, object] = {}
@@ -184,6 +200,8 @@ class EditSessionViewModel(BaseViewModel):
         self._selected_export_modules: list[str] = []
         self._file_session = None
         self._audio_player = None
+        self._processing_session = None
+        self._preserve_unified_result_on_reload = False
         self._active_export_generation = 0
         self._player_operation_token = ""
         self.set_status_message("当前没有文件信息编辑草稿。")
@@ -191,6 +209,14 @@ class EditSessionViewModel(BaseViewModel):
     def attach_runtime(self, file_session, audio_player) -> None:
         self._file_session = file_session
         self._audio_player = audio_player
+
+    def attach_processing_session(self, processing_session) -> None:
+        self._processing_session = processing_session
+        processing_session.stateChanged.connect(self._on_processing_state_changed)
+
+    @Slot()
+    def _on_processing_state_changed(self) -> None:
+        self.stateChanged.emit()
 
     @Property(str, notify=stateChanged)
     def sourcePath(self) -> str:
@@ -249,7 +275,13 @@ class EditSessionViewModel(BaseViewModel):
 
     @Property(bool, notify=stateChanged)
     def unifiedExporting(self) -> bool:
-        return self._unified_export_worker is not None
+        return bool(
+            self._unified_export_worker is not None
+            or (
+                self._unified_export_dialog_open
+                and self._lyrics_export_worker is not None
+            )
+        )
 
     @Property(bool, notify=stateChanged)
     def unifiedExportDialogOpen(self) -> bool:
@@ -482,7 +514,24 @@ class EditSessionViewModel(BaseViewModel):
 
     @Property(bool, notify=stateChanged)
     def hasUnsavedDrafts(self) -> bool:
-        return self.dirty or self.lyricsDirty or self.coverDirty
+        return self.dirty or self.lyricsDirty or self.coverDirty or self.processingDirty
+
+    @Property(bool, notify=stateChanged)
+    def processingDirty(self) -> bool:
+        return bool(
+            self._processing_session is not None
+            and getattr(self._processing_session, "processingDirty", False)
+        )
+
+    @Property(int, notify=stateChanged)
+    def processingSemitone(self) -> int:
+        if self._processing_session is None:
+            return 0
+        return int(getattr(self._processing_session, "semitone", 0) or 0)
+
+    @Property(bool, notify=stateChanged)
+    def processingWriteEnabled(self) -> bool:
+        return self.allows_capability(AUDIO_PROCESSING) and self.allows_capability(AUDIO_EXPORT)
 
     @Property(bool, notify=stateChanged)
     def hasAnyDraft(self) -> bool:
@@ -514,12 +563,41 @@ class EditSessionViewModel(BaseViewModel):
     def unsavedDraftLabels(self) -> list[str]:
         labels: list[str] = []
         if self.dirty:
-            labels.append("Metadata")
+            labels.append("文件信息")
         if self.lyricsDirty:
-            labels.append("Lyrics")
+            labels.append("歌词")
         if self.coverDirty:
-            labels.append("Cover")
+            labels.append("封面")
+        if self.processingDirty:
+            labels.append("音频处理")
         return labels
+
+    @Property(str, notify=stateChanged)
+    def unifiedExportTarget(self) -> str:
+        return self._unified_export_target
+
+    @Property(bool, notify=stateChanged)
+    def unifiedExportOverwriteRequired(self) -> bool:
+        raw_output = str(self._unified_export_output_path or "").strip()
+        if not raw_output:
+            return False
+        try:
+            return Path(raw_output).expanduser().resolve().is_file()
+        except OSError:
+            return False
+
+    @Property(bool, notify=stateChanged)
+    def unifiedExportOverwritesSource(self) -> bool:
+        if self._unified_export_target != "audio":
+            return False
+        try:
+            return (
+                bool(self._source_path and self._unified_export_output_path)
+                and str(Path(self._source_path).expanduser().resolve()).casefold()
+                == str(Path(self._unified_export_output_path).expanduser().resolve()).casefold()
+            )
+        except OSError:
+            return False
 
     @Property(bool, notify=stateChanged)
     def lyricsWriteEnabled(self) -> bool:
@@ -541,11 +619,25 @@ class EditSessionViewModel(BaseViewModel):
             "metadata": self.dirty,
             "lyrics": self.lyricsDirty,
             "cover": self.coverDirty,
+            "processing": self.processingDirty,
         }
         if not available.get(requested, False):
             requested = next((key for key, value in available.items() if value), "metadata")
         self._unified_export_default_module = requested
+        self._unified_export_target = "audio"
+        self._unified_export_output_path = ""
         self._unified_export_dialog_open = True
+        self._unified_export_state = "idle"
+        self._unified_export_validation_message = ""
+        self.stateChanged.emit()
+
+    @Slot(str)
+    def setUnifiedExportTarget(self, target: str) -> None:
+        normalized = "lrc" if str(target or "") == "lrc" else "audio"
+        if normalized == self._unified_export_target:
+            return
+        self._unified_export_target = normalized
+        self._unified_export_output_path = ""
         self._unified_export_state = "idle"
         self._unified_export_validation_message = ""
         self.stateChanged.emit()
@@ -568,7 +660,14 @@ class EditSessionViewModel(BaseViewModel):
             self._unified_export_validation_message = error[1]
         else:
             self._unified_export_state = "ready"
-            self._unified_export_validation_message = "输出路径已通过预检；最终 no-clobber 仍会在发布前复核。"
+            if self.unifiedExportOverwriteRequired:
+                self._unified_export_validation_message = (
+                    "当前路径是源音频；开始导出前必须再次确认覆盖。"
+                    if self.unifiedExportOverwritesSource
+                    else "目标文件已存在；开始导出前必须再次确认覆盖。"
+                )
+            else:
+                self._unified_export_validation_message = "输出路径已通过预检；将另存为新文件。"
         self.stateChanged.emit()
 
     @Slot()
@@ -576,39 +675,63 @@ class EditSessionViewModel(BaseViewModel):
         if not self.hasSession or self.unifiedExporting:
             return
         source = Path(self._source_path)
-        suggested = self._unified_export_output_path or str(
-            source.with_name(f"{source.stem}_edited{source.suffix}")
-        )
+        if self._unified_export_target == "lrc":
+            suggested = self._unified_export_output_path or str(
+                source.with_name(f"{source.stem}.lrc")
+            )
+            caption = "选择 LRC 输出路径"
+            file_filter = "LRC 歌词 (*.lrc *.LRC)"
+        else:
+            suggested = self._unified_export_output_path or str(
+                source.with_name(f"{source.stem}_edited{source.suffix}")
+            )
+            caption = "选择音频输出路径"
+            file_filter = (
+                f"{source.suffix.upper().lstrip('.')} 文件 (*{source.suffix});;所有文件 (*)"
+            )
         selected_path, _selected_filter = QFileDialog.getSaveFileName(
             None,
-            "选择新的编辑音频副本路径",
+            caption,
             suggested,
-            f"{source.suffix.upper().lstrip('.')} 文件 (*{source.suffix});;所有文件 (*)",
+            file_filter,
         )
         if not selected_path:
             self.set_status_message("已取消选择导出路径；草稿保持不变。")
             return
         self.setUnifiedExportOutputPath(selected_path)
 
-    @Slot(bool, bool, bool, result="QVariantMap")
+    @Slot(bool, bool, bool, bool, result="QVariantMap")
     def unifiedExportPreflight(
         self,
         include_metadata: bool,
         include_lyrics: bool,
         include_cover: bool,
+        include_processing: bool = False,
     ) -> dict[str, object]:
-        selected = self._selected_operations(include_metadata, include_lyrics, include_cover)
+        selected = self._selected_operations(
+            include_metadata,
+            include_lyrics,
+            include_cover,
+            include_processing,
+        )
         required = {
             "metadata": METADATA_WRITE,
             "lyrics": LYRICS_WRITE,
             "cover": COVER_WRITE,
+            "processing": AUDIO_PROCESSING,
         }
         missing = [required[name] for name in selected if not self.allows_capability(required[name])]
+        if "processing" in selected and not self.allows_capability(AUDIO_EXPORT):
+            missing.append(AUDIO_EXPORT)
         supported = supported_edit_modules(self._source_path)
-        unsupported = [name for name in selected if name not in supported]
+        unsupported = [
+            name for name in selected
+            if name != "processing" and name not in supported
+        ]
         return {
             "selected_operations": selected,
-            "required_capabilities": [required[name] for name in selected],
+            "required_capabilities": [required[name] for name in selected]
+                + ([AUDIO_EXPORT] if "processing" in selected else []),
             "missing_capabilities": missing,
             "supported_modules": supported,
             "unsupported_modules": unsupported,
@@ -620,17 +743,24 @@ class EditSessionViewModel(BaseViewModel):
             ),
         }
 
-    @Slot(bool, bool, bool)
+    @Slot(bool, bool, bool, bool, bool)
     def startUnifiedAudioExport(
         self,
         include_metadata: bool,
         include_lyrics: bool,
         include_cover: bool,
+        include_processing: bool = False,
+        overwrite_existing: bool = False,
     ) -> None:
         if self.unifiedExporting or self.anyExporting:
             self.set_status_message("正在导出编辑副本，请等待当前操作完成。")
             return
-        preflight = self.unifiedExportPreflight(include_metadata, include_lyrics, include_cover)
+        preflight = self.unifiedExportPreflight(
+            include_metadata,
+            include_lyrics,
+            include_cover,
+            include_processing,
+        )
         selected = list(preflight["selected_operations"])
         if not selected:
             self._set_unified_failure("no_changes", "请至少选择一个存在修改的模块。")
@@ -656,6 +786,31 @@ class EditSessionViewModel(BaseViewModel):
         if output_error:
             self._set_unified_failure(*output_error)
             return
+        if self.unifiedExportOverwriteRequired and not overwrite_existing:
+            self._set_unified_failure(
+                "overwrite_confirmation_required",
+                "目标文件已存在，需要二次确认后才能覆盖。",
+            )
+            return
+        if overwrite_existing and not self.unifiedExportOverwriteRequired:
+            self._set_unified_failure(
+                "overwrite_target_missing",
+                "确认覆盖的目标文件已不存在，请重新选择路径。",
+            )
+            return
+        if self.unifiedExportOverwritesSource:
+            all_dirty_selected = (
+                (not self.dirty or include_metadata)
+                and (not self.lyricsDirty or include_lyrics)
+                and (not self.coverDirty or include_cover)
+                and (not self.processingDirty or include_processing)
+            )
+            if not all_dirty_selected:
+                self._set_unified_failure(
+                    "source_overwrite_requires_all_drafts",
+                    "覆盖当前源文件时必须包含全部未保存修改；也可以改为另存新文件。",
+                )
+                return
         if include_cover and self.coverDirty and self._cover_action == "replace":
             validation = validate_cover_bytes(self._draft_cover_data)
             if not validation.get("ok") or validation.get("mime") != self._draft_cover_mime:
@@ -672,6 +827,12 @@ class EditSessionViewModel(BaseViewModel):
             cover_action=self._cover_action if include_cover and self.coverDirty else "keep",
             cover_data=self._draft_cover_data if include_cover and self._cover_action == "replace" else None,
             cover_mime=self._draft_cover_mime if include_cover and self._cover_action == "replace" else "",
+            pitch_semitone=(
+                self.processingSemitone
+                if include_processing and self.processingDirty
+                else 0
+            ),
+            overwrite_existing=bool(overwrite_existing),
         )
         if not self._prepare_audio_export():
             self._set_unified_failure(
@@ -682,7 +843,11 @@ class EditSessionViewModel(BaseViewModel):
         self._selected_export_modules = selected
         self._unified_export_state = "exporting"
         self._unified_export_validation_message = "正在创建并验证新的音频副本。"
-        self.set_status_message("正在安全导出编辑副本；原文件不会被覆盖。")
+        self.set_status_message(
+            "正在生成并验证覆盖内容；正式替换前仍可安全取消。"
+            if overwrite_existing
+            else "正在安全导出编辑副本；原文件不会被覆盖。"
+        )
         try:
             worker = _UnifiedExportWorker(self._service_for_export(), request)
             self._unified_export_worker = worker
@@ -698,6 +863,54 @@ class EditSessionViewModel(BaseViewModel):
             )
             return
         self.stateChanged.emit()
+
+    @Slot(bool)
+    def startUnifiedLrcExport(self, overwrite_existing: bool) -> None:
+        if self.anyExporting:
+            self.set_status_message("正在导出，请等待当前操作完成。")
+            return
+        if not self.lyricsDirty:
+            self._set_unified_failure("no_changes", "当前没有未保存的歌词修改。")
+            return
+        if not self.lyricsWriteEnabled:
+            self._set_unified_failure(
+                "capability_denied",
+                "当前无法导出歌词。未创建临时文件。",
+            )
+            return
+        output_error = self._validate_unified_output_path(
+            self._unified_export_output_path
+        )
+        if output_error:
+            self._set_unified_failure(*output_error)
+            return
+        if self.unifiedExportOverwriteRequired and not overwrite_existing:
+            self._set_unified_failure(
+                "overwrite_confirmation_required",
+                "目标 LRC 已存在，需要二次确认后才能覆盖。",
+            )
+            return
+        if overwrite_existing and not self.unifiedExportOverwriteRequired:
+            self._set_unified_failure(
+                "overwrite_target_missing",
+                "确认覆盖的 LRC 已不存在，请重新选择路径。",
+            )
+            return
+        request = LrcExportRequest(
+            source_path=self._source_path,
+            output_path=self._unified_export_output_path,
+            lyrics_text=self._draft_lyrics,
+            original_lrc_path=self.selectedLyricsLrcPath,
+            overwrite_existing=bool(overwrite_existing),
+        )
+        self._selected_export_modules = ["lyrics"]
+        self._unified_export_state = "exporting"
+        self._unified_export_validation_message = (
+            "正在验证并覆盖 LRC 文件。"
+            if overwrite_existing
+            else "正在验证并另存新的 LRC 文件。"
+        )
+        self._start_lyrics_export(request, lrc_only=True)
 
     @Slot()
     def cancelExport(self) -> None:
@@ -722,6 +935,7 @@ class EditSessionViewModel(BaseViewModel):
         path = str(self._unified_export_result.get("output_path") or "")
         return bool(
             self._unified_export_result.get("success")
+            and not self._unified_export_result.get("overwrote_source")
             and path
             and Path(path).is_file()
             and not self.anyExporting
@@ -764,6 +978,14 @@ class EditSessionViewModel(BaseViewModel):
         self._cover_state = (
             "loaded" if self._has_original_cover else "no_cover"
         ) if self.hasSession else "empty"
+        if self._processing_session is not None:
+            restore_processing = getattr(
+                self._processing_session,
+                "restoreOriginalProcessing",
+                None,
+            )
+            if callable(restore_processing):
+                restore_processing()
         self.stateChanged.emit()
 
     @Slot()
@@ -787,12 +1009,30 @@ class EditSessionViewModel(BaseViewModel):
 
     @Slot(str, int)
     def beginCurrentFile(self, path: str, generation: int) -> None:
+        preserve_unified_result = bool(
+            self._preserve_unified_result_on_reload
+            and self._source_path
+            and str(Path(self._source_path)).casefold()
+            == str(Path(str(path or ""))).casefold()
+        )
+        saved_export_state = self._unified_export_state
+        saved_export_output_path = self._unified_export_output_path
+        saved_export_result = dict(self._unified_export_result)
+        saved_export_message = self._unified_export_validation_message
+        saved_dialog_open = self._unified_export_dialog_open
         self._clear_draft("正在读取新文件的信息；已丢弃上一文件的编辑草稿。")
         self._clear_lyrics_draft()
         self._clear_cover_draft()
         self._reset_unified_export_state()
         self._source_path = str(path or "")
         self._session_generation = int(generation)
+        self._preserve_unified_result_on_reload = False
+        if preserve_unified_result:
+            self._unified_export_state = saved_export_state
+            self._unified_export_output_path = saved_export_output_path
+            self._unified_export_result = saved_export_result
+            self._unified_export_validation_message = saved_export_message
+            self._unified_export_dialog_open = saved_dialog_open
         self.stateChanged.emit()
 
     @Slot()
@@ -1548,6 +1788,14 @@ class EditSessionViewModel(BaseViewModel):
                     f"{type(exc).__name__}"
                 ),
             }
+            if self._unified_export_dialog_open:
+                self._record_unified_export_result(
+                    self._lyrics_last_export_result
+                )
+                self._unified_export_state = "failed"
+                self._unified_export_validation_message = str(
+                    self._lyrics_last_export_result["message"]
+                )
             self.set_status_message(
                 str(self._lyrics_last_export_result["message"])
             )
@@ -1557,10 +1805,11 @@ class EditSessionViewModel(BaseViewModel):
 
     def _apply_lyrics_export_result(self, result: dict) -> None:
         self._lyrics_export_worker = None
-        if list(result.get("applied_operations") or []) != ["lrc"]:
+        lrc_only = list(result.get("applied_operations") or []) == ["lrc"]
+        if not lrc_only:
             self._finish_audio_export_transaction()
         self._lyrics_last_export_result = dict(result or {})
-        if list(result.get("applied_operations") or []) != ["lrc"]:
+        if not lrc_only or self._unified_export_dialog_open:
             self._record_unified_export_result(result)
         if result.get("success"):
             self._lyrics_state = "success"
@@ -1577,9 +1826,23 @@ class EditSessionViewModel(BaseViewModel):
                 self.set_status_message(
                     f"已生成新输出：{result.get('output_path')}。当前工作区仍保持原文件。"
                 )
+            if self._unified_export_dialog_open:
+                self._unified_export_state = "success"
+                self._unified_export_validation_message = str(
+                    result.get("message") or "歌词导出完成。"
+                )
         else:
             self._lyrics_state = "failed"
             self.set_status_message(str(result.get("message") or "歌词导出失败。"))
+            if self._unified_export_dialog_open:
+                self._unified_export_state = (
+                    "cancelled"
+                    if result.get("error_code") == "export_cancelled"
+                    else "failed"
+                )
+                self._unified_export_validation_message = str(
+                    result.get("message") or "歌词导出失败。"
+                )
         self.stateChanged.emit()
 
     def _check_cover_exportable(self) -> bool:
@@ -1633,12 +1896,25 @@ class EditSessionViewModel(BaseViewModel):
         self._record_unified_export_result(result)
         if result.get("success"):
             self._unified_export_state = "success"
-            self._unified_export_validation_message = (
-                "修改已导出到副本；当前源文件仍未包含这些修改，草稿保持未保存状态。"
-            )
-            self.set_status_message(
-                f"已生成新输出：{result.get('output_path')}。当前工作区仍保持原文件。"
-            )
+            if result.get("overwrote_source"):
+                self._unified_export_validation_message = (
+                    "当前源文件已安全覆盖并通过验证；编辑草稿将按新文件重新读取。"
+                )
+                self.set_status_message("当前源文件已安全覆盖并重新读取。")
+            elif result.get("overwrote_existing"):
+                self._unified_export_validation_message = (
+                    "现有目标文件已安全覆盖；当前编辑源文件和草稿保持不变。"
+                )
+                self.set_status_message(
+                    f"已覆盖输出：{result.get('output_path')}。当前工作区仍保持原文件。"
+                )
+            else:
+                self._unified_export_validation_message = (
+                    "修改已导出到副本；当前源文件仍未包含这些修改，草稿保持未保存状态。"
+                )
+                self.set_status_message(
+                    f"已生成新输出：{result.get('output_path')}。当前工作区仍保持原文件。"
+                )
         else:
             self._unified_export_state = (
                 "cancelled"
@@ -1648,6 +1924,17 @@ class EditSessionViewModel(BaseViewModel):
             self._unified_export_validation_message = str(result.get("message") or "编辑副本导出失败。")
             self.set_status_message(self._unified_export_validation_message)
         self.stateChanged.emit()
+        if (
+            result.get("success")
+            and result.get("overwrote_source")
+            and self._file_session is not None
+        ):
+            # The confirmed source replacement now contains every dirty
+            # module, so clear the old in-memory baseline before asking the
+            # file session to read the replaced source again.
+            self.discardAllDraftsForResultLoad()
+            self._preserve_unified_result_on_reload = True
+            self._file_session.reloadCurrentFile()
 
     def _record_unified_export_result(self, result: dict) -> None:
         record = dict(result or {})
@@ -1678,6 +1965,7 @@ class EditSessionViewModel(BaseViewModel):
         include_metadata: bool,
         include_lyrics: bool,
         include_cover: bool,
+        include_processing: bool,
     ) -> list[str]:
         selected: list[str] = []
         if include_metadata and self.dirty:
@@ -1686,12 +1974,14 @@ class EditSessionViewModel(BaseViewModel):
             selected.append("lyrics")
         if include_cover and self.coverDirty:
             selected.append("cover")
+        if include_processing and self.processingDirty:
+            selected.append("processing")
         return selected
 
     def _validate_unified_output_path(self, output_path: str) -> tuple[str, str] | None:
         raw_output = str(output_path or "").strip()
         if not raw_output:
-            return "output_required", "必须手动选择全新的音频输出路径。"
+            return "output_required", "必须选择输出路径。"
         if not self._source_path:
             return "source_missing", "当前没有源音频文件。"
         try:
@@ -1699,17 +1989,19 @@ class EditSessionViewModel(BaseViewModel):
             output = Path(raw_output).expanduser().resolve()
         except OSError as exc:
             return "output_required", f"无法规范化输出路径：{exc}"
-        if str(source).casefold() == str(output).casefold():
-            return "output_same_as_source", "输出路径不能与当前源文件相同。"
-        if source.suffix.lower() != output.suffix.lower():
+        if self._unified_export_target == "lrc":
+            if output.suffix.lower() != ".lrc":
+                return "lrc_extension_invalid", "LRC 输出文件必须使用 .lrc 扩展名。"
+        elif source.suffix.lower() != output.suffix.lower():
             return "output_extension_mismatch", "输出文件扩展名必须与源文件一致。"
-        if output.exists():
-            return "output_exists", "输出路径已存在，系统不会覆盖已有文件。"
+        if output.exists() and not output.is_file():
+            return "overwrite_target_invalid", "输出路径已存在，但不是普通文件。"
         return None
 
     def _reset_unified_export_state(self) -> None:
         self._unified_export_dialog_open = False
         self._unified_export_default_module = "metadata"
+        self._unified_export_target = "audio"
         self._unified_export_state = "idle"
         self._unified_export_output_path = ""
         self._unified_export_result = {}

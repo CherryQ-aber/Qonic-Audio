@@ -54,22 +54,12 @@ Rectangle {
                 maximumLineCount: 1
             }
             StatusBadge {
+                visible: root.processingSession && root.processingSession.processingDirty
                 theme: root.theme
                 typography: root.typography
-                label: root.processingSession
-                    ? root.pitchText(root.processingSession.semitone) : "原调"
-                tone: root.processingSession
-                    && root.processingSession.semitone !== 0 ? "accent" : "muted"
+                label: "未保存"
+                tone: "warning"
             }
-        }
-        Text {
-            text: "试听缓存与正式导出完全分离；原文件和当前编辑文件不会被修改或替换。"
-            color: theme.textSecondary
-            font.family: typography.fontFamily
-            font.pixelSize: typography.sizeSmall
-            Layout.fillWidth: true
-            elide: Text.ElideRight
-            maximumLineCount: 1
         }
 
         GridLayout {
@@ -77,7 +67,7 @@ Rectangle {
             objectName: "pitchWorkspaceGrid"
             Layout.fillWidth: true
             Layout.minimumWidth: 0
-            columns: root.width >= 900 ? 3 : 1
+            columns: root.width >= 700 ? 2 : 1
             columnSpacing: theme.spacing
             rowSpacing: theme.spacing
 
@@ -107,10 +97,10 @@ Rectangle {
                         onClicked: root.processingSession.setSemitone(root.processingSession.semitone - 1)
                     }
                     StepButton {
-                        text: "还原 0"
-                        enabled: root.processingSession && root.processingSession.hasSource
+                        text: "恢复原始"
+                        enabled: root.processingSession && root.processingSession.processingDirty
                             && !root.processingSession.isBusy
-                        onClicked: root.processingSession.setSemitone(0)
+                        onClicked: root.processingSession.restoreOriginalProcessing()
                     }
                     StepButton {
                         text: "+1 半音"
@@ -224,70 +214,6 @@ Rectangle {
                 }
             }
 
-            WorkspacePane {
-                objectName: "pitchExportPane"
-                title: "导出结果"
-
-                StatusLine {
-                    label: "当前导出状态"
-                    value: root.processingSession
-                        ? root.stateText(root.processingSession.processingState) : "尚未导出"
-                }
-                StatusLine {
-                    label: "最近导出"
-                    value: root.processingSession && root.processingSession.exportPath
-                        ? root.processingSession.exportPath : "尚未导出"
-                    middleElide: true
-                }
-                Flow {
-                    Layout.fillWidth: true
-                    spacing: 8
-                    Action {
-                        text: "导出为新文件"
-                        accent: true
-                        enabled: root.processingSession
-                            && root.processingSession.hasSource
-                            && root.processingSession.semitone !== 0
-                            && !root.processingSession.isBusy
-                            && root.processingSession.audioProcessingEnabled
-                            && root.processingSession.audioExportEnabled
-                        onClicked: root.processingSession.requestExport()
-                    }
-                    Action {
-                        text: "打开导出位置"
-                        enabled: root.processingSession
-                            && root.processingSession.exportPath.length > 0
-                        onClicked: root.processingSession.openExportLocation()
-                    }
-                    Action {
-                        text: "载入导出结果"
-                        enabled: root.processingSession
-                            && root.processingSession.canLoadExportResult
-                        onClicked: root.processingSession.loadExportResultAsCurrent()
-                    }
-                }
-                Text {
-                    visible: root.processingSession
-                        && root.processingSession.canLoadExportResult
-                    text: "导出结果不会自动替换当前文件；仅在点击“载入导出结果”后切换并重新读取。"
-                    color: theme.warning
-                    font.family: typography.fontFamily
-                    font.pixelSize: typography.sizeSmall
-                    Layout.fillWidth: true
-                    wrapMode: Text.WordWrap
-                }
-                Text {
-                    text: root.processingSession
-                        && root.processingSession.disabledReason.length > 0
-                        ? "不可用原因：" + root.processingSession.disabledReason
-                        : "导出始终另存为新文件，不覆盖现有输出。"
-                    color: theme.textSecondary
-                    font.family: typography.fontFamily
-                    font.pixelSize: typography.sizeSmall
-                    Layout.fillWidth: true
-                    wrapMode: Text.WordWrap
-                }
-            }
         }
     }
 

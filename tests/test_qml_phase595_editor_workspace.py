@@ -278,17 +278,16 @@ Item {
             "coverDirtyBadge",
             "lyricsDirtyBadge",
             "importEditorAudioButton",
-            "loadEditorFileInPlayerButton",
             "openEditorFileLocationButton",
             "exportEditorDraftsButton",
         ):
             self.assertIn(f'objectName: "{object_name}"', current_file)
 
         self.assertIn('chooseAudioFile("audio_editor")', current_file)
-        self.assertIn("root.audioPlayer.loadEditorFile(", current_file)
-        self.assertIn("root.fileSession.sessionGeneration", current_file)
         self.assertIn('openUnifiedExportDialog("auto")', current_file)
         self.assertIn("playbackMatchesEditorFile", current_file)
+        self.assertNotIn('objectName: "loadEditorFileInPlayerButton"', current_file)
+        self.assertNotIn('text: "载入播放器"', current_file)
         self.assertIn("property bool floatingMode: false", current_file)
         self.assertIn("property bool expanded: false", current_file)
         self.assertIn("signal collapseRequested()", current_file)

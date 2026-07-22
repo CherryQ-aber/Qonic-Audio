@@ -160,7 +160,10 @@ class EditSessionMetadataTests(unittest.TestCase):
             session.updateField("title", "Draft title")
             session.exportDraftToPath(str(output))
             self._wait_export(session)
-            self.assertEqual("output_exists", session.lastExportResult["error_code"])
+            self.assertEqual(
+                "overwrite_confirmation_required",
+                session.lastExportResult["error_code"],
+            )
             self.assertEqual(source_hash, hashlib.sha256(source.read_bytes()).hexdigest())
             self.assertEqual(output_hash, hashlib.sha256(output.read_bytes()).hexdigest())
 

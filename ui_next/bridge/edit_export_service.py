@@ -5,7 +5,7 @@ from hashlib import sha256
 import os
 from pathlib import Path
 import shutil
-from threading import Event
+from threading import Event, Lock
 from uuid import uuid4
 
 from metadata import (
@@ -21,9 +21,24 @@ from lyrics import (
     read_lrc_file_preview,
     remove_embedded_lyrics,
 )
-from ui_next.bridge.capabilities import COVER_WRITE, LYRICS_WRITE, METADATA_WRITE, CapabilityGate
+from ui_next.bridge.audio_processing_service import AudioProcessingService
+from ui_next.bridge.capabilities import (
+    AUDIO_EXPORT,
+    AUDIO_PROCESSING,
+    COVER_WRITE,
+    LYRICS_WRITE,
+    METADATA_WRITE,
+    CapabilityGate,
+)
 from ui_next.bridge.cover_validation import validate_cover_bytes
-from ui_next.bridge.no_clobber_publish import cleanup_owned_temp, publish_no_clobber
+from ui_next.bridge.no_clobber_publish import (
+    cleanup_owned_temp,
+    commit_confirmed_overwrite,
+    publish_confirmed_overwrite,
+    publish_no_clobber,
+    rollback_confirmed_overwrite,
+)
+from ui_next.bridge.processed_audio_export_service import ProcessedAudioExportService
 
 
 _METADATA_WRITE_EXTENSIONS = frozenset(
@@ -62,6 +77,8 @@ class EditExportRequest:
     cover_action: str = "keep"  # keep, replace, remove
     cover_data: bytes | None = None
     cover_mime: str = ""
+    pitch_semitone: int = 0
+    overwrite_existing: bool = False
     cancel_event: Event | None = field(default=None, repr=False, compare=False)
 
     def requested_operations(self) -> tuple[str, ...]:
@@ -72,6 +89,8 @@ class EditExportRequest:
             operations.append("cover")
         if self.lyrics_text is not None:
             operations.append("lyrics")
+        if int(self.pitch_semitone):
+            operations.append("pitch")
         return tuple(operations)
 
 
@@ -86,10 +105,18 @@ class LrcExportRequest:
 
 
 class EditExportService:
-    """Create and publish a fully verified edited *copy* of an audio file."""
+    """Create one verified edited output, with opt-in transactional overwrite."""
 
     def __init__(self, capability_gate: CapabilityGate | None = None) -> None:
         self._capability_gate = capability_gate or CapabilityGate()
+        self._processing_lock = Lock()
+        self._active_processing_service: AudioProcessingService | None = None
+
+    def cancel(self) -> None:
+        with self._processing_lock:
+            processing_service = self._active_processing_service
+        if processing_service is not None:
+            processing_service.cancel()
 
     def export(self, request: EditExportRequest) -> dict[str, object]:
         result = _base_result(request)
@@ -131,10 +158,12 @@ class EditExportService:
                 return _fail(result, *merge_error)
             request = replace(request, metadata_changes=merged_metadata)
 
+        overwrite_publication: dict[str, object] | None = None
         try:
             source_sha256 = _sha256(source)
+            target_sha256 = _sha256(output) if request.overwrite_existing else ""
         except OSError as exc:
-            return _fail(result, "source_missing", f"无法校验源文件：{exc}")
+            return _fail(result, "source_missing", f"无法校验源文件或覆盖目标：{exc}")
         result["source_sha256"] = source_sha256
         if _cancelled(request):
             return _cancelled_result(result)
@@ -147,9 +176,48 @@ class EditExportService:
         temp_path = _make_temp_path(output)
         temp_identity: tuple[int, int] | None = None
         try:
-            shutil.copy2(source, temp_path)
+            if "pitch" in operations:
+                processing_service = AudioProcessingService()
+                with self._processing_lock:
+                    self._active_processing_service = processing_service
+                render = processing_service.render_pitch_shift(
+                    str(source),
+                    str(temp_path),
+                    int(request.pitch_semitone),
+                )
+                with self._processing_lock:
+                    self._active_processing_service = None
+                if not render.get("success"):
+                    cleanup_owned_temp(temp_path, _identity(temp_path))
+                    if (
+                        _cancelled(request)
+                        or render.get("error_code") == "processing_cancelled"
+                    ):
+                        return _cancelled_result(result)
+                    return _fail(
+                        result,
+                        str(render.get("error_code") or "processing_failed"),
+                        str(render.get("message") or "音频处理失败。"),
+                    )
+                preservation = ProcessedAudioExportService._verify_preservation(
+                    source,
+                    temp_path,
+                )
+                if not preservation.get("success"):
+                    cleanup_owned_temp(temp_path, _identity(temp_path))
+                    return _fail(
+                        result,
+                        str(preservation.get("error_code") or "processing_verification_failed"),
+                        str(preservation.get("message") or "音频处理结果验证失败。"),
+                    )
+                result["processing"] = render
+            else:
+                shutil.copy2(source, temp_path)
             temp_identity = _identity(temp_path)
-        except OSError as exc:
+        except Exception as exc:
+            with self._processing_lock:
+                self._active_processing_service = None
+            cleanup_owned_temp(temp_path, _identity(temp_path))
             return _fail(result, "temp_copy_failed", f"无法创建编辑临时副本：{exc}")
 
         try:
@@ -176,7 +244,17 @@ class EditExportService:
 
             if _cancelled(request):
                 return _cancelled_with_cleanup(result, temp_path, temp_identity)
-            published = publish_no_clobber(temp_path, output)
+            published = (
+                publish_confirmed_overwrite(
+                    temp_path,
+                    output,
+                    target_sha256,
+                )
+                if request.overwrite_existing
+                else publish_no_clobber(temp_path, output)
+            )
+            if request.overwrite_existing and published.get("success"):
+                overwrite_publication = published
             result["finalization_strategy"] = published["finalization_strategy"]
             result["temp_cleanup_success"] = published["temp_cleanup_success"]
             if not published["success"]:
@@ -184,6 +262,19 @@ class EditExportService:
 
             post_verification = self._verify(output, request, operations)
             if post_verification:
+                if request.overwrite_existing:
+                    restored = rollback_confirmed_overwrite(output, published)
+                    if not restored:
+                        result["warnings"].append(
+                            "自动恢复未完成，已保留回滚备份："
+                            + str(published.get("rollback_backup_path") or "")
+                        )
+                    return _fail(
+                        result,
+                        "verification_failed",
+                        post_verification[1]
+                        + ("；已恢复覆盖前文件。" if restored else "；自动恢复未完成。"),
+                    )
                 final_cleanup_ok = cleanup_owned_temp(
                     output,
                     published.get("output_identity"),
@@ -192,23 +283,60 @@ class EditExportService:
                     result["warnings"].append("发布后验证失败，无法确认清理输出文件。")
                 return _fail(result, "verification_failed", post_verification[1])
 
+            backup_cleanup_success = True
+            if request.overwrite_existing:
+                backup_cleanup_success = commit_confirmed_overwrite(published)
+                if not backup_cleanup_success:
+                    result["warnings"].append("覆盖已成功，但临时回滚备份未能自动清理。")
+
+            overwrote_source = request.overwrite_existing and _same_path(source, output)
+
             result.update(
                 {
                     "success": True,
-                    "message": "已安全导出编辑副本；原文件未修改。",
+                    "message": (
+                        "已确认覆盖当前源文件。"
+                        if overwrote_source
+                        else "已确认覆盖现有输出文件。"
+                        if request.overwrite_existing
+                        else "已安全导出编辑副本；原文件未修改。"
+                    ),
                     "verification_success": True,
                     "source_sha256": source_sha256,
-                    "sourceUnchanged": True,
+                    "sourceUnchanged": not overwrote_source,
+                    "overwrote_existing": bool(request.overwrite_existing),
+                    "overwrote_source": overwrote_source,
+                    "backup_cleanup_success": backup_cleanup_success,
                 }
             )
             return result
         except Exception as exc:  # defensive transaction boundary
+            restored = False
+            if overwrite_publication is not None:
+                restored = rollback_confirmed_overwrite(
+                    output,
+                    overwrite_publication,
+                )
+                if not restored:
+                    result["warnings"].append(
+                        "自动恢复未完成，已保留回滚备份："
+                        + str(
+                            overwrite_publication.get(
+                                "rollback_backup_path"
+                            )
+                            or ""
+                        )
+                    )
             return _fail_with_cleanup(
                 result,
                 temp_path,
                 temp_identity,
                 "finalization_failed",
-                f"编辑副本导出异常：{exc}",
+                (
+                    f"编辑副本导出异常：{exc}；已恢复覆盖前文件。"
+                    if restored
+                    else f"编辑副本导出异常：{exc}"
+                ),
             )
 
     def export_lrc(self, request: LrcExportRequest) -> dict[str, object]:
@@ -241,12 +369,6 @@ class EditExportService:
             except OSError:
                 original_path = None
         if overwrite_existing:
-            if original_path is None or not _same_path(original_path, output):
-                return _fail(
-                    result,
-                    "lrc_overwrite_target_invalid",
-                    "只能显式覆盖当前歌词来源的 .lrc 文件。",
-                )
             if not output.is_file():
                 return _fail(
                     result,
@@ -337,11 +459,19 @@ class EditExportService:
                     )
                 result.update({
                     "success": True,
-                    "message": "已覆盖当前 LRC 文件；音频源文件未修改。",
+                    "message": (
+                        "已覆盖当前歌词来源的 LRC 文件；音频源文件未修改。"
+                        if original_path is not None and _same_path(original_path, output)
+                        else "已确认覆盖现有 LRC 文件；音频源文件未修改。"
+                    ),
                     "verification_success": True,
                     "encoding": "UTF-8（无 BOM）",
                     "sourceUnchanged": True,
-                    "overwrote_original_lrc": True,
+                    "overwrote_original_lrc": bool(
+                        original_path is not None
+                        and _same_path(original_path, output)
+                    ),
+                    "overwrote_existing": True,
                     "finalization_strategy": "explicit_atomic_lrc_replace",
                     "temp_cleanup_success": True,
                 })
@@ -383,16 +513,20 @@ class EditExportService:
             return None, None, ("source_missing", f"无法规范化路径：{exc}")
         if not source.is_file():
             return None, None, ("source_missing", "源文件不存在或不是普通文件。")
-        if _same_path(source, output):
-            return None, None, ("output_same_as_source", "输出路径不能是源文件本身。")
+        if _same_path(source, output) and not request.overwrite_existing:
+            return None, None, ("overwrite_confirmation_required", "输出路径是当前源文件，需要二次确认后才能覆盖。")
         if source.suffix.lower() != output.suffix.lower():
             return None, None, ("output_extension_mismatch", "输出文件扩展名必须与源文件一致。")
-        if output.exists():
-            return None, None, ("output_exists", "输出路径已存在，系统不会覆盖已有文件。")
+        if output.exists() and not request.overwrite_existing:
+            return None, None, ("overwrite_confirmation_required", "输出路径已存在，需要二次确认后才能覆盖。")
+        if request.overwrite_existing and not output.is_file():
+            return None, None, ("overwrite_target_missing", "确认覆盖的目标文件已不存在。")
         return source, output, None
 
     def _validate_operations(self, source: Path, request: EditExportRequest, operations: tuple[str, ...]):
         extension = source.suffix.lower()
+        if int(request.pitch_semitone) < -12 or int(request.pitch_semitone) > 12:
+            return "pitch_out_of_range", "Pitch 半音参数必须在 -12 到 +12 之间。"
         if request.cover_action not in {"keep", "replace", "remove"}:
             return "cover_write_failed", "封面操作仅支持 keep、replace 或 remove。"
         if "metadata" in operations and extension not in _METADATA_WRITE_EXTENSIONS:
@@ -505,8 +639,18 @@ def supported_edit_modules(path: str) -> list[str]:
 
 
 def _required_capabilities(operations: tuple[str, ...]) -> tuple[str, ...]:
-    mapping = {"metadata": METADATA_WRITE, "lyrics": LYRICS_WRITE, "cover": COVER_WRITE}
-    return tuple(mapping[operation] for operation in operations)
+    mapping = {
+        "metadata": (METADATA_WRITE,),
+        "lyrics": (LYRICS_WRITE,),
+        "cover": (COVER_WRITE,),
+        "pitch": (AUDIO_PROCESSING, AUDIO_EXPORT),
+    }
+    required: list[str] = []
+    for operation in operations:
+        for capability in mapping[operation]:
+            if capability not in required:
+                required.append(capability)
+    return tuple(required)
 
 
 def _metadata_value(result: dict, field: str):
@@ -577,6 +721,9 @@ def _base_result(request: EditExportRequest) -> dict[str, object]:
         "skippedModules": [],
         "failedModules": [],
         "sourceUnchanged": True,
+        "overwrote_existing": False,
+        "overwrote_source": False,
+        "backup_cleanup_success": True,
     }
 
 
@@ -595,6 +742,8 @@ def _base_lrc_result(request: LrcExportRequest) -> dict[str, object]:
         "warnings": [],
         "encoding": "UTF-8（无 BOM）",
         "overwrote_original_lrc": False,
+        "overwrote_existing": False,
+        "overwrote_source": False,
         "appliedModules": ["lrc"],
         "skippedModules": [],
         "failedModules": [],
@@ -608,6 +757,9 @@ def _fail(result: dict[str, object], code: str, message: str) -> dict[str, objec
     if result.get("appliedModules") and code not in {
         "output_exists",
         "output_conflict",
+        "overwrite_confirmation_required",
+        "overwrite_target_missing",
+        "overwrite_target_changed",
     }:
         result["failedModules"] = list(result.get("appliedModules") or [])
     return result

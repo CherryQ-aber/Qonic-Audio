@@ -251,7 +251,7 @@ class EditSessionCoverTests(unittest.TestCase):
                 "source_path": str(source), "output_path": str(output), "cover_action": "remove",
             }
             result = EditExportService(CapabilityGate((COVER_WRITE,))).export(EditExportRequest(**request))
-            self.assertEqual("output_exists", result["error_code"])
+            self.assertEqual("overwrite_confirmation_required", result["error_code"])
             self.assertEqual(source_hash, hashlib.sha256(source.read_bytes()).hexdigest())
 
 

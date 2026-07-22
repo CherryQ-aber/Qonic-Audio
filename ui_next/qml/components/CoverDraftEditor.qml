@@ -14,7 +14,6 @@ SectionCard {
     signal replaceRequested()
     signal removeRequested()
     signal restoreRequested()
-    signal exportRequested()
 
     objectName: "coverDraftEditor"
     Layout.fillWidth: true
@@ -32,7 +31,7 @@ SectionCard {
         RowLayout {
             Layout.fillWidth: true
             Text {
-                text: "封面编辑（草稿）"
+                text: "封面编辑"
                 color: root.theme.textPrimary
                 font.family: root.typography.fontFamily
                 font.pixelSize: root.typography.sizeMedium
@@ -40,26 +39,12 @@ SectionCard {
                 Layout.fillWidth: true
             }
             StatusBadge {
+                visible: root.editSession && root.editSession.coverDirty
                 theme: root.theme
                 typography: root.typography
-                label: !root.editSession || !root.editSession.hasSession ? "未选择文件"
-                    : root.editSession.coverEditState === "error" || root.editSession.coverEditState === "failed" ? "读取失败"
-                    : root.editSession.coverAction === "replace" ? "新封面草稿"
-                    : root.editSession.coverAction === "remove" ? "已标记移除"
-                    : root.editSession.hasOriginalCover ? "原文件封面" : "原文件无封面"
-                tone: root.editSession && (root.editSession.coverDirty
-                    || root.editSession.coverEditState === "error"
-                    || root.editSession.coverEditState === "failed") ? "warning" : "muted"
+                label: "未保存"
+                tone: "warning"
             }
-        }
-
-        Text {
-            text: "封面替换、移除和恢复仅修改本次运行的内存草稿；导出只会生成新的音频副本。"
-            color: root.theme.textSecondary
-            font.family: root.typography.fontFamily
-            font.pixelSize: root.typography.sizeSmall
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
         }
 
         PreviewPane {
@@ -114,33 +99,6 @@ SectionCard {
                 enabled: root.editSession && root.editSession.coverDirty && !root.editSession.anyExporting
                 onClicked: root.restoreRequested()
             }
-            DraftButton {
-                text: "导出封面修改（另存新文件）"
-                enabled: root.editSession && root.editSession.coverDirty && !root.editSession.anyExporting
-                onClicked: root.exportRequested()
-            }
-        }
-
-        Text {
-            text: root.editSession && root.editSession.coverWriteEnabled
-                ? "当前支持将封面草稿导出到新的音频副本；不会覆盖源文件或已有输出。"
-                : "当前运行模式未启用封面导出；封面草稿仍只保存在内存中。"
-            color: root.theme.muted
-            font.family: root.typography.fontFamily
-            font.pixelSize: root.typography.sizeSmall
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-        }
-
-        Text {
-            visible: root.editSession && (root.editSession.unifiedExportMessage.length > 0 || root.editSession.lastCoverExportMessage.length > 0)
-            text: root.editSession && root.editSession.unifiedExportMessage.length > 0 ? root.editSession.unifiedExportMessage : (root.editSession ? root.editSession.lastCoverExportMessage : "")
-            color: root.editSession && root.editSession.unifiedExportMessage.length > 0 && root.editSession.unifiedExportResult.success === true
-                ? root.theme.success : root.theme.warning
-            font.family: root.typography.fontFamily
-            font.pixelSize: root.typography.sizeSmall
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
         }
     }
 

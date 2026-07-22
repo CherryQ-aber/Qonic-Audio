@@ -9,7 +9,14 @@ from unittest.mock import patch
 
 from PIL import Image
 
-from ui_next.bridge.capabilities import COVER_WRITE, LYRICS_WRITE, METADATA_WRITE, CapabilityGate
+from ui_next.bridge.capabilities import (
+    AUDIO_EXPORT,
+    AUDIO_PROCESSING,
+    COVER_WRITE,
+    LYRICS_WRITE,
+    METADATA_WRITE,
+    CapabilityGate,
+)
 from ui_next.bridge.edit_export_service import (
     EditExportRequest,
     EditExportService,
@@ -99,12 +106,12 @@ class EditExportServiceTests(unittest.TestCase):
             service = EditExportService(CapabilityGate((METADATA_WRITE,)))
             request = lambda output: EditExportRequest(str(source), output, metadata_changes={"title": "Draft"})
             self.assertEqual("output_required", service.export(request("")).get("error_code"))
-            self.assertEqual("output_same_as_source", service.export(request(str(source))).get("error_code"))
+            self.assertEqual("overwrite_confirmation_required", service.export(request(str(source))).get("error_code"))
             self.assertEqual("output_extension_mismatch", service.export(request(str(root / "edited.mp3"))).get("error_code"))
             existing = root / "existing.flac"
             existing.write_bytes(b"keep")
             before = existing.read_bytes()
-            self.assertEqual("output_exists", service.export(request(str(existing))).get("error_code"))
+            self.assertEqual("overwrite_confirmation_required", service.export(request(str(existing))).get("error_code"))
             self.assertEqual(before, existing.read_bytes())
 
     def test_metadata_lyrics_cover_replace_and_remove_publish_new_copy(self):
@@ -150,6 +157,41 @@ class EditExportServiceTests(unittest.TestCase):
                 result = EditExportService(CapabilityGate((METADATA_WRITE, LYRICS_WRITE))).export(request)
             self.assertEqual("capability_denied", result["error_code"])
             copy.assert_not_called()
+
+    def test_pitch_and_metadata_are_rendered_into_one_verified_audio_output(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source = self._source(root)
+            output = root / "combined.flac"
+            service, state, stack = self._service_with_backend(
+                (METADATA_WRITE, AUDIO_PROCESSING, AUDIO_EXPORT)
+            )
+
+            def render(_service, source_path, output_path, semitone):
+                self.assertEqual(3, semitone)
+                Path(output_path).write_bytes(
+                    Path(source_path).read_bytes() + b"-pitch"
+                )
+                return {"success": True, "semitone": semitone}
+
+            with stack, patch(
+                "ui_next.bridge.edit_export_service.AudioProcessingService.render_pitch_shift",
+                new=render,
+            ), patch(
+                "ui_next.bridge.edit_export_service.ProcessedAudioExportService._verify_preservation",
+                return_value={"success": True},
+            ):
+                result = service.export(EditExportRequest(
+                    str(source),
+                    str(output),
+                    metadata_changes={"title": "Combined"},
+                    pitch_semitone=3,
+                ))
+
+            self.assertTrue(result["success"], result)
+            self.assertEqual(["metadata", "pitch"], result["applied_operations"])
+            self.assertEqual("Combined", state["metadata"]["title"])
+            self.assertTrue(output.read_bytes().endswith(b"-pitch"))
 
     def test_each_write_or_verification_failure_cleans_temp_and_never_publishes(self):
         cases = (
@@ -287,14 +329,127 @@ class EditExportServiceTests(unittest.TestCase):
             )
             self.assertEqual(source_hash, self._sha(source))
 
-    def test_service_uses_no_replace_and_has_no_session_config_or_watcher_dependencies(self):
+    def test_service_limits_replace_to_explicit_confirmed_overwrite_helpers(self):
         root = Path(__file__).resolve().parents[1]
         service_source = (root / "ui_next/bridge/edit_export_service.py").read_text(encoding="utf-8")
         publish_source = (root / "ui_next/bridge/no_clobber_publish.py").read_text(encoding="utf-8")
-        self.assertNotIn("os.replace", service_source + publish_source)
+        no_clobber_body = publish_source.split("def publish_no_clobber", 1)[1].split(
+            "def publish_confirmed_overwrite", 1
+        )[0]
+        self.assertNotIn("os.replace", no_clobber_body)
+        self.assertIn("def publish_confirmed_overwrite", publish_source)
+        self.assertIn("os.replace", publish_source)
         self.assertNotIn("import watcher", service_source)
         self.assertNotIn("save_config", service_source)
         self.assertNotIn("fileSession", service_source)
+
+    def test_confirmed_existing_target_overwrite_is_verified_and_committed(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source = self._source(root)
+            source_hash = self._sha(source)
+            output = root / "existing.flac"
+            output.write_bytes(b"old-output")
+            service, state, stack = self._service_with_backend((METADATA_WRITE,))
+
+            with stack:
+                result = service.export(EditExportRequest(
+                    str(source),
+                    str(output),
+                    metadata_changes={"title": "Confirmed"},
+                    overwrite_existing=True,
+                ))
+
+            self.assertTrue(result["success"], result)
+            self.assertTrue(result["overwrote_existing"])
+            self.assertFalse(result["overwrote_source"])
+            self.assertEqual("confirmed_atomic_replace", result["finalization_strategy"])
+            self.assertEqual(b"original-audio-bytes", output.read_bytes())
+            self.assertEqual(source_hash, self._sha(source))
+            self.assertEqual("Confirmed", state["metadata"]["title"])
+            self.assertEqual([], list(root.glob("*.cherryq_rollback_*.bak")))
+
+    def test_confirmed_source_overwrite_reloads_from_a_verified_replacement(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source = self._source(root)
+            original = source.read_bytes()
+            service, state, stack = self._service_with_backend((METADATA_WRITE,))
+
+            def write_and_change_bytes(path, values, overwrite=True):
+                state["metadata"].update(values)
+                Path(path).write_bytes(Path(path).read_bytes() + b"-edited")
+                return {"success": True}
+
+            with stack, patch(
+                "ui_next.bridge.edit_export_service.write_audio_metadata",
+                side_effect=write_and_change_bytes,
+            ):
+                result = service.export(EditExportRequest(
+                    str(source),
+                    str(source),
+                    metadata_changes={"title": "Source edit"},
+                    overwrite_existing=True,
+                ))
+
+            self.assertTrue(result["success"], result)
+            self.assertTrue(result["overwrote_source"])
+            self.assertFalse(result["sourceUnchanged"])
+            self.assertNotEqual(original, source.read_bytes())
+            self.assertEqual([], list(root.glob("*.cherryq_rollback_*.bak")))
+
+    def test_post_overwrite_verification_failure_restores_original_target(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source = self._source(root)
+            output = root / "existing.flac"
+            original = b"must-be-restored"
+            output.write_bytes(original)
+            service, _state, stack = self._service_with_backend((METADATA_WRITE,))
+
+            with stack, patch.object(
+                service,
+                "_verify",
+                side_effect=[None, ("verification_failed", "post publish failed")],
+            ):
+                result = service.export(EditExportRequest(
+                    str(source),
+                    str(output),
+                    metadata_changes={"title": "x"},
+                    overwrite_existing=True,
+                ))
+
+            self.assertEqual("verification_failed", result["error_code"])
+            self.assertEqual(original, output.read_bytes())
+            self.assertEqual([], list(root.glob("*.cherryq_rollback_*.bak")))
+
+    def test_confirmed_audio_overwrite_stops_if_target_changes(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source = self._source(root)
+            output = root / "existing.flac"
+            output.write_bytes(b"confirmed-target")
+            service, _state, stack = self._service_with_backend((METADATA_WRITE,))
+
+            def external_change(_temp, _request, _operations):
+                output.write_bytes(b"external-change")
+                return None
+
+            with stack, patch.object(
+                service,
+                "_apply_operations",
+                side_effect=external_change,
+            ), patch.object(service, "_verify", return_value=None):
+                result = service.export(EditExportRequest(
+                    str(source),
+                    str(output),
+                    metadata_changes={"title": "x"},
+                    overwrite_existing=True,
+                ))
+
+            self.assertEqual("overwrite_target_changed", result["error_code"])
+            self.assertEqual(b"external-change", output.read_bytes())
+            self.assertEqual([], list(root.glob("*.cherryq_rollback_*.bak")))
 
     def test_lrc_overwrite_stops_if_confirmed_target_changes(self):
         with tempfile.TemporaryDirectory() as temp_dir:

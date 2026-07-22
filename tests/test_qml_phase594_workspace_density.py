@@ -465,12 +465,12 @@ Item {{
         processingSession: processingSessionViewModel
 """
         expected_pitch_columns = {
-            "1080x680": 3,
-            "1280x720": 3,
-            "1440x900": 3,
-            "1536x982": 3,
-            "1900x1200": 3,
-            "1920x1080": 3,
+            "1080x680": 2,
+            "1280x720": 2,
+            "1440x900": 2,
+            "1536x982": 2,
+            "1900x1200": 2,
+            "1920x1080": 2,
         }
         expected_settings_columns = {
             "1080x680": 2,
@@ -499,7 +499,6 @@ Item {{
                         for name in (
                             "pitchParametersPane",
                             "pitchPreviewPane",
-                            "pitchExportPane",
                         )
                     ]
                     self.assertTrue(all((card, grid, *panes)))
@@ -509,21 +508,15 @@ Item {{
                     )
                     for pane in panes:
                         self._assert_horizontal_fit(pane, card)
-                    if expected_pitch_columns[label] == 3:
-                        self.assertEqual(
-                            1,
-                            len(
-                                {
-                                    round(self._rect(pane, card)[1], 1)
-                                    for pane in panes
-                                }
-                            ),
-                        )
-                    else:
-                        positions = [
-                            self._rect(pane, card)[1] for pane in panes
-                        ]
-                        self.assertEqual(positions, sorted(positions))
+                    self.assertEqual(
+                        1,
+                        len(
+                            {
+                                round(self._rect(pane, card)[1], 1)
+                                for pane in panes
+                            }
+                        ),
+                    )
                 finally:
                     self._dispose(view, component, container)
 

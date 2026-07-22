@@ -47,16 +47,6 @@ Rectangle {
             : "播放文件与编辑文件不同"
     }
 
-    function loadCurrentFileInPlayer() {
-        if (!root.fileSession || !root.fileSession.hasCurrentFile || !root.audioPlayer)
-            return
-        root.audioPlayer.loadEditorFile(
-            root.fileSession.currentFilePath,
-            root.fileSession.sessionGeneration,
-            "editor_file"
-        )
-    }
-
     implicitHeight: expandedContent.implicitHeight + theme.spacing * 2
     color: root.floatingMode ? theme.drawerBackground : theme.panel
     border.color: root.floatingMode ? theme.borderStrong : theme.border
@@ -195,27 +185,35 @@ Rectangle {
             }
             StatusBadge {
                 objectName: "metadataDirtyBadge"
+                visible: root.editSession && root.editSession.dirty
                 theme: root.theme
                 typography: root.typography
-                label: root.editSession && root.editSession.dirty
-                    ? "Metadata 已修改" : "Metadata 未修改"
-                tone: root.editSession && root.editSession.dirty ? "warning" : "muted"
+                label: "文件信息 · 未保存"
+                tone: "warning"
             }
             StatusBadge {
                 objectName: "coverDirtyBadge"
+                visible: root.editSession && root.editSession.coverDirty
                 theme: root.theme
                 typography: root.typography
-                label: root.editSession && root.editSession.coverDirty
-                    ? "封面已修改" : "封面未修改"
-                tone: root.editSession && root.editSession.coverDirty ? "warning" : "muted"
+                label: "封面 · 未保存"
+                tone: "warning"
             }
             StatusBadge {
                 objectName: "lyricsDirtyBadge"
+                visible: root.editSession && root.editSession.lyricsDirty
                 theme: root.theme
                 typography: root.typography
-                label: root.editSession && root.editSession.lyricsDirty
-                    ? "歌词已修改" : "歌词未修改"
-                tone: root.editSession && root.editSession.lyricsDirty ? "warning" : "muted"
+                label: "歌词 · 未保存"
+                tone: "warning"
+            }
+            StatusBadge {
+                objectName: "processingDirtyBadge"
+                visible: root.editSession && root.editSession.processingDirty
+                theme: root.theme
+                typography: root.typography
+                label: "音频处理 · 未保存"
+                tone: "warning"
             }
         }
 
@@ -230,15 +228,6 @@ Rectangle {
                 onClicked: root.fileSession.chooseAudioFile("audio_editor")
             }
             FileActionButton {
-                objectName: "loadEditorFileInPlayerButton"
-                text: "载入播放器"
-                enabled: root.fileSession
-                    && root.fileSession.hasCurrentFile
-                    && root.audioPlayer
-                    && root.audioPlayer.audioPlaybackEnabled
-                onClicked: root.loadCurrentFileInPlayer()
-            }
-            FileActionButton {
                 objectName: "openEditorFileLocationButton"
                 text: "打开文件位置"
                 enabled: root.fileSession && root.fileSession.hasCurrentFile
@@ -246,7 +235,7 @@ Rectangle {
             }
             FileActionButton {
                 objectName: "exportEditorDraftsButton"
-                text: "统一导出"
+                text: "导出"
                 enabled: root.editSession
                     && root.editSession.hasUnsavedDrafts
                     && !root.editSession.anyExporting

@@ -10,135 +10,204 @@ Dialog {
     property QtObject theme: Theme {}
     property QtObject typography: Typography {}
     property var editSession: null
+    property var processingSession: null
     property bool selectAllDraftsOnOpen: false
     property bool metadataSelected: false
     property bool lyricsSelected: false
     property bool coverSelected: false
+    property bool processingSelected: false
+    readonly property bool lrcTarget: root.editSession
+        && root.editSession.unifiedExportTarget === "lrc"
     readonly property var preflight: root.editSession
-        ? root.editSession.unifiedExportPreflight(root.metadataSelected, root.lyricsSelected, root.coverSelected)
-        : ({ "selected_operations": [], "required_capabilities": [], "missing_capabilities": [], "supported_modules": [], "unsupported_modules": [], "can_export": false })
-    readonly property bool hasSelection: root.preflight.selected_operations.length > 0
-    readonly property bool hasMissingCapability: root.preflight.missing_capabilities.length > 0
-    readonly property bool hasUnsupportedModule: root.preflight.unsupported_modules.length > 0
+        ? root.editSession.unifiedExportPreflight(
+            root.metadataSelected,
+            root.lyricsSelected,
+            root.coverSelected,
+            root.processingSelected
+        )
+        : ({ "selected_operations": [], "missing_capabilities": [], "unsupported_modules": [] })
+    readonly property bool hasSelection: root.lrcTarget
+        ? Boolean(root.editSession && root.editSession.lyricsDirty)
+        : root.preflight.selected_operations.length > 0
+    readonly property bool hasMissingCapability: root.lrcTarget
+        ? Boolean(root.editSession && !root.editSession.lyricsWriteEnabled)
+        : root.preflight.missing_capabilities.length > 0
+    readonly property bool hasUnsupportedModule: !root.lrcTarget
+        && root.preflight.unsupported_modules.length > 0
 
     objectName: "unifiedEditExportDialog"
     modal: true
     visible: root.editSession && root.editSession.unifiedExportDialogOpen
     closePolicy: Popup.NoAutoClose
     anchors.centerIn: parent
-    width: Math.min(720, parent.width - root.theme.spacing * 4)
-    title: "导出编辑副本"
+    width: Math.min(760, parent.width - root.theme.spacing * 4)
+    title: "导出"
     standardButtons: Dialog.NoButton
 
     function resetSelections() {
         if (!root.editSession)
             return
-        if (root.selectAllDraftsOnOpen) {
-            root.metadataSelected = root.editSession.dirty
-            root.lyricsSelected = root.editSession.lyricsDirty
-            root.coverSelected = root.editSession.coverDirty
+        root.metadataSelected = root.editSession.dirty
+        root.lyricsSelected = root.editSession.lyricsDirty
+        root.coverSelected = root.editSession.coverDirty
+        root.processingSelected = root.editSession.processingDirty
+    }
+
+    function startExport(overwriteExisting) {
+        if (!root.editSession)
+            return
+        if (root.lrcTarget) {
+            root.editSession.startUnifiedLrcExport(overwriteExisting)
             return
         }
-        root.metadataSelected = root.editSession.unifiedExportDefaultModule === "metadata" && root.editSession.dirty
-        root.lyricsSelected = root.editSession.unifiedExportDefaultModule === "lyrics" && root.editSession.lyricsDirty
-        root.coverSelected = root.editSession.unifiedExportDefaultModule === "cover" && root.editSession.coverDirty
+        root.editSession.startUnifiedAudioExport(
+            root.metadataSelected,
+            root.lyricsSelected,
+            root.coverSelected,
+            root.processingSelected,
+            overwriteExisting
+        )
+    }
+
+    function requestExport() {
+        if (!root.editSession)
+            return
+        if (root.editSession.unifiedExportOverwriteRequired)
+            overwriteConfirmDialog.open()
+        else
+            root.startExport(false)
     }
 
     onVisibleChanged: {
         if (visible)
             resetSelections()
+        else if (overwriteConfirmDialog.visible)
+            overwriteConfirmDialog.close()
     }
 
     contentItem: ScrollView {
+        id: exportScroll
+
         clip: true
+        implicitWidth: root.width - root.leftPadding - root.rightPadding
         contentWidth: availableWidth
-        implicitHeight: Math.min(620, exportContent.implicitHeight + root.theme.spacing * 2)
+        implicitHeight: Math.min(660, exportContent.implicitHeight + root.theme.spacing * 2)
 
         ColumnLayout {
             id: exportContent
-            width: parent.availableWidth
+            width: exportScroll.availableWidth
             spacing: root.theme.spacing
 
             Text {
-                text: "本次操作只会生成新的音频副本，不会修改或覆盖当前源文件。"
-                color: root.theme.warning
+                text: root.selectAllDraftsOnOpen
+                    ? "切换文件前会导出全部未保存修改；本次不能只导出部分草稿。"
+                    : "所有编辑内容都保留为草稿。默认另存新文件；选择已有文件时会在执行前再次确认。"
+                color: root.theme.textSecondary
                 font.family: root.typography.fontFamily
-                font.pixelSize: root.typography.sizeBody
-                font.weight: root.typography.weightMedium
+                font.pixelSize: root.typography.sizeSmall
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
             }
 
             GroupBox {
-                title: "源文件"
+                title: "导出类型"
                 Layout.fillWidth: true
-                ColumnLayout {
-                    anchors.left: parent.left; anchors.right: parent.right
-                    spacing: 5
-                    Text { text: root.editSession ? "文件：" + root.editSession.sourcePath.split("/").pop().split("\\").pop() : "文件：-"; color: root.theme.textPrimary; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeSmall; Layout.fillWidth: true; elide: Text.ElideRight }
-                    Text { text: root.editSession ? "路径：" + root.editSession.sourcePath : "路径：-"; color: root.theme.textSecondary; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeTiny; Layout.fillWidth: true; elide: Text.ElideMiddle }
-                    Text { text: root.editSession && root.editSession.sourcePath.length > 0 ? "格式：" + root.editSession.sourcePath.split(".").pop().toUpperCase() + " · 源文件不会被修改" : "格式：-"; color: root.theme.textSecondary; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeTiny; Layout.fillWidth: true }
+                RowLayout {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    Button {
+                        text: "音频文件"
+                        checkable: true
+                        checked: !root.lrcTarget
+                        enabled: root.editSession
+                            && !root.editSession.unifiedExporting
+                            && !root.selectAllDraftsOnOpen
+                        onClicked: root.editSession.setUnifiedExportTarget("audio")
+                    }
+                    Button {
+                        text: "LRC 歌词"
+                        checkable: true
+                        checked: root.lrcTarget
+                        visible: root.editSession
+                            && root.editSession.lyricsDirty
+                            && !root.selectAllDraftsOnOpen
+                        enabled: root.editSession
+                            && !root.editSession.unifiedExporting
+                            && !root.selectAllDraftsOnOpen
+                        onClicked: root.editSession.setUnifiedExportTarget("lrc")
+                    }
+                    Item { Layout.fillWidth: true }
+                    Text {
+                        text: root.lrcTarget ? "另存或覆盖 .lrc" : "嵌入所选草稿并生成音频"
+                        color: root.theme.muted
+                        font.family: root.typography.fontFamily
+                        font.pixelSize: root.typography.sizeSmall
+                    }
                 }
             }
 
             GroupBox {
-                title: "导出范围"
+                title: root.lrcTarget ? "导出内容" : "包含的未保存修改"
                 Layout.fillWidth: true
                 ColumnLayout {
-                    anchors.left: parent.left; anchors.right: parent.right
+                    anchors.left: parent.left
+                    anchors.right: parent.right
                     spacing: 5
+
                     CheckBox {
-                        id: metadataBox
-                        visible: root.editSession && root.editSession.dirty
-                        enabled: !root.editSession || !root.editSession.unifiedExporting
+                        visible: !root.lrcTarget && root.editSession && root.editSession.dirty
+                        enabled: root.editSession
+                            && !root.editSession.unifiedExporting
+                            && !root.selectAllDraftsOnOpen
                         checked: root.metadataSelected
-                        text: "Metadata 修改（" + (root.editSession ? root.editSession.changedFieldCount : 0) + " 项：" + (root.editSession ? root.editSession.changedFields.join("、") : "") + "）"
+                        text: "文件信息 · " + (root.editSession ? root.editSession.changedFieldCount : 0) + " 项未保存"
                         onToggled: root.metadataSelected = checked
                     }
                     CheckBox {
-                        id: lyricsBox
                         visible: root.editSession && root.editSession.lyricsDirty
-                        enabled: !root.editSession || !root.editSession.unifiedExporting
-                        checked: root.lyricsSelected
-                        text: "Lyrics 修改（来源：" + (root.editSession ? root.editSession.lyricsSource : "-") + "；" + (root.editSession ? root.editSession.lyricsLineCount : 0) + " 行；" + (root.editSession && root.editSession.lyricsHasTimestamps ? "含时间戳" : "无时间戳") + "）"
-                        onToggled: root.lyricsSelected = checked
+                        enabled: !root.lrcTarget
+                            && root.editSession
+                            && !root.editSession.unifiedExporting
+                            && !root.selectAllDraftsOnOpen
+                        checked: root.lrcTarget || root.lyricsSelected
+                        text: "歌词 · " + (root.editSession ? root.editSession.lyricsLineCount : 0) + " 行未保存"
+                        onToggled: if (!root.lrcTarget) root.lyricsSelected = checked
                     }
                     CheckBox {
-                        id: coverBox
-                        visible: root.editSession && root.editSession.coverDirty
-                        enabled: !root.editSession || !root.editSession.unifiedExporting
+                        visible: !root.lrcTarget && root.editSession && root.editSession.coverDirty
+                        enabled: root.editSession
+                            && !root.editSession.unifiedExporting
+                            && !root.selectAllDraftsOnOpen
                         checked: root.coverSelected
-                        text: "Cover 修改（" + (root.editSession ? root.editSession.coverAction : "-") + "；" + (root.editSession ? root.editSession.draftCoverMime : "-") + "；" + (root.editSession ? root.editSession.draftCoverDimensions : "-") + "）"
+                        text: "封面 · " + (root.editSession ? root.editSession.coverAction : "") + " 未保存"
                         onToggled: root.coverSelected = checked
                     }
-                    Text { visible: !root.hasSelection; text: "请至少选择一个存在修改的模块。"; color: root.theme.error; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeSmall; Layout.fillWidth: true }
-                    RowLayout {
+                    CheckBox {
+                        visible: !root.lrcTarget && root.editSession && root.editSession.processingDirty
+                        enabled: root.editSession
+                            && !root.editSession.unifiedExporting
+                            && !root.selectAllDraftsOnOpen
+                        checked: root.processingSelected
+                        text: "音频处理 · " + (root.editSession ? root.editSession.processingSemitone : 0) + " 半音未保存"
+                        onToggled: root.processingSelected = checked
+                    }
+                    Text {
+                        visible: !root.hasSelection
+                        text: "请至少选择一项未保存修改。"
+                        color: root.theme.error
+                        font.family: root.typography.fontFamily
+                        font.pixelSize: root.typography.sizeSmall
                         Layout.fillWidth: true
-                        Button { text: "仅当前模块"; enabled: root.editSession && !root.editSession.unifiedExporting; onClicked: root.resetSelections() }
-                        Button { text: "导出全部修改"; enabled: root.editSession && !root.editSession.unifiedExporting; onClicked: { root.metadataSelected = root.editSession.dirty; root.lyricsSelected = root.editSession.lyricsDirty; root.coverSelected = root.editSession.coverDirty } }
                     }
                 }
             }
 
             GroupBox {
-                title: "导出检查"
+                title: "输出位置"
                 Layout.fillWidth: true
                 ColumnLayout {
-                    anchors.left: parent.left; anchors.right: parent.right
-                    spacing: 4
-                    CapabilityLine { label: "文件信息修改"; needed: root.metadataSelected; allowed: root.editSession && root.editSession.metadataWriteEnabled }
-                    CapabilityLine { label: "歌词修改"; needed: root.lyricsSelected; allowed: root.editSession && root.editSession.lyricsWriteEnabled }
-                    CapabilityLine { label: "封面修改"; needed: root.coverSelected; allowed: root.editSession && root.editSession.coverWriteEnabled }
-                    Text { visible: root.hasMissingCapability; text: "所选内容当前无法导出。请取消相应项目后重试；系统不会创建临时副本或修改原文件。"; color: root.theme.error; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeSmall; wrapMode: Text.WordWrap; Layout.fillWidth: true }
-                    Text { visible: root.hasUnsupportedModule; text: "当前格式不支持：" + root.preflight.unsupported_modules.join("、") + "。WAV / AAC 等受限格式不会伪报写入成功。"; color: root.theme.error; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeSmall; wrapMode: Text.WordWrap; Layout.fillWidth: true }
-                }
-            }
-
-            GroupBox {
-                title: "输出设置"
-                Layout.fillWidth: true
-                ColumnLayout {
-                    anchors.left: parent.left; anchors.right: parent.right
+                    anchors.left: parent.left
+                    anchors.right: parent.right
                     spacing: 6
                     RowLayout {
                         Layout.fillWidth: true
@@ -147,45 +216,95 @@ Dialog {
                             Layout.fillWidth: true
                             Layout.minimumWidth: 0
                             enabled: root.editSession && !root.editSession.unifiedExporting
-                            placeholderText: "手动选择全新的音频输出路径"
+                            placeholderText: root.lrcTarget
+                                ? "选择 .lrc 输出路径"
+                                : "选择音频输出路径"
                             text: root.editSession ? root.editSession.unifiedExportOutputPath : ""
-                            onTextEdited: if (root.editSession) root.editSession.setUnifiedExportOutputPath(text)
+                            onTextEdited: if (root.editSession)
+                                root.editSession.setUnifiedExportOutputPath(text)
                         }
-                        Button { text: "选择路径"; enabled: root.editSession && !root.editSession.unifiedExporting; onClicked: root.editSession.chooseUnifiedExportOutputPath() }
+                        Button {
+                            text: "浏览…"
+                            enabled: root.editSession && !root.editSession.unifiedExporting
+                            onClicked: root.editSession.chooseUnifiedExportOutputPath()
+                        }
                     }
-                    Text { text: root.editSession ? root.editSession.unifiedExportValidationMessage : ""; color: root.editSession && root.editSession.unifiedExportState === "ready" ? root.theme.success : root.theme.warning; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeSmall; wrapMode: Text.WordWrap; Layout.fillWidth: true }
-                    Text { text: "输出必须是与源文件同扩展名的全新文件；已存在路径、源路径和覆盖操作都会被拒绝。"; color: root.theme.textSecondary; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeSmall; wrapMode: Text.WordWrap; Layout.fillWidth: true }
+                    Text {
+                        text: root.editSession ? root.editSession.unifiedExportValidationMessage : ""
+                        color: root.editSession && root.editSession.unifiedExportOverwriteRequired
+                            ? root.theme.warning
+                            : root.editSession && root.editSession.unifiedExportState === "ready"
+                                ? root.theme.success : root.theme.textSecondary
+                        font.family: root.typography.fontFamily
+                        font.pixelSize: root.typography.sizeSmall
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
+                    }
+                    Text {
+                        visible: root.editSession && root.editSession.unifiedExportOverwritesSource
+                        text: "当前选择的是源音频。确认后将以完整草稿生成替换文件，并在写回验证失败时自动恢复。"
+                        color: root.theme.warning
+                        font.family: root.typography.fontFamily
+                        font.pixelSize: root.typography.sizeSmall
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
+                    }
                 }
+            }
+
+            Text {
+                visible: root.hasMissingCapability || root.hasUnsupportedModule
+                text: root.hasMissingCapability
+                    ? "当前运行模式缺少所选导出能力。"
+                    : "当前格式不支持：" + root.preflight.unsupported_modules.join("、")
+                color: root.theme.error
+                font.family: root.typography.fontFamily
+                font.pixelSize: root.typography.sizeSmall
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
             }
 
             GroupBox {
                 visible: root.editSession && root.editSession.unifiedExportMessage.length > 0
-                title: "最近导出结果"
+                title: "导出结果"
                 Layout.fillWidth: true
                 ColumnLayout {
-                    anchors.left: parent.left; anchors.right: parent.right
+                    anchors.left: parent.left
+                    anchors.right: parent.right
                     spacing: 5
-                    Text { text: root.editSession ? root.editSession.unifiedExportMessage : ""; color: root.editSession && root.editSession.unifiedExportResult.success === true ? root.theme.success : root.theme.error; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeSmall; wrapMode: Text.WordWrap; Layout.fillWidth: true }
-                    Text { text: root.editSession ? "输出：" + (root.editSession.unifiedExportResult.output_path || "-") : ""; color: root.theme.textSecondary; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeSmall; Layout.fillWidth: true; elide: Text.ElideMiddle }
-                    Text { text: root.editSession ? "已应用：" + (root.editSession.unifiedExportResult.applied_operations || []).join("、") + " · " + (root.editSession.unifiedExportResult.finalization_strategy || "-") : ""; color: root.theme.textSecondary; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeTiny; Layout.fillWidth: true; wrapMode: Text.WordWrap }
-                    Text { text: root.editSession ? "跳过：" + (root.editSession.unifiedExportResult.skippedModules || []).join("、") + " · 失败：" + (root.editSession.unifiedExportResult.failedModules || []).join("、") : ""; color: root.theme.textSecondary; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeTiny; Layout.fillWidth: true; wrapMode: Text.WordWrap }
-                    Text { text: root.editSession && root.editSession.unifiedExportResult.sourceUnchanged === true ? "源文件完整性：未修改" : ""; color: root.theme.success; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeSmall; Layout.fillWidth: true }
-                    Text { visible: root.editSession && (root.editSession.unifiedExportResult.warnings || []).length > 0; text: "警告：" + (root.editSession.unifiedExportResult.warnings || []).join("；"); color: root.theme.warning; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeSmall; wrapMode: Text.WordWrap; Layout.fillWidth: true }
-                    Text { visible: root.editSession && root.editSession.unifiedExportResult.success === true; text: "修改已导出到副本；当前源文件仍未包含这些修改，草稿保持未保存状态。"; color: root.theme.warning; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeSmall; wrapMode: Text.WordWrap; Layout.fillWidth: true }
+                    Text {
+                        text: root.editSession ? root.editSession.unifiedExportMessage : ""
+                        color: root.editSession && root.editSession.unifiedExportResult.success === true
+                            ? root.theme.success : root.theme.error
+                        font.family: root.typography.fontFamily
+                        font.pixelSize: root.typography.sizeSmall
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
+                    }
+                    Text {
+                        text: root.editSession
+                            ? "输出：" + (root.editSession.unifiedExportResult.output_path || "-") : ""
+                        color: root.theme.textSecondary
+                        font.family: root.typography.fontFamily
+                        font.pixelSize: root.typography.sizeSmall
+                        Layout.fillWidth: true
+                        elide: Text.ElideMiddle
+                    }
                     RowLayout {
                         Layout.fillWidth: true
                         Button {
-                            text: "复制输出路径"
+                            text: "复制路径"
                             enabled: root.editSession && root.editSession.unifiedExportResult.success === true
                             onClicked: root.editSession.copyUnifiedExportOutputPath()
                         }
                         Button {
-                            text: "打开输出位置"
+                            text: "打开位置"
                             enabled: root.editSession && root.editSession.unifiedExportResult.success === true
                             onClicked: root.editSession.openUnifiedExportLocation()
                         }
                         Button {
                             text: "载入为当前文件"
+                            visible: !root.lrcTarget
                             enabled: root.editSession && root.editSession.canLoadUnifiedExportResult
                             onClicked: root.editSession.loadUnifiedExportResultAsCurrent()
                         }
@@ -202,18 +321,73 @@ Dialog {
                     enabled: root.editSession && root.editSession.unifiedExporting
                     onClicked: root.editSession.cancelExport()
                 }
-                Button { text: "关闭"; enabled: root.editSession && !root.editSession.unifiedExporting; onClicked: root.editSession.closeUnifiedExportDialog() }
-                Button { text: root.editSession && root.editSession.unifiedExporting ? "正在导出…" : "导出新音频副本"; enabled: root.editSession && root.hasSelection && !root.hasMissingCapability && !root.hasUnsupportedModule && root.editSession.unifiedExportOutputPath.length > 0 && !root.editSession.unifiedExporting; onClicked: root.editSession.startUnifiedAudioExport(root.metadataSelected, root.lyricsSelected, root.coverSelected) }
+                Button {
+                    text: "关闭"
+                    enabled: root.editSession && !root.editSession.unifiedExporting
+                    onClicked: root.editSession.closeUnifiedExportDialog()
+                }
+                Button {
+                    text: root.editSession && root.editSession.unifiedExporting
+                        ? "正在导出…"
+                        : root.editSession && root.editSession.unifiedExportOverwriteRequired
+                            ? "检查并覆盖" : "导出"
+                    enabled: root.editSession
+                        && root.hasSelection
+                        && !root.hasMissingCapability
+                        && !root.hasUnsupportedModule
+                        && root.editSession.unifiedExportOutputPath.length > 0
+                        && root.editSession.unifiedExportState === "ready"
+                        && !root.editSession.unifiedExporting
+                    onClicked: root.requestExport()
+                }
             }
         }
     }
 
-    component CapabilityLine: RowLayout {
-        property string label: ""
-        property bool needed: false
-        property bool allowed: false
-        Layout.fillWidth: true
-        Text { text: parent.label; color: parent.needed ? root.theme.textPrimary : root.theme.muted; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeSmall; Layout.fillWidth: true }
-        Text { text: !parent.needed ? "未选择" : parent.allowed ? "已启用" : "缺少"; color: !parent.needed ? root.theme.muted : parent.allowed ? root.theme.success : root.theme.error; font.family: root.typography.fontFamily; font.pixelSize: root.typography.sizeSmall }
+    Dialog {
+        id: overwriteConfirmDialog
+        objectName: "editExportOverwriteConfirmDialog"
+        modal: true
+        title: root.editSession && root.editSession.unifiedExportOverwritesSource
+            ? "确认覆盖源音频？" : "确认覆盖已有文件？"
+        standardButtons: Dialog.NoButton
+        closePolicy: Popup.NoAutoClose
+        anchors.centerIn: parent
+        width: Math.min(500, root.width - root.theme.spacing * 4)
+
+        contentItem: ColumnLayout {
+            spacing: root.theme.spacing
+            Text {
+                text: root.editSession && root.editSession.unifiedExportOverwritesSource
+                    ? "你选择了当前源音频。系统会先生成完整替换文件并保留临时回滚副本，验证成功后才完成覆盖。此操作会改变原文件。"
+                    : "目标路径已经存在。确认后将替换该文件；如果最终内容验证失败，系统会尝试恢复覆盖前文件。"
+                color: root.theme.textPrimary
+                font.family: root.typography.fontFamily
+                font.pixelSize: root.typography.sizeBody
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+            Text {
+                text: root.editSession ? root.editSession.unifiedExportOutputPath : ""
+                color: root.theme.warning
+                font.family: root.typography.fontFamily
+                font.pixelSize: root.typography.sizeSmall
+                wrapMode: Text.WrapAnywhere
+                Layout.fillWidth: true
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                Item { Layout.fillWidth: true }
+                Button { text: "返回"; onClicked: overwriteConfirmDialog.close() }
+                Button {
+                    text: root.editSession && root.editSession.unifiedExportOverwritesSource
+                        ? "确认覆盖源文件" : "确认覆盖"
+                    onClicked: {
+                        overwriteConfirmDialog.close()
+                        root.startExport(true)
+                    }
+                }
+            }
+        }
     }
 }

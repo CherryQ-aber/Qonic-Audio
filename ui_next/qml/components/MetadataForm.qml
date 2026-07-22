@@ -41,7 +41,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.minimumWidth: 0
             Text {
-                text: "文件信息编辑（草稿）"
+                text: "文件信息编辑"
                 color: theme.textPrimary
                 font.family: typography.fontFamily
                 font.pixelSize: typography.sizeMedium
@@ -52,26 +52,18 @@ Rectangle {
                 maximumLineCount: 1
             }
             StatusBadge {
+                visible: root.editSession && root.editSession.dirty
                 theme: root.theme
                 typography: root.typography
-                label: !root.editSession || !root.editSession.hasSession
-                    ? "等待读取"
-                    : root.editSession.dirty
-                        ? "已修改 " + root.editSession.changedFieldCount + " 项"
-                        : "无修改"
-                tone: root.editSession && root.editSession.dirty ? "warning" : "muted"
+                label: "未保存"
+                tone: "warning"
             }
-        }
-
-        Text {
-            text: root.editSession && root.editSession.hasSession
-                ? "原始信息来自只读读取；下列输入框是当前草稿。每项下方显示原始值。"
-                : "需要先启用 metadata_read 并读取当前工作区文件，才能创建编辑草稿。"
-            color: theme.textSecondary
-            font.family: typography.fontFamily
-            font.pixelSize: typography.sizeSmall
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
+            Button {
+                text: "恢复原始"
+                visible: root.editSession && root.editSession.dirty
+                enabled: root.editSession && !root.editSession.anyExporting
+                onClicked: root.editSession.restoreOriginal()
+            }
         }
 
         Text {
@@ -126,20 +118,6 @@ Rectangle {
             }
         }
 
-        Rectangle {
-            Layout.fillWidth: true
-            implicitHeight: 1
-            color: theme.border
-        }
-
-        Text {
-            text: root.editSession ? root.editSession.statusMessage : "编辑草稿未初始化"
-            color: theme.textSecondary
-            font.family: typography.fontFamily
-            font.pixelSize: typography.sizeSmall
-            wrapMode: Text.WordWrap
-            Layout.fillWidth: true
-        }
     }
 
     component MetadataField: ColumnLayout {

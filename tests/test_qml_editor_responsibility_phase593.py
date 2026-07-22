@@ -18,7 +18,7 @@ def test_metadata_page_owns_cover_draft_controls():
     assert "chooseReplacementCover()" in metadata
     assert "removeCoverDraft()" in metadata
     assert "restoreOriginalCover()" in metadata
-    assert 'openUnifiedExportDialog("cover")' in metadata
+    assert "openUnifiedExportDialog" not in metadata
 
     assert "CoverDraftEditor {" not in lyrics
     assert "chooseReplacementCover" not in lyrics
@@ -34,7 +34,7 @@ def test_lyrics_page_keeps_only_lyrics_state_and_actions():
     assert "LyricsPreviewList" in lyrics
     assert "LyricsDraftEditor" in lyrics
     assert "chooseLyricsFile()" in lyrics
-    assert 'openUnifiedExportDialog("lyrics")' in lyrics
+    assert "openUnifiedExportDialog" not in lyrics
     assert "coverViewModel" not in lyrics
     assert "coverDirty" not in lyrics
     assert "lastCoverExport" not in lyrics
@@ -79,25 +79,21 @@ def test_unified_export_remains_the_single_audio_copy_dialog():
     assert (QML / "pages" / "LyricsCoverPage.qml").is_file()
 
 
-def test_lyrics_preview_and_draft_have_independent_vertical_scroll_areas():
+def test_lyrics_preview_and_current_editor_have_independent_scroll_areas():
     editor = _read("ui_next/qml/components/LyricsDraftEditor.qml")
+    preview = _read("ui_next/qml/components/LyricsPreviewList.qml")
 
-    assert 'objectName: "originalLyricsScrollView"' in editor
-    assert 'objectName: "originalLyricsTextArea"' in editor
-    assert 'objectName: "originalLyricsVerticalScrollBar"' in editor
+    assert 'objectName: "originalLyricsScrollView"' not in editor
     assert 'objectName: "lyricsDraftScrollView"' in editor
     assert 'objectName: "lyricsDraftTextArea"' in editor
     assert 'objectName: "draftLyricsVerticalScrollBar"' in editor
-    assert editor.count("contentWidth: availableWidth") == 2
-    assert editor.count("ScrollBar.horizontal.policy: ScrollBar.AlwaysOff") == 2
-    assert editor.count("ScrollBar.vertical: ThemeScrollBar {") == 2
-    assert editor.count("policy: ScrollBar.AlwaysOn") == 2
-    assert editor.count("Layout.rightMargin: root.theme.spacing") == 2
-    assert "parent: originalLyricsScrollView" in editor
-    assert "anchors.right: originalLyricsScrollView.right" in editor
+    assert editor.count("contentWidth: availableWidth") == 1
+    assert editor.count("ScrollBar.horizontal.policy: ScrollBar.AlwaysOff") == 1
+    assert editor.count("ScrollBar.vertical: ThemeScrollBar {") == 1
+    assert editor.count("policy: ScrollBar.AlwaysOn") == 1
     assert "parent: draftScrollView" in editor
     assert "anchors.right: draftScrollView.right" in editor
-    assert "rightPadding: originalLyricsVerticalScrollBar.width + 4" in editor
     assert "rightPadding: draftLyricsVerticalScrollBar.width + 4" in editor
-    assert "height: Math.max(implicitHeight, originalLyricsScrollView.availableHeight)" in editor
     assert "height: Math.max(implicitHeight, draftScrollView.availableHeight)" in editor
+    assert 'objectName: "lyricsPreviewListView"' in preview
+    assert 'objectName: "lyricsPreviewVerticalScrollBar"' in preview

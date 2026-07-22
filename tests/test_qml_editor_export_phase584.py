@@ -354,7 +354,7 @@ def test_running_edit_export_cannot_overwrite_its_media_token(tmp_path):
     assert player.finish_calls == [(token, True)]
 
 
-def test_phase584_qml_exposes_cancel_result_summary_and_explicit_load():
+def test_qml_exposes_unified_cancel_result_load_and_confirmed_overwrite():
     root = Path(__file__).resolve().parents[1]
     dialog = (root / "ui_next/qml/components/EditExportDialog.qml").read_text(
         encoding="utf-8"
@@ -365,14 +365,13 @@ def test_phase584_qml_exposes_cancel_result_summary_and_explicit_load():
     shell = (root / "ui_next/qml/AppShell.qml").read_text(encoding="utf-8")
     assert "cancelExport()" in dialog
     assert "loadUnifiedExportResultAsCurrent()" in dialog
-    assert "sourceUnchanged" in dialog
-    assert "failedModules" in dialog
-    assert "loadExportResultAsCurrent()" in pitch
-    assert "不会自动替换当前文件" in pitch
-    assert "needsDraftConfirmation" in shell
-    assert "confirmDraftWarning(false)" in shell
-    assert "confirmDraftWarning(true)" in shell
-    assert "pitchDraftWarningDialog" not in pitch
+    assert "unifiedExportOverwriteRequired" in dialog
+    assert "unifiedExportOverwritesSource" in dialog
+    assert "startUnifiedLrcExport" in dialog
+    assert "processingSelected" in dialog
+    assert "requestExport()" not in pitch
+    assert "pitchExportPane" not in pitch
+    assert "pitchDraftWarningDialog" not in shell
 
 
 def test_pending_file_change_offers_discard_export_or_cancel():

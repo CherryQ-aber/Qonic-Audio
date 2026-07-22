@@ -114,6 +114,8 @@ class ProcessingSessionViewModel(BaseViewModel):
     def sourceGeneration(self): return self._source_generation
     @Property(int, notify=stateChanged)
     def semitone(self): return self._semitone
+    @Property(bool, notify=stateChanged)
+    def processingDirty(self): return bool(self.hasSource and self._semitone != 0)
     @Property(str, notify=stateChanged)
     def processingState(self): return self._state
     @Property(str, notify=stateChanged)
@@ -244,6 +246,12 @@ class ProcessingSessionViewModel(BaseViewModel):
             self._state = "ready" if next_value == 0 else "preview_required"
         self.set_status_message("半音参数已更新；旧试听缓存不会被静默播放。")
         self.stateChanged.emit()
+
+    @Slot()
+    def restoreOriginalProcessing(self) -> None:
+        if self.isBusy or self._semitone == 0:
+            return
+        self.setSemitone(0)
 
     @Slot()
     def previewCurrentSetting(self) -> None:

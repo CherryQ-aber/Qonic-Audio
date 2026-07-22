@@ -39,10 +39,6 @@ Rectangle {
         )
     }
     signal manualSourceRequested()
-    signal embeddedLyricsExportRequested()
-    signal lrcExportRequested()
-    signal lrcOverwriteRequested()
-    signal audioExportRequested()
 
     function rememberDraftSelection(force) {
         if (!force && !draftEditor.activeFocus) {
@@ -114,14 +110,11 @@ Rectangle {
                 Layout.fillWidth: true
             }
             StatusBadge {
+                visible: root.editSession && root.editSession.lyricsDirty
                 theme: root.theme
                 typography: root.typography
-                label: root.editSession
-                    ? root.editSession.lyricsDraftStatusLabel : "等待读取"
-                tone: !root.editSession || !root.editSession.hasSession ? "muted"
-                    : root.editSession.lyricsDraftStatusLabel === "导入歌词" ? "accent"
-                    : root.editSession.lyricsDraftStatusLabel === "已修改歌词" ? "warning"
-                    : "muted"
+                label: "未保存"
+                tone: "warning"
             }
         }
 
@@ -135,15 +128,6 @@ Rectangle {
                 enabled: root.editSession && root.editSession.hasSession
                     && !root.editSession.anyExporting
                 onClicked: root.manualSourceRequested()
-            }
-            Button {
-                id: exportMenuButton
-                objectName: "lyricsExportMenuButton"
-                text: "导出"
-                enabled: root.editSession && root.editSession.hasSession
-                    && root.editSession.lyricsDirty
-                    && !root.editSession.anyExporting
-                onClicked: exportMenu.popup()
             }
             Button {
                 id: undoButton
@@ -165,6 +149,14 @@ Rectangle {
                     && root.audioPlayer && root.audioPlayer.hasPlaybackSource
                 onPressed: root.rememberDraftSelection(false)
                 onClicked: root.insertCurrentTimestamp()
+            }
+            Button {
+                id: restoreLyricsButton
+                objectName: "restoreOriginalLyricsButton"
+                text: "恢复原始"
+                visible: root.editSession && root.editSession.lyricsDirty
+                enabled: root.editSession && !root.editSession.anyExporting
+                onClicked: root.editSession.restoreOriginalLyrics()
             }
         }
 
@@ -280,74 +272,5 @@ Rectangle {
             }
         }
 
-        Text {
-            text: root.editSession ? root.editSession.statusMessage : ""
-            color: theme.textSecondary
-            font.family: typography.fontFamily
-            font.pixelSize: typography.sizeSmall
-            Layout.fillWidth: true
-            elide: Text.ElideRight
-            maximumLineCount: 1
-        }
-        Text {
-            visible: root.editSession
-                && root.editSession.unifiedExportMessage.length > 0
-            text: root.editSession
-                ? "音频副本：" + root.editSession.unifiedExportMessage : ""
-            color: root.editSession
-                && root.editSession.unifiedExportResult.success === true
-                ? theme.success : theme.warning
-            font.family: typography.fontFamily
-            font.pixelSize: typography.sizeSmall
-            Layout.fillWidth: true
-            elide: Text.ElideMiddle
-            maximumLineCount: 1
-        }
-        Text {
-            visible: !!(root.editSession
-                && root.editSession.lastLyricsExportResult.applied_operations
-                && root.editSession.lastLyricsExportResult.applied_operations.length === 1
-                && root.editSession.lastLyricsExportResult.applied_operations[0] === "lrc")
-            text: root.editSession
-                ? "独立 LRC：" + root.editSession.lastLyricsExportMessage : ""
-            color: root.editSession
-                && root.editSession.lastLyricsExportResult.success === true
-                ? theme.success : theme.warning
-            font.family: typography.fontFamily
-            font.pixelSize: typography.sizeSmall
-            Layout.fillWidth: true
-            elide: Text.ElideMiddle
-            maximumLineCount: 1
-        }
-    }
-
-    Menu {
-        id: exportMenu
-        objectName: "lyricsExportMenu"
-
-        Action {
-            text: "嵌入歌词"
-            enabled: root.editSession && root.editSession.lyricsDirty
-                && !root.editSession.anyExporting
-            onTriggered: root.embeddedLyricsExportRequested()
-        }
-        Action {
-            text: "另存 .lrc 文件"
-            enabled: root.editSession && root.editSession.lyricsDirty
-                && !root.editSession.anyExporting
-            onTriggered: root.lrcExportRequested()
-        }
-        Action {
-            text: "覆盖 .lrc 文件"
-            enabled: root.editSession && root.editSession.canOverwriteCurrentLrc
-            onTriggered: root.lrcOverwriteRequested()
-        }
-        MenuSeparator {}
-        Action {
-            text: "导出音频副本"
-            enabled: root.editSession && root.editSession.lyricsDirty
-                && !root.editSession.anyExporting
-            onTriggered: root.audioExportRequested()
-        }
     }
 }

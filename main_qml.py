@@ -175,6 +175,9 @@ def main(argv: list[str] | None = None) -> int:
         file_session_view_model, audio_player_view_model, edit_session_view_model,
         capability_gate=capability_gate,
     )
+    edit_session_view_model.attach_processing_session(
+        processing_session_view_model
+    )
     file_session_view_model.setFileChangeBlocker(
         lambda: (
             edit_session_view_model.anyExporting
