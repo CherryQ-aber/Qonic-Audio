@@ -25,12 +25,16 @@ from ui_next.bridge.task_queue_model import TaskQueueModel
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-# AppShell keeps a 218 px sidebar, 292 px inspector and its surrounding chrome.
-# These are the resulting page viewports for the three required window sizes.
+# Phase 5.9.5 keeps FolderBrowserPane hidden and lets the workspace fill the
+# main area.  These are the measured page viewports after the 58 px top bar,
+# 44 px sub-navigation, 82/96 px player dock and 12 px workspace margins.
 VIEWPORT_CASES = (
-    ("1280x720", 754, 612),
-    ("1440x900", 914, 792),
-    ("1920x1080", 1392, 972),
+    ("1080x680", 1056, 472),
+    ("1280x720", 1256, 512),
+    ("1440x900", 1416, 678),
+    ("1536x982", 1512, 760),
+    ("1900x1200", 1876, 978),
+    ("1920x1080", 1896, 858),
 )
 
 
@@ -221,8 +225,11 @@ Item {{
 
     def test_metadata_uses_two_then_three_columns_without_horizontal_overflow(self):
         expected_columns = {
-            "1280x720": 2,
+            "1080x680": 3,
+            "1280x720": 3,
             "1440x900": 3,
+            "1536x982": 3,
+            "1900x1200": 3,
             "1920x1080": 3,
         }
         properties = """
@@ -289,8 +296,11 @@ Item {{
 
     def test_lyrics_body_and_both_inner_scrollbars_remain_accessible(self):
         expected_inner_columns = {
-            "1280x720": 1,
-            "1440x900": 1,
+            "1080x680": 1,
+            "1280x720": 2,
+            "1440x900": 2,
+            "1536x982": 2,
+            "1900x1200": 2,
             "1920x1080": 2,
         }
         properties = """
@@ -390,13 +400,19 @@ Item {{
         processingSession: processingSessionViewModel
 """
         expected_pitch_columns = {
-            "1280x720": 1,
+            "1080x680": 3,
+            "1280x720": 3,
             "1440x900": 3,
+            "1536x982": 3,
+            "1900x1200": 3,
             "1920x1080": 3,
         }
         expected_settings_columns = {
-            "1280x720": 1,
+            "1080x680": 2,
+            "1280x720": 2,
             "1440x900": 2,
+            "1536x982": 2,
+            "1900x1200": 2,
             "1920x1080": 2,
         }
         for label, width, height in VIEWPORT_CASES:

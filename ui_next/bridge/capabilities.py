@@ -10,6 +10,7 @@ LYRICS_READ = "lyrics_read"
 COVER_READ = "cover_read"
 SCAN_PREVIEW = "scan_preview"
 SINGLE_FILE_CONVERT = "single_file_convert"
+FOLDER_BROWSER = "folder_browser"
 
 CONFIG_WRITE = "config_write"
 WATCHER_CONTROL = "watcher_control"
@@ -34,6 +35,7 @@ ALL_CAPABILITIES = (
     COVER_READ,
     SCAN_PREVIEW,
     SINGLE_FILE_CONVERT,
+    FOLDER_BROWSER,
     CONFIG_WRITE,
     WATCHER_CONTROL,
     QUEUE_MUTATION,
@@ -58,6 +60,7 @@ PHASE4_PILOT_CAPABILITIES = frozenset(
         COVER_READ,
         SCAN_PREVIEW,
         SINGLE_FILE_CONVERT,
+        FOLDER_BROWSER,
     }
 )
 
@@ -68,6 +71,7 @@ PHASE57_ENABLED_CAPABILITIES = frozenset(
         COVER_READ,
         SCAN_PREVIEW,
         SINGLE_FILE_CONVERT,
+        FOLDER_BROWSER,
         AUDIO_PLAYBACK,
         AUDIO_PROCESSING,
         AUDIO_EXPORT,
@@ -109,6 +113,7 @@ USER_TRIAL_CAPABILITIES = frozenset(
 
 _USER_FEATURE_GROUPS = (
     ((SCAN_PREVIEW,), "扫描"),
+    ((FOLDER_BROWSER,), "文件浏览"),
     ((SINGLE_FILE_CONVERT, BATCH_CONVERT), "转换"),
     ((QUEUE_MUTATION,), "队列"),
     ((WATCHER_CONTROL,), "监听"),

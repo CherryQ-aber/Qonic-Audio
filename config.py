@@ -62,6 +62,11 @@ DEFAULT_CONFIG = {
     "editor_project_folders": [],
     "editor_browser_collapsed": False,
     "editor_file_bar_mode": "fixed",
+    "folder_browser_root": "",
+    "folder_browser_favorites": [],
+    "folder_browser_recent": [],
+    "folder_browser_visible": True,
+    "folder_browser_width": 260,
     "lyrics_timestamp_precision": "millisecond",
     "target_format": DEFAULT_TARGET_FORMAT,
     "create_format_subfolder": True,
@@ -126,6 +131,44 @@ def _merge_with_default(config_data):
         project_folders.append(legacy_browser_folder)
 
     merged["editor_project_folders"] = project_folders
+
+    for key, limit in (
+        ("folder_browser_favorites", 32),
+        ("folder_browser_recent", 12),
+    ):
+        raw_paths = merged.get(key)
+        if not isinstance(raw_paths, list):
+            raw_paths = []
+        normalized_paths = []
+        seen_paths = set()
+        for raw_path in raw_paths:
+            if not isinstance(raw_path, str) or not raw_path.strip():
+                continue
+            normalized_path = os.path.abspath(os.path.normpath(raw_path))
+            identity = os.path.normcase(normalized_path)
+            if identity in seen_paths:
+                continue
+            seen_paths.add(identity)
+            normalized_paths.append(normalized_path)
+            if len(normalized_paths) >= limit:
+                break
+        merged[key] = normalized_paths
+
+    root_path = str(merged.get("folder_browser_root") or "").strip()
+    merged["folder_browser_root"] = (
+        os.path.abspath(os.path.normpath(root_path))
+        if root_path
+        else ""
+    )
+    merged["folder_browser_visible"] = _as_bool(
+        merged.get("folder_browser_visible"),
+        True,
+    )
+    try:
+        pane_width = int(merged.get("folder_browser_width", 260))
+    except (TypeError, ValueError):
+        pane_width = 260
+    merged["folder_browser_width"] = max(220, min(360, pane_width))
 
     return merged
 

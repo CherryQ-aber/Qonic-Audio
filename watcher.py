@@ -57,6 +57,7 @@ OUTPUT_ROOT_ALLOWED_SOURCES = frozenset(
         "qml_file",
         "qml_drop",
         "qml_scan",
+        "folder_browser",
         "manual_drop",
         "retry",
     }

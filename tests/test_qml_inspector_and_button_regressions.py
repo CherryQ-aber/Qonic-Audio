@@ -11,8 +11,6 @@ from PySide6.QtQuick import QQuickItem, QQuickView
 from PySide6.QtWidgets import QApplication
 
 from ui_next.bridge.settings_viewmodel import SettingsViewModel
-from ui_next.bridge.capabilities import DEFAULT_USER_CAPABILITIES, CapabilityGate
-from ui_next.bridge.runtime_mode import DEFAULT_USER_MODE
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -96,7 +94,7 @@ Item {
         finally:
             self._dispose_probe(view, container)
 
-    def test_runtime_preview_header_has_no_empty_badge_and_global_actions_have_content(self):
+    def test_runtime_header_omits_status_badges_and_global_actions_have_content(self):
         source = '''import QtQuick
 import "ui_next/qml/components"
 
@@ -107,8 +105,6 @@ Item {
     TopStatusBar {
         objectName: "topBarUnderTest"
         anchors.fill: parent
-        modeLabel: "预览模式"
-        capabilityLabel: ""
         workspaces: [
             { "key": "autoConvert", "title": "自动转码", "description": "任务" },
             { "key": "audioEditor", "title": "音频编辑", "description": "编辑" }
@@ -121,15 +117,15 @@ Item {
             source, "top_status_regression_probe.qml"
         )
         try:
-            mode_badge = container.findChild(QObject, "modeStatusBadge")
-            capability_badge = container.findChild(QObject, "capabilityStatusBadge")
             workspace = container.findChild(QObject, "workspaceSwitcher")
             settings = container.findChild(QObject, "openSettingsButton")
             log = container.findChild(QObject, "openGlobalLogButton")
-            self.assertTrue(mode_badge.property("visible"))
-            self.assertEqual("预览模式", mode_badge.property("label"))
-            self.assertFalse(capability_badge.property("visible"))
-            self.assertEqual("", capability_badge.property("label"))
+            self.assertIsNone(
+                container.findChild(QObject, "modeStatusBadge")
+            )
+            self.assertIsNone(
+                container.findChild(QObject, "capabilityStatusBadge")
+            )
             self.assertEqual(
                 "autoConvert",
                 workspace.property("currentWorkspaceKey"),
@@ -182,10 +178,6 @@ Item {
             self._dispose_probe(view, container)
 
     def test_normal_mode_global_actions_stay_inside_the_1080px_window(self):
-        gate = CapabilityGate(
-            DEFAULT_USER_CAPABILITIES,
-            runtime_mode=DEFAULT_USER_MODE,
-        )
         source = '''import QtQuick
 import "ui_next/qml/components"
 
@@ -195,8 +187,6 @@ Item {
 
     TopStatusBar {
         anchors.fill: parent
-        modeLabel: "正常运行"
-        capabilityLabel: capabilitySummary
         versionLabel: "v5.0"
         workspaces: [
             { "key": "autoConvert", "title": "自动转码", "description": "任务" },
@@ -209,13 +199,13 @@ Item {
         view, _component, container = self._create_probe(
             source,
             "top_status_normal_mode_geometry_probe.qml",
-            {"capabilitySummary": gate.enabledFeatureSummary},
         )
         try:
-            capability = container.findChild(QObject, "capabilityStatusBadge")
             settings = container.findChild(QObject, "openSettingsButton")
             log = container.findChild(QObject, "openGlobalLogButton")
-            self.assertFalse(capability.property("visible"))
+            self.assertIsNone(
+                container.findChild(QObject, "capabilityStatusBadge")
+            )
             for action in (settings, log):
                 self.assertGreaterEqual(action.x(), 0)
                 self.assertLessEqual(
@@ -226,7 +216,6 @@ Item {
             container.setWidth(1536)
             view.setWidth(1536)
             self.app.processEvents()
-            self.assertTrue(capability.property("visible"))
             self.assertLessEqual(
                 log.x() + log.width(),
                 container.width() + 0.5,

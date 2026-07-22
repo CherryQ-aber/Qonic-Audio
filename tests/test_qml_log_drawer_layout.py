@@ -97,9 +97,12 @@ Item {
         self.assertIn("context: Qt.ApplicationShortcut", self.drawer_source)
         self.assertNotIn("root.width * 0.42", self.drawer_source)
 
-    def test_shell_coordinates_drawer_with_the_hidden_folder_pane(self):
+    def test_shell_coordinates_drawer_with_the_global_folder_pane(self):
         self.assertIn("FolderBrowserPane {", self.shell_source)
-        self.assertIn("visible: false", self.shell_source)
+        self.assertIn(
+            "visible: root.folderPaneVisible",
+            self.shell_source,
+        )
         self.assertIn(
             "workspaceLeftInset: folderBrowserPane.visible ? folderBrowserPane.width : 0",
             self.shell_source,

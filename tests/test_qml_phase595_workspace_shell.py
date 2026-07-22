@@ -8,7 +8,7 @@ from pathlib import Path
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6.QtCore import QCoreApplication, QEvent, QObject, Qt, QUrl
+from PySide6.QtCore import QCoreApplication, QEvent, QObject, QPointF, Qt, QUrl
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtQuick import QQuickItem, QQuickWindow
 from PySide6.QtTest import QTest
@@ -19,11 +19,16 @@ from ui_next.bridge.app_state_viewmodel import AppStateViewModel
 from ui_next.bridge.audio_player_viewmodel import AudioPlayerViewModel
 from ui_next.bridge.audio_processing_session import ProcessingSessionViewModel
 from ui_next.bridge.auto_convert_viewmodel import AutoConvertViewModel
-from ui_next.bridge.capabilities import CapabilityGate
+from ui_next.bridge.capabilities import (
+    DEFAULT_USER_MODE,
+    FOLDER_BROWSER,
+    CapabilityGate,
+)
 from ui_next.bridge.cover_viewmodel import CoverViewModel
 from ui_next.bridge.edit_session import EditSessionViewModel
 from ui_next.bridge.editor_file_browser_viewmodel import EditorFileBrowserViewModel
 from ui_next.bridge.file_session_viewmodel import FileSessionViewModel
+from ui_next.bridge.folder_browser_model import FolderBrowserModel
 from ui_next.bridge.log_model import LogModel
 from ui_next.bridge.lyrics_viewmodel import LyricsViewModel
 from ui_next.bridge.metadata_viewmodel import MetadataViewModel
@@ -199,10 +204,11 @@ class Phase595RealAppShellTests(unittest.TestCase):
     def setUpClass(cls):
         cls.app = QApplication.instance() or QApplication([])
 
-    def _create_real_shell(self):
-        gate = CapabilityGate((), runtime_mode=TEST_MODE)
+    def _create_real_shell(self, gate=None):
+        gate = gate or CapabilityGate((), runtime_mode=TEST_MODE)
         objects: dict[str, QObject] = {}
         objects["appState"] = AppStateViewModel(gate)
+        objects["folderBrowserModel"] = FolderBrowserModel(gate)
         objects["taskQueueModel"] = TaskQueueModel(gate)
         objects["autoConvertViewModel"] = AutoConvertViewModel(
             objects["taskQueueModel"],
@@ -513,9 +519,17 @@ class Phase595RealAppShellTests(unittest.TestCase):
             )
 
             folder = children["folderBrowserPane"]
+            bound_folder_model = folder.property("folderBrowserModel")
+            self.assertIsNotNone(bound_folder_model)
+            self.assertEqual(
+                getCppPointer(objects["folderBrowserModel"])[0],
+                getCppPointer(bound_folder_model)[0],
+            )
+            self.assertFalse(folder.property("available"))
+            self.assertEqual(0, int(folder.property("itemCount")))
             self.assertFalse(folder.property("visible"))
             self.assertFalse(folder.property("enabled"))
-            self.assertEqual(0, int(folder.property("width")))
+            self.assertGreaterEqual(int(folder.property("width")), 0)
             self.assertIsNone(root.findChild(QObject, "sidebarNavigation"))
             self.assertIsNone(root.findChild(QObject, "rightInspector"))
             self.assertIsNone(
@@ -603,6 +617,183 @@ class Phase595RealAppShellTests(unittest.TestCase):
             ).read_text(encoding="utf-8")
             self.assertIn("onInteractionEnabledChanged", task_row_source)
             self.assertIn("taskMenu.close()", task_row_source)
+        finally:
+            self._dispose_real_shell(engine, root, objects)
+
+    def test_real_shell_phase_f_responsive_boundaries(self):
+        engine, root, objects = self._create_real_shell()
+        try:
+            folder = self._require_child(root, "folderBrowserPane")
+            main_area = self._require_child(root, "mainArea")
+            workspace = self._require_child(root, "mainWorkspaceSurface")
+            player = self._require_child(root, "globalPlayerDock")
+            inspector = self._require_child(root, "taskInspectorDrawer")
+            settings_button = self._require_child(root, "openSettingsButton")
+            log_button = self._require_child(root, "openGlobalLogButton")
+
+            window_cases = (
+                (1080, 680),
+                (1280, 720),
+                (1440, 900),
+                (1536, 982),
+                (1900, 1200),
+                (1920, 1080),
+            )
+            for width, height in window_cases:
+                with self.subTest(window=f"{width}x{height}"):
+                    root.setWidth(width)
+                    root.setHeight(height)
+                    QTest.qWait(20)
+                    self.app.processEvents()
+
+                    self.assertFalse(folder.property("visible"))
+                    self.assertFalse(folder.property("enabled"))
+                    self.assertAlmostEqual(
+                        0,
+                        float(workspace.property("x")),
+                        delta=0.5,
+                    )
+                    self.assertAlmostEqual(
+                        float(main_area.property("width")),
+                        float(workspace.property("width")),
+                        delta=0.5,
+                    )
+                    self.assertEqual(
+                        height < 800,
+                        bool(player.property("compactMode")),
+                    )
+                    self.assertEqual(
+                        82 if height < 800 else 96,
+                        int(player.property("requestedHeight")),
+                    )
+                    self.assertAlmostEqual(
+                        float(root.property("height")),
+                        float(player.property("y"))
+                        + float(player.property("height")),
+                        delta=0.5,
+                    )
+                    self.assertEqual(
+                        width >= 1900 and height >= 1200,
+                        bool(inspector.property("opened")),
+                    )
+                    for button in (settings_button, log_button):
+                        point = button.mapToItem(
+                            root.contentItem(),
+                            QPointF(0, 0),
+                        )
+                        self.assertGreaterEqual(point.x(), -0.5)
+                        self.assertLessEqual(
+                            point.x() + float(button.property("width")),
+                            float(root.property("width")) + 0.5,
+                        )
+
+            for height, expected_compact in ((799, True), (800, False)):
+                with self.subTest(player_height=height):
+                    root.setWidth(1536)
+                    root.setHeight(height)
+                    QTest.qWait(20)
+                    self.app.processEvents()
+                    self.assertEqual(
+                        expected_compact,
+                        bool(player.property("compactMode")),
+                    )
+
+            for width, height, expected_opened in (
+                (1899, 1200, False),
+                (1900, 1199, False),
+                (1900, 1200, True),
+            ):
+                with self.subTest(inspector=f"{width}x{height}"):
+                    root.setWidth(width)
+                    root.setHeight(height)
+                    QTest.qWait(20)
+                    self.app.processEvents()
+                    self.assertEqual(
+                        expected_opened,
+                        bool(inspector.property("opened")),
+                    )
+        finally:
+            self._dispose_real_shell(engine, root, objects)
+
+    def test_real_shell_live_folder_pane_persists_across_workspaces_and_collapses(self):
+        gate = CapabilityGate(
+            (FOLDER_BROWSER,),
+            runtime_mode=DEFAULT_USER_MODE,
+        )
+        engine, root, objects = self._create_real_shell(gate)
+        try:
+            folder_model = objects["folderBrowserModel"]
+            folder = self._require_child(root, "folderBrowserPane")
+            main_area = self._require_child(root, "mainArea")
+            workspace = self._require_child(root, "mainWorkspaceSurface")
+            toggle = self._require_child(
+                root,
+                "toggleGlobalFolderBrowserButton",
+            )
+            settings_button = self._require_child(
+                root,
+                "openSettingsButton",
+            )
+            log_button = self._require_child(
+                root,
+                "openGlobalLogButton",
+            )
+
+            self.assertTrue(folder_model.available)
+            self.assertTrue(folder.property("visible"))
+            self.assertTrue(folder.property("enabled"))
+            self.assertTrue(toggle.property("visible"))
+            self.assertGreaterEqual(float(folder.property("width")), 220)
+            self.assertGreater(float(workspace.property("x")), 0)
+
+            root.setWidth(1080)
+            root.setHeight(680)
+            QTest.qWait(30)
+            self.app.processEvents()
+            for button in (toggle, settings_button, log_button):
+                point = button.mapToItem(
+                    root.contentItem(),
+                    QPointF(0, 0),
+                )
+                self.assertGreaterEqual(point.x(), -0.5)
+                self.assertLessEqual(
+                    point.x() + float(button.property("width")),
+                    float(root.property("width")) + 0.5,
+                )
+            self.assertGreaterEqual(float(workspace.property("width")), 620)
+
+            objects["appState"].switchWorkspace("audioEditor")
+            self.app.processEvents()
+            self.assertTrue(folder.property("visible"))
+            objects["appState"].switchWorkspace("autoConvert")
+            self.app.processEvents()
+            self.assertTrue(folder.property("visible"))
+
+            folder_model.setPaneVisible(False)
+            QTest.qWait(30)
+            self.app.processEvents()
+            self.assertFalse(folder.property("visible"))
+            self.assertAlmostEqual(
+                0,
+                float(workspace.property("x")),
+                delta=0.5,
+            )
+            self.assertAlmostEqual(
+                float(main_area.property("width")),
+                float(workspace.property("width")),
+                delta=0.5,
+            )
+
+            folder_model.setPaneVisible(True)
+            folder_model.setPaneWidth(330)
+            QTest.qWait(30)
+            self.app.processEvents()
+            self.assertTrue(folder.property("visible"))
+            self.assertAlmostEqual(
+                330,
+                float(folder.property("width")),
+                delta=2.0,
+            )
         finally:
             self._dispose_real_shell(engine, root, objects)
 

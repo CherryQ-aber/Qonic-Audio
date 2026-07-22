@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import time
 import unittest
 from pathlib import Path
 
@@ -123,6 +124,16 @@ Item {
         self.assertIsNotNone(child, object_name)
         return child
 
+    def _wait_until(self, predicate, timeout=1.0):
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            self.app.processEvents()
+            if predicate():
+                return True
+            QTest.qWait(20)
+        self.app.processEvents()
+        return bool(predicate())
+
     def test_production_workspace_uses_common_file_bar_and_real_page_stack(self):
         stack = self._source("ui_next/qml/components/WorkspaceStack.qml")
         workspace = self._source(
@@ -193,8 +204,15 @@ Item {
         self.assertGreater(float(stack.property("y")), float(current_file_bar.property("height")))
 
         self.container.setProperty("fileBarMode", "floating")
-        QTest.qWait(220)
-        self.app.processEvents()
+        self.assertTrue(
+            self._wait_until(
+                lambda: (
+                    float(current_file_bar.property("y"))
+                    + float(current_file_bar.property("height"))
+                    <= 0.0
+                )
+            )
+        )
 
         self.assertTrue(current_file_bar.property("floatingMode"))
         self.assertFalse(current_file_bar.property("expanded"))

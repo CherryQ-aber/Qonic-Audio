@@ -719,6 +719,8 @@ class TaskQueueModel(QAbstractListModel):
             return "添加文件"
         if task.get("source") == "qml_drop":
             return "拖入文件"
+        if task.get("source") == "folder_browser":
+            return "文件夹树"
         if task.get("source") == "watcher":
             return "目录监听"
         if task.get("source") == "retry":

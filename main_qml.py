@@ -16,6 +16,7 @@ from ui_next.bridge.cover_viewmodel import CoverViewModel
 from ui_next.bridge.edit_session import EditSessionViewModel
 from ui_next.bridge.editor_file_browser_viewmodel import EditorFileBrowserViewModel
 from ui_next.bridge.file_session_viewmodel import FileSessionViewModel
+from ui_next.bridge.folder_browser_model import FolderBrowserModel
 from ui_next.bridge.lyrics_viewmodel import LyricsViewModel
 from ui_next.bridge.log_model import LogModel, install_log_model_handler
 from ui_next.bridge.metadata_viewmodel import MetadataViewModel
@@ -100,6 +101,7 @@ def main(argv: list[str] | None = None) -> int:
     if runtime_config.open_settings:
         app_state.openSettings()
 
+    folder_browser_model = FolderBrowserModel(capability_gate=capability_gate)
     task_queue_model = TaskQueueModel(capability_gate=capability_gate)
     task_queue_filter_model = TaskQueueFilterProxyModel(task_queue_model)
     auto_convert_view_model = AutoConvertViewModel(
@@ -208,7 +210,18 @@ def main(argv: list[str] | None = None) -> int:
         open_task_source_in_editor
     )
 
+    folder_browser_model.playbackRequested.connect(
+        load_task_source_in_player
+    )
+    folder_browser_model.editorRequested.connect(
+        open_task_source_in_editor
+    )
+    folder_browser_model.enqueueRequested.connect(
+        auto_convert_view_model.enqueue_folder_browser_file
+    )
+
     app.aboutToQuit.connect(auto_convert_view_model.shutdown)
+    app.aboutToQuit.connect(folder_browser_model.shutdown)
     app.aboutToQuit.connect(editor_file_browser_view_model.shutdown)
     app.aboutToQuit.connect(processing_session_view_model.shutdown)
     app.aboutToQuit.connect(edit_session_view_model.shutdown)
@@ -216,6 +229,10 @@ def main(argv: list[str] | None = None) -> int:
     app.aboutToQuit.connect(file_session_view_model.shutdown)
 
     engine.rootContext().setContextProperty("appState", app_state)
+    engine.rootContext().setContextProperty(
+        "folderBrowserModel",
+        folder_browser_model,
+    )
     engine.rootContext().setContextProperty("taskQueueModel", task_queue_model)
     engine.rootContext().setContextProperty(
         "taskQueueFilterModel",

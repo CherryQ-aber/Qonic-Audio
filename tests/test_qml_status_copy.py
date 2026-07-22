@@ -9,14 +9,17 @@ class QmlStatusCopyTests(unittest.TestCase):
     def _qml_source(self, relative_path: str) -> str:
         return (PROJECT_ROOT / relative_path).read_text(encoding="utf-8")
 
-    def test_global_status_uses_user_summary_without_exposing_capability_ids(self):
+    def test_top_bar_omits_runtime_badges_without_exposing_capability_ids(self):
         shell = self._qml_source("ui_next/qml/AppShell.qml")
         top = self._qml_source("ui_next/qml/components/TopStatusBar.qml")
         inspector = self._qml_source("ui_next/qml/components/RightInspector.qml")
         bottom = self._qml_source("ui_next/qml/components/BottomStatusBar.qml")
 
-        self.assertIn('return capabilityGate.enabledFeatureSummary', shell)
-        self.assertIn('modeLabel: capabilityGate.previewMode ? "预览模式" : "正常运行"', shell)
+        self.assertNotIn("userFeatureSummary", shell)
+        self.assertNotIn("modeLabel:", shell)
+        self.assertNotIn("capabilityLabel:", shell)
+        self.assertNotIn("modeStatusBadge", top)
+        self.assertNotIn("capabilityStatusBadge", top)
         self.assertNotIn('label: "未监听"', top)
         self.assertNotIn('label: "无任务"', top)
         self.assertIn('"当前状态：" + root.runtimeLabel', inspector)

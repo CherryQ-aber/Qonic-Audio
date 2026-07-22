@@ -19,6 +19,7 @@ from ui_next.bridge.capabilities import (
     SCAN_PREVIEW,
     CapabilityGate,
 )
+from ui_next.bridge.task_queue_model import TaskQueueModel
 
 
 class Phase591AutoConvertTests(unittest.TestCase):
@@ -112,6 +113,50 @@ class Phase591AutoConvertTests(unittest.TestCase):
             self.assertIn("不支持或无效 1 项", view_model.lastOperation)
             self.assertIsNone(view_model._convert_thread)
             view_model.shutdown()
+
+    def test_folder_browser_explicit_file_uses_same_queue_and_source_label(self):
+        gate = CapabilityGate((QUEUE_MUTATION,))
+        queue_model = MagicMock()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output_root = Path(temp_dir) / "Output"
+            output_root.mkdir()
+            source = output_root / "chosen.flac"
+            source.write_bytes(b"audio")
+            with (
+                patch(
+                    "ui_next.bridge.auto_convert_viewmodel.load_config",
+                    return_value={
+                        "output_folder": str(output_root),
+                        "target_format": "wav",
+                        "create_format_subfolder": False,
+                    },
+                ),
+                patch(
+                    "watcher.get_output_folder",
+                    return_value=str(output_root),
+                ),
+            ):
+                view_model = AutoConvertViewModel(
+                    queue_model,
+                    capability_gate=gate,
+                )
+                with patch.object(view_model, "_start_prepare_thread"):
+                    view_model.enqueue_folder_browser_file(str(source))
+
+            tasks = watcher.get_task_snapshots()
+            self.assertEqual(1, len(tasks))
+            self.assertEqual("folder_browser", tasks[0]["source"])
+            self.assertIn("新增 1 项", view_model.lastOperation)
+
+            source_model = TaskQueueModel(gate)
+            try:
+                self.assertEqual(
+                    "文件夹树",
+                    source_model._source_note(tasks[0]),
+                )
+            finally:
+                source_model.deleteLater()
+                view_model.shutdown()
 
     def test_directory_scan_directly_enqueues_and_keeps_only_summary(self):
         gate = CapabilityGate((SCAN_PREVIEW, QUEUE_MUTATION))

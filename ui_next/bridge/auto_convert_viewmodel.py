@@ -738,6 +738,27 @@ class AutoConvertViewModel(BaseViewModel):
         )
         self._finish_enqueue_summary(summary, label="文件导入")
 
+    @Slot(str)
+    def enqueue_folder_browser_file(self, file_path: str) -> None:
+        """Explicitly add one browser selection to the existing queue."""
+        if not self.allows_capability(QUEUE_MUTATION):
+            self._capability_blocked(QUEUE_MUTATION)
+            return
+        normalized_path = os.path.abspath(
+            os.path.normpath(str(file_path or ""))
+        )
+        if not normalized_path:
+            self._set_last_operation("没有可加入任务队列的文件")
+            return
+        summary = _enqueue_paths_to_watcher(
+            [normalized_path],
+            config_data=load_config(),
+            source="folder_browser",
+            source_root=os.path.dirname(normalized_path),
+            request_generation=self._next_scan_generation(),
+        )
+        self._finish_enqueue_summary(summary, label="文件夹树")
+
     @Slot()
     def choose_scan_folder(self) -> None:
         if not self.canScanDirectories:

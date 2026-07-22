@@ -59,7 +59,7 @@ class QmlLightThemeCoverageTests(unittest.TestCase):
 
         self.assertIn("Theme {", shell)
         self.assertIn("FolderBrowserPane {", shell)
-        self.assertIn("visible: false", shell)
+        self.assertIn("visible: root.folderPaneVisible", shell)
         self.assertIn("activeFocusOnTab", switcher)
         self.assertIn("Accessible.checked: selected", switcher)
         self.assertIn("PHASE4_ENABLED_CAPABILITIES", capabilities)

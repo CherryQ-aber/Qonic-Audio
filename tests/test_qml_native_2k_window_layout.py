@@ -12,16 +12,18 @@ class QmlNative2kWindowLayoutTests(unittest.TestCase):
     def _source(self, path: str) -> str:
         return (PROJECT_ROOT / path).read_text(encoding="utf-8")
 
-    def test_shell_uses_remaining_workspace_and_single_preview_badge(self):
+    def test_shell_uses_remaining_workspace_without_runtime_badges(self):
         shell = self._source("ui_next/qml/AppShell.qml")
         header = self._source("ui_next/qml/components/TopStatusBar.qml")
 
         self.assertIn("Layout.minimumWidth: 0", shell)
-        self.assertIn("capabilityLabel: capabilityGate.previewMode", shell)
+        self.assertNotIn("modeLabel:", shell)
+        self.assertNotIn("capabilityLabel:", shell)
         self.assertIn("WorkspaceSubNavigation {", shell)
         self.assertIn("WorkspaceStack {", shell)
         self.assertIn("FolderBrowserPane {", shell)
-        self.assertIn("root.capabilityLabel.length > 0", header)
+        self.assertNotIn("modeStatusBadge", header)
+        self.assertNotIn("capabilityStatusBadge", header)
         self.assertIn("ScrollView", self._source("ui_next/qml/components/RightInspector.qml"))
 
     def test_primary_pages_use_viewport_width_and_vertical_scroll(self):
