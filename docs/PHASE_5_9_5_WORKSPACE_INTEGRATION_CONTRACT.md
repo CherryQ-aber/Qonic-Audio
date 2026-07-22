@@ -5,8 +5,8 @@
 - 日期：2026-07-19
 - 项目：CherryQ Audio Converter v5.0 Internal Test
 - 阶段：Phase 5.9.5-E 自动转码筛选、播放动作与任务检查器
-- 状态：Phase D2 已随 `926e32a` 完成提交收尾且未推送；Phase E 工程实现与完整回归已完成，当前未暂存、未提交、未推送，等待人工审核
-- 下一阶段：Phase E 审核与提交收尾前保持停止；继续 Phase F 须用户再次明确要求
+- 状态：Phase 5.9.5-A～F2 已完成工程实现、自动化回归和提交收尾，当前未推送；Phase F/F2 的 Windows 真实 DPI 与真实媒体鼠标操作仍保留为最终人工门禁
+- 当前阶段：Phase E 已提交为 `cdd1d5e`，Phase F/F2 已提交为 `f4445d7`；顶部工作区与全局工具语义优化已提交为 `b22b1e5`
 - 长期计划：`Codex_memory/PHASE_5_9_5_WORKSPACE_INTEGRATION_PLAN.md`
 
 本文是 Phase 5.9.5 的工程合同。长期计划描述完整方向，本文固定当前代码基线、状态归属、兼容规则、测试迁移和阶段门禁。后续实现如需改变本文合同，必须先更新本文并单独汇报，不得在代码修改中隐式改变语义。
@@ -1003,4 +1003,66 @@ Phase B 已按精确文件清单提交为 `9a01869`，未推送；`.reasonix/`�
 - `autoConvert` offscreen smoke、目标 Python 编译和 `git diff --check` 通过；无新增 QML ReferenceError、binding loop、类型或运行时 warning。
 - `config.json` SHA256 前后均为 `EA8BE86CDF7FC7C9351B7F961D9D8B9BC97AD3D414FB7B6A8B8376B8E82CA72B`。
 - 未创建第二套播放器、TaskQueueModel、FileSession 或 EditSession；未修改 `converter.py`、FFmpeg/NCM/Pitch、导出/no-clobber、capability、配置语义、Legacy Widgets 或真实文件夹树。
-- `.reasonix/`、`Code_Review_Packages/` 和 `config.json.bak` 等既有未跟踪内容未处理。Phase E 当前未暂存、未提交、未推送；阶段结束后停止等待人工审核，不自动进入 Phase F。
+- `.reasonix/`、`Code_Review_Packages/` 和 `config.json.bak` 等既有未跟踪内容未处理。Phase E 人工审核通过后已精确提交为 `cdd1d5e`，未推送。
+
+## 26. Phase 5.9.5-F 完成记录
+
+> 本节是 Phase F 空接口与响应式历史基线。2026-07-19 用户解除“真实文件树不实现”边界，当前有效产品合同见第 27 节。
+
+### 26.1 文件夹接口
+
+- 新增独立 `FolderBrowserModel`，固定 `available=false`、`count=0`、`rowCount=0`、空 roles。接口不导入或调用目录扫描、watcher、收藏、最近目录或搜索逻辑。
+- `main_qml.py` 只创建一个模型实例；`AppShell` 通过不同名 `folderBrowserBridge` 传入 `FolderBrowserPane`，不得发生 QML 同名自绑定。
+- Pane 保持 `visible=false / enabled=false / width=0`，保留最小/默认/最大 220 / 260 / 360 px；无子项、无大型占位卡片，不复用 `EditorFileBrowserViewModel`。
+
+### 26.2 响应式合同
+
+- 六档真实 AppShell：1080×680、1280×720、1440×900、1536×982、1900×1200、1920×1080。隐藏 Pane 后 `mainWorkspaceSurface` 必须完整占满 `mainArea`。
+- 播放器严格在高度 `<800` 使用 82 px，`>=800` 使用 96 px；检查器只在宽度 `>=1900` 且高度 `>=1200` 时默认展开。
+- Phase 5.9.4 页面密度测试必须使用真实外壳测得的页面视口，不再扣除不存在的 218 px Sidebar 和 292 px Inspector。
+- Qt 100% / 125% / 150% offscreen 模拟是自动化门禁；Windows 真实 DPI 与真实媒体鼠标操作仍为人工验收项。
+
+### 26.3 验证与边界
+
+- Phase F 核心：`17 passed, 50 subtests passed`；联合回归：`79 passed, 59 subtests passed`。
+- 最终完整回归：`544 passed, 2 warnings, 70 subtests passed`；两条 warning 仍为既有 Qt `QMouseEvent` 弃用提示。
+- 双工作区 smoke、Legacy Safe Start/import、目标 Python 编译、`git diff --check`、配置哈希和残留进程检查通过。
+- 未实现真实文件夹树，未改 converter、watcher、任务状态机、播放器、编辑/导出、no-clobber、capability、配置语义、Legacy Widgets 或发行打包。
+- Phase E 已提交为 `cdd1d5e` 且未推送。此处记录 Phase F 空接口完成时的历史状态；当前进度见第 27 节。
+
+## 27. Phase 5.9.5-F2 用户级全局文件浏览
+
+### 27.1 模型与能力
+
+- 进程只创建一个独立 `FolderBrowserModel`，不复用 `EditorFileBrowserViewModel`，不创建第二套 PlayerSession、EditorSession 或 TaskQueueModel。
+- 模型基于 Qt `QFileSystemModel` 的原生后台 gatherer，根目录明确后按展开懒加载；目录内容变化由模型自动刷新，不在 QML 主线程递归枚举。
+- `folder_browser` 是默认用户模式的非破坏性能力；Preview、test 和 smoke 不恢复或读取真实根目录。
+- 树只显示目录、转换输入格式和编辑器直接支持格式。NCM 视为可转码输入，但不视为播放器或编辑器可直接打开的媒体。
+
+### 27.2 状态与布局
+
+- `config.py` 保存 `folder_browser_root / favorites / recent / visible / width`；收藏最多 32 个、最近目录最多 12 个，路径去重，Pane 宽度强制 220～360 px。
+- 只有默认用户模式下的显式根目录、收藏、清理、显示或宽度操作会写配置；Preview/smoke 和仅浏览模型数据不会写配置。
+- AppShell 使用 `SplitView`。Pane 可由内部“收起”或顶部全局按钮切换；隐藏后不得保留可见 handle 或主内容空白。
+- Pane 与 AppShell 同生命周期；切换一级工作区或编辑子页不重建模型、树、选择或滚动视图。
+
+### 27.3 交互语义
+
+- 单击目录或音频只更新选择摘要；箭头只展开/折叠。筛选和原生目录刷新不会播放、编辑、入队或转换。
+- 选中文件按规范化路径身份显示明显高亮；底部摘要封面只允许后台只读解析、代次隔离和有限内存缓存，不写磁盘。
+- TreeView 禁用 delegate 复用并校验真实相对深度，异步展开时错误层级 delegate 不显示；不得以载入瞬间可能失配的扁平行索引决定可见性。
+- 双击普通音频发出 `path / filename / original / folder_tree`，组合层调用唯一 `AudioPlayerViewModel.setPlaybackSourceWithOrigin(..., autoplay=false, position=0)`；EditorSession 不变。
+- 普通音频可拖入当前编辑或转码主工作区；NCM 只可拖入转码区。拖入继续调用既有 FileSession dirty guard 或唯一队列入口，工作区外释放不执行。拖动提示必须由 AppShell 窗口级浮层持有并持续到真实释放；取消只清理状态，不触发投放。
+- TopStatusBar 不再实例化运行模式或功能能力摘要 StatusBadge；不得因此删除底层 runtime mode、capability gate 或安全守卫。
+- 右键“在音频编辑中打开”调用 `FileSessionViewModel.setCurrentFile(path, "audio_editor")`，统一 dirty guard 和 blocker 继续生效。
+- 右键“加入转码队列”调用 `AutoConvertViewModel.enqueue_folder_browser_file()`，以 `folder_browser` 来源进入同一 watcher 队列。任务列表来源显示“文件夹树”。
+- `folder_browser` 作为显式用户来源可读取输出目录范围内的选择文件；自动 watcher 防回灌、运行时目录排除、重复识别、状态机和转换算法不变。
+- 右键另提供打开文件位置和复制文件路径；全部动作在目标缺失或格式不支持时拒绝并显示状态。
+
+### 27.4 验证与边界
+
+- 自动化覆盖中文/空格根目录、目录/音频/NCM 角色、搜索、原生目录新增删除刷新、收藏/最近目录、配置恢复、Pane 宽度与显示恢复、封面后台读取和文件 URL 拖放桥接。
+- QML 鼠标级覆盖连续展开/折叠路径唯一、箭头展开、双击载入请求、选中高亮和右键菜单；真实 AppShell 覆盖 1080 px 全局按钮可达、跨工作区常驻、收起后主内容完整扩展。
+- 最终完整无缓存回归：`553 passed, 2 warnings, 70 subtests passed`；warning 仍为既有 Qt `QMouseEvent` 弃用提示。
+- 未修改 `converter.py`、任务生命周期、FFmpeg/NCM/Pitch 算法、编辑/导出服务、no-clobber、源文件保护、Legacy Widgets 或发行打包。
+- Phase F/F2 已于 2026-07-22 根据用户提交授权提交为 `f4445d7`，未推送；已通过界面审核的顶部工作区与全局工具语义优化另提交为 `b22b1e5`。
