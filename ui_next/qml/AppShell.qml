@@ -31,6 +31,10 @@ ApplicationWindow {
     property bool logDrawerOpened: false
     property bool editorFileBarExpanded: false
     property int minimumWorkspaceWidth: 620
+    property var folderBrowserBridge:
+        typeof folderBrowserModel !== "undefined"
+        ? folderBrowserModel
+        : null
     property var taskQueueBridge:
         typeof taskQueueModel !== "undefined"
         ? taskQueueModel
@@ -41,10 +45,10 @@ ApplicationWindow {
         : null
     readonly property bool editorFileBarFloating:
         settingsViewModel.editorFileBarMode === "floating"
-
-    function userFeatureSummary() {
-        return capabilityGate.enabledFeatureSummary
-    }
+    readonly property bool folderPaneVisible:
+        Boolean(root.folderBrowserBridge
+            && root.folderBrowserBridge.available
+            && root.folderBrowserBridge.paneVisible)
 
     function focusCurrentSubNavigation() {
         workspaceSubNavigation.focusCurrentItem()
@@ -66,6 +70,35 @@ ApplicationWindow {
         Qt.callLater(topStatusBar.focusLogButton)
     }
 
+    function handleFolderFileDragRelease(
+        fileUrl,
+        editable,
+        queueable,
+        paneX,
+        paneY
+    ) {
+        var workspacePoint = workspaceSurface.mapFromItem(
+            folderBrowserPane,
+            paneX,
+            paneY
+        )
+        if (workspacePoint.x < 0
+                || workspacePoint.y < 0
+                || workspacePoint.x > workspaceSurface.width
+                || workspacePoint.y > workspaceSurface.height) {
+            return
+        }
+        if (appState.currentWorkspaceKey === "autoConvert") {
+            if (queueable)
+                autoConvertViewModel.enqueue_dropped_items([fileUrl])
+            return
+        }
+        if (appState.currentWorkspaceKey === "audioEditor"
+                && editable) {
+            fileSessionViewModel.handleDroppedUrls([fileUrl])
+        }
+    }
+
     onEditorFileBarFloatingChanged: editorFileBarExpanded = false
 
     ColumnLayout {
@@ -82,15 +115,26 @@ ApplicationWindow {
             appName: appState.appName
             moduleName: appState.currentModuleName
             statusSummary: appState.statusSummary
-            modeLabel: capabilityGate.previewMode ? "预览模式" : "正常运行"
-            capabilityLabel: capabilityGate.previewMode
-                ? ""
-                : root.userFeatureSummary()
             versionLabel: appState.versionLabel
             workspaces: appState.workspaces
             currentWorkspaceKey: appState.currentWorkspaceKey
+            autoConvertActive: autoConvertViewModel.isMonitoring
+                || autoConvertViewModel.hasBackgroundTask
+            autoConvertStatusText: autoConvertViewModel.hasBackgroundTask
+                ? autoConvertViewModel.backgroundTaskLabel
+                : autoConvertViewModel.isMonitoring ? "监听中" : ""
+            editorHasUnsavedDrafts: editSessionViewModel.hasUnsavedDrafts
+            folderBrowserAvailable: Boolean(
+                root.folderBrowserBridge
+                && root.folderBrowserBridge.available
+            )
+            folderPaneVisible: root.folderPaneVisible
             onWorkspaceRequested: function(workspaceKey) {
                 appState.switchWorkspace(workspaceKey)
+            }
+            onFolderPaneToggleRequested: {
+                if (root.folderBrowserBridge)
+                    root.folderBrowserBridge.togglePaneVisible()
             }
             onSettingsRequested: root.openSettingsOverlay()
             onLogRequested: root.openLogDrawer()
@@ -121,30 +165,63 @@ ApplicationWindow {
                 root.editorFileBarExpanded = !root.editorFileBarExpanded
         }
 
-        RowLayout {
+        SplitView {
             id: mainArea
             objectName: "mainArea"
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.minimumWidth: 0
-            spacing: 0
+            orientation: Qt.Horizontal
+
+            handle: Rectangle {
+                implicitWidth: 5
+                color: SplitHandle.pressed
+                    ? theme.selectedIndicator
+                    : SplitHandle.hovered
+                        ? theme.borderStrong
+                        : theme.borderNormal
+            }
 
             FolderBrowserPane {
                 id: folderBrowserPane
-                Layout.fillHeight: true
-                Layout.minimumWidth: 0
-                Layout.preferredWidth: visible ? defaultPaneWidth : 0
-                Layout.maximumWidth: visible ? maximumPaneWidth : 0
-                visible: false
-                enabled: false
+                SplitView.minimumWidth: visible ? minimumPaneWidth : 0
+                SplitView.preferredWidth: visible
+                    ? (root.folderBrowserBridge
+                        ? root.folderBrowserBridge.paneWidth
+                        : defaultPaneWidth)
+                    : 0
+                SplitView.maximumWidth: visible ? maximumPaneWidth : 0
+                theme: theme
+                typography: typography
+                folderBrowserModel: root.folderBrowserBridge
+                visible: root.folderPaneVisible
+                enabled: visible
+                onCollapseRequested: {
+                    if (root.folderBrowserBridge)
+                        root.folderBrowserBridge.setPaneVisible(false)
+                }
+                onFileDragReleased: function(
+                    fileUrl,
+                    editable,
+                    queueable,
+                    paneX,
+                    paneY
+                ) {
+                    root.handleFolderFileDragRelease(
+                        fileUrl,
+                        editable,
+                        queueable,
+                        paneX,
+                        paneY
+                    )
+                }
             }
 
             Rectangle {
                 id: workspaceSurface
                 objectName: "mainWorkspaceSurface"
-                Layout.minimumWidth: 0
-                Layout.fillWidth: true
-                Layout.fillHeight: true
+                SplitView.minimumWidth: root.minimumWorkspaceWidth
+                SplitView.fillWidth: true
                 color: theme.surface
                 border.color: theme.border
                 border.width: 1
@@ -175,6 +252,16 @@ ApplicationWindow {
                     }
                 }
             }
+
+            onResizingChanged: {
+                if (!resizing
+                        && folderBrowserPane.visible
+                        && root.folderBrowserBridge) {
+                    root.folderBrowserBridge.setPaneWidth(
+                        Math.round(folderBrowserPane.width)
+                    )
+                }
+            }
         }
 
         GlobalPlayerDock {
@@ -188,6 +275,64 @@ ApplicationWindow {
             audioPlayer: audioPlayerViewModel
             compactMode: root.height < 800
             narrowMode: root.width < 1320
+        }
+    }
+
+    Rectangle {
+        id: folderFileDragIndicator
+        objectName: "folderFileDragIndicator"
+
+        readonly property point pointerPosition:
+            root.folderBrowserBridge
+            ? root.contentItem.mapFromGlobal(
+                root.folderBrowserBridge.internalDragGlobalX,
+                root.folderBrowserBridge.internalDragGlobalY
+            )
+            : Qt.point(0, 0)
+
+        z: 1000
+        x: Math.max(
+            theme.spacingSm,
+            Math.min(
+                root.width - width - theme.spacingSm,
+                pointerPosition.x + 14
+            )
+        )
+        y: Math.max(
+            theme.spacingSm,
+            Math.min(
+                root.height - height - theme.spacingSm,
+                pointerPosition.y + 14
+            )
+        )
+        width: Math.min(240, root.width - theme.spacingSm * 2)
+        height: 34
+        visible: Boolean(
+            root.folderBrowserBridge
+            && root.folderBrowserBridge.internalDragActive
+        )
+        color: theme.panelBackgroundRaised
+        border.color: theme.selectedIndicator
+        border.width: 1
+        radius: theme.radiusSmall
+        opacity: 0.96
+
+        Text {
+            anchors.fill: parent
+            anchors.leftMargin: theme.spacingSm
+            anchors.rightMargin: theme.spacingSm
+            text: "正在拖动 · " + (
+                root.folderBrowserBridge
+                ? root.folderBrowserBridge.internalDragFileName
+                : ""
+            )
+            color: theme.textPrimary
+            font.family: typography.fontFamily
+            font.pixelSize: typography.sizeSmall
+            font.weight: typography.weightMedium
+            verticalAlignment: Text.AlignVCenter
+            elide: Text.ElideMiddle
+            maximumLineCount: 1
         }
     }
 

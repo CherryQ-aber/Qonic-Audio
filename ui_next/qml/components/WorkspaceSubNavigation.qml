@@ -138,18 +138,19 @@ Rectangle {
 
         Text {
             text: root.currentWorkspaceKey === "audioEditor"
-                ? "编辑页面"
-                : "任务视图"
+                ? "音频编辑"
+                : "自动转码"
             color: theme.textSecondary
             font.family: typography.fontFamily
             font.pixelSize: typography.sizeSmall
             font.weight: typography.weightMedium
         }
 
-        Rectangle {
-            Layout.preferredWidth: 1
-            Layout.preferredHeight: 22
-            color: theme.border
+        Text {
+            text: "/"
+            color: theme.textMuted
+            font.family: typography.fontFamily
+            font.pixelSize: typography.sizeSmall
         }
 
         Repeater {
@@ -187,7 +188,9 @@ Rectangle {
                 theme: root.theme
                 typography: root.typography
                 text: navigationTitle
-                tone: selected ? "primary" : "ghost"
+                tone: "ghost"
+                selectedState: selected
+                borderless: true
                 activeFocusOnTab: root.tabStopIndex === index
                 Accessible.checked: selected
                 Accessible.description: selected

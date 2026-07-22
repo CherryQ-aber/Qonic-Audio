@@ -11,9 +11,13 @@ Text {
     property string name: ""
     property bool enabledState: true
     property string tone: "normal"
+    property int iconSize: theme.iconSizeNormal
 
     readonly property var glyphs: ({
         "refresh": "↻",
+        "editor": "≋",
+        "folder": "▤",
+        "settings": "⊙",
         "open": "↗",
         "close": "×",
         "clear": "×",
@@ -27,9 +31,11 @@ Text {
     visible: text !== ""
     color: !enabledState ? theme.textDisabled
         : tone === "warning" ? theme.warning
-        : tone === "error" ? theme.error : theme.textSecondary
+        : tone === "error" ? theme.error
+        : tone === "accent" ? theme.selectedIndicator
+        : theme.textSecondary
     font.family: typography.fontFamily
-    font.pixelSize: theme.iconSizeNormal
+    font.pixelSize: iconSize
     font.weight: Font.DemiBold
     horizontalAlignment: Text.AlignHCenter
     verticalAlignment: Text.AlignVCenter

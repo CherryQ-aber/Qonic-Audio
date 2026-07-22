@@ -12,13 +12,17 @@ Rectangle {
     property string appName: "CherryQ Audio Converter"
     property string moduleName: ""
     property string statusSummary: ""
-    property string modeLabel: "预览模式"
-    property string capabilityLabel: ""
     property string versionLabel: ""
     property var workspaces: []
     property string currentWorkspaceKey: "autoConvert"
+    property bool autoConvertActive: false
+    property string autoConvertStatusText: ""
+    property bool editorHasUnsavedDrafts: false
+    property bool folderBrowserAvailable: false
+    property bool folderPaneVisible: false
 
     signal workspaceRequested(string workspaceKey)
+    signal folderPaneToggleRequested()
     signal settingsRequested()
     signal logRequested()
 
@@ -48,6 +52,8 @@ Rectangle {
         ColumnLayout {
             Layout.preferredWidth: 210
             Layout.minimumWidth: 150
+            Layout.maximumWidth: 210
+            Layout.fillWidth: false
             spacing: 2
 
             Text {
@@ -78,6 +84,9 @@ Rectangle {
             typography: root.typography
             workspaces: root.workspaces
             currentWorkspaceKey: root.currentWorkspaceKey
+            autoConvertActive: root.autoConvertActive
+            autoConvertStatusText: root.autoConvertStatusText
+            editorHasUnsavedDrafts: root.editorHasUnsavedDrafts
             onWorkspaceRequested: function(workspaceKey) {
                 root.workspaceRequested(workspaceKey)
             }
@@ -87,40 +96,38 @@ Rectangle {
             Layout.fillWidth: true
         }
 
-        StatusBadge {
-            objectName: "modeStatusBadge"
-            visible: root.modeLabel.length > 0
-            theme: root.theme
-            typography: root.typography
-            label: root.modeLabel
-            tone: root.modeLabel === "预览模式" ? "muted" : "accent"
-        }
-
-        StatusBadge {
-            objectName: "capabilityStatusBadge"
-            visible: root.width >= 1360
-                && root.capabilityLabel.length > 0
-                && root.capabilityLabel !== root.modeLabel
-            theme: root.theme
-            typography: root.typography
-            label: root.capabilityLabel
-            tone: root.capabilityLabel === "预览模式" ? "muted" : "accent"
-        }
-
         Rectangle {
             Layout.preferredWidth: 1
             Layout.preferredHeight: 26
-            color: theme.border
+            color: theme.divider
+        }
+
+        WorkstationButton {
+            id: folderBrowserButton
+            objectName: "toggleGlobalFolderBrowserButton"
+            visible: root.folderBrowserAvailable
+            Layout.preferredWidth: 72
+            theme: root.theme
+            typography: root.typography
+            text: "文件"
+            iconName: "folder"
+            tone: root.folderPaneVisible ? "secondary" : "ghost"
+            toolTipText: root.folderPaneVisible
+                ? "收起全局文件浏览栏"
+                : "展开全局文件浏览栏"
+            onClicked: root.folderPaneToggleRequested()
         }
 
         WorkstationButton {
             id: settingsButton
             objectName: "openSettingsButton"
-            Layout.preferredWidth: 86
+            Layout.preferredWidth: 76
             theme: root.theme
             typography: root.typography
             text: "设置"
+            iconName: "settings"
             tone: "ghost"
+            borderless: true
             toolTipText: "打开全局设置；不会切换当前工作区"
             onClicked: root.settingsRequested()
         }
@@ -128,12 +135,13 @@ Rectangle {
         WorkstationButton {
             id: globalLogButton
             objectName: "openGlobalLogButton"
-            Layout.preferredWidth: 78
+            Layout.preferredWidth: 72
             theme: root.theme
             typography: root.typography
             text: "日志"
             iconName: "log"
             tone: "ghost"
+            borderless: true
             toolTipText: "打开全局内存日志"
             onClicked: root.logRequested()
         }
