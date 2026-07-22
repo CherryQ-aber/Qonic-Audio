@@ -62,7 +62,9 @@ class _FakePlayer(QObject):
         self.output = None
         self.position = 0
         self.stop_count = 0
+        self.play_count = 0
         self.set_source_count = 0
+        self.seek_emits_transient_reload = False
 
     def setAudioOutput(self, output):
         self.output = output
@@ -73,6 +75,7 @@ class _FakePlayer(QObject):
         self.set_source_count += 1
 
     def play(self):
+        self.play_count += 1
         self.playbackStateChanged.emit(QMediaPlayer.PlaybackState.PlayingState)
 
     def pause(self):
@@ -85,6 +88,11 @@ class _FakePlayer(QObject):
     def setPosition(self, position):
         self.position = position
         self.positionChanged.emit(position)
+        if self.seek_emits_transient_reload:
+            self.playbackStateChanged.emit(
+                QMediaPlayer.PlaybackState.StoppedState
+            )
+            self.mediaStatusChanged.emit(QMediaPlayer.MediaStatus.LoadedMedia)
 
     def errorString(self):
         return "unsupported codec"
@@ -496,6 +504,7 @@ class AudioPlayerViewModelTests(unittest.TestCase):
             session.setCurrentFile(str(source), "audio_editor")
             fake.durationChanged.emit(9_000)
             fake.mediaStatusChanged.emit(QMediaPlayer.MediaStatus.LoadedMedia)
+            player.play()
             fake.positionChanged.emit(8_900)
 
             fake.errorOccurred.emit(0, "decode_frame() failed")
@@ -508,12 +517,61 @@ class AudioPlayerViewModelTests(unittest.TestCase):
             session.setCurrentFile(str(source), "audio_editor")
             fake.durationChanged.emit(9_000)
             fake.mediaStatusChanged.emit(QMediaPlayer.MediaStatus.LoadedMedia)
+            player.play()
             fake.positionChanged.emit(8_000)
             fake.errorOccurred.emit(0, "decode_frame() failed")
 
             self.assertEqual("error", player.playerState)
             self.assertFalse(player.hasPlaybackSource)
             self.assertIn("音频加载或播放错误", player.error)
+
+    def test_decoder_tail_error_uses_furthest_position_before_backend_reset(self):
+        session, player, fake, _output = self._build_player()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            source = Path(temp_dir) / "long-tail-error.flac"
+            source.write_bytes(b"audio")
+            session.setCurrentFile(str(source), "audio_editor")
+            fake.durationChanged.emit(206_000)
+            fake.mediaStatusChanged.emit(QMediaPlayer.MediaStatus.LoadedMedia)
+            player.play()
+            fake.positionChanged.emit(200_000)
+            fake.positionChanged.emit(0)
+
+            fake.errorOccurred.emit(
+                QMediaPlayer.Error.NoError,
+                "Invalid data found when processing input",
+            )
+
+            self.assertEqual("finished", player.playerState)
+            self.assertEqual(206_000, player.position)
+            self.assertEqual("", player.error)
+            self.assertTrue(player.hasPlaybackSource)
+
+    def test_seek_while_playing_reasserts_play_and_keeps_pause_available(self):
+        session, player, fake, _output = self._build_player()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            source = Path(temp_dir) / "seek-playing.flac"
+            source.write_bytes(b"audio")
+            session.setCurrentFile(str(source), "audio_editor")
+            fake.durationChanged.emit(206_000)
+            fake.mediaStatusChanged.emit(QMediaPlayer.MediaStatus.LoadedMedia)
+            player.play()
+            initial_play_count = fake.play_count
+            fake.seek_emits_transient_reload = True
+
+            player.seek(101_376)
+
+            self.assertEqual(101_376, player.position)
+            self.assertEqual("playing", player.playerState)
+            self.assertGreater(fake.play_count, initial_play_count)
+            player.pause()
+            self.assertEqual("paused", player.playerState)
+
+            paused_play_count = fake.play_count
+            player.seek(82_000)
+            self.assertEqual(82_000, player.position)
+            self.assertEqual("paused", player.playerState)
+            self.assertEqual(paused_play_count, fake.play_count)
 
     def test_volume_and_seek_boundaries_survive_file_switch_without_rebuild(self):
         session, player, fake, output = self._build_player()

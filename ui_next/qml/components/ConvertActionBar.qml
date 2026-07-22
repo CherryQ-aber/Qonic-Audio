@@ -8,7 +8,6 @@ SectionCard {
     id: root
     objectName: "convertActionBar"
 
-    property QtObject theme: Theme {}
     property QtObject typography: Typography {}
     property var autoConvertViewModel
     property var taskQueueModel

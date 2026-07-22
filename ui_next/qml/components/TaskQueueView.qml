@@ -7,7 +7,6 @@ import "../theme"
 SectionCard {
     id: root
 
-    property QtObject theme: Theme {}
     property QtObject typography: Typography {}
     property var queueModel
     property var sourceModel: queueModel

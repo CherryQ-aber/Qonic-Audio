@@ -23,6 +23,8 @@ Item {
     readonly property bool internalDragActive: folderBrowserModel
         ? Boolean(folderBrowserModel.internalDragActive)
         : false
+    // 收藏数据与后端能力保留，当前产品界面暂不开放入口。
+    readonly property bool favoriteDirectoryControlsVisible: false
 
     signal collapseRequested()
     signal fileDragReleased(
@@ -120,6 +122,7 @@ Item {
             ComboBox {
                 id: favoriteDirectoriesBox
                 objectName: "folderBrowserFavorites"
+                visible: root.favoriteDirectoryControlsVisible
                 Layout.fillWidth: true
                 Layout.minimumWidth: 0
                 implicitHeight: theme.controlHeightSmall
@@ -147,6 +150,7 @@ Item {
 
             WorkstationButton {
                 objectName: "toggleFolderBrowserFavoriteButton"
+                visible: root.favoriteDirectoryControlsVisible
                 Layout.preferredWidth: 34
                 Layout.preferredHeight: theme.controlHeightSmall
                 theme: root.theme
@@ -764,12 +768,6 @@ Item {
         id: folderListsMenu
         objectName: "folderBrowserListsMenu"
 
-        Action {
-            text: "清空收藏目录"
-            enabled: root.folderBrowserModel
-                && root.folderBrowserModel.favoriteDirectories.length > 0
-            onTriggered: root.folderBrowserModel.clearFavoriteDirectories()
-        }
         Action {
             text: "清空最近目录"
             enabled: root.folderBrowserModel

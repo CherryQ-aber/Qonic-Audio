@@ -58,10 +58,14 @@ Rectangle {
                 maximumLineCount: 1
             }
 
-            Button {
+            WorkstationButton {
                 id: followLyricsButton
                 objectName: "lyricsFollowToggle"
+                implicitWidth: 126
                 implicitHeight: 28
+                theme: root.theme
+                typography: root.typography
+                selectedState: root.followCurrentLine
                 text: root.followCurrentLine ? "跟随滚动：开" : "跟随滚动：关"
                 enabled: root.lines && root.lines.length > 0
                 onClicked: root.followCurrentLineRequested(

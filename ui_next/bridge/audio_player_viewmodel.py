@@ -87,8 +87,9 @@ class AudioPlayerViewModel(BaseViewModel):
     """Single capability-gated Qt Multimedia owner for the QML process."""
 
     stateChanged = Signal()
-    _END_ERROR_TOLERANCE_MAX_MS = 2_000
-    _END_ERROR_TOLERANCE_MIN_MS = 250
+    _END_ERROR_TOLERANCE_MAX_MS = 10_000
+    _END_ERROR_TOLERANCE_MIN_MS = 750
+    _END_ERROR_TOLERANCE_DIVISOR = 33
 
     _SOURCE_TYPE_LABELS = {
         "none": "未加载",
@@ -145,6 +146,7 @@ class AudioPlayerViewModel(BaseViewModel):
         self._state = "empty"
         self._duration = 0
         self._position = 0
+        self._furthest_position = 0
         self._timestamp_precision = "millisecond"
         self._volume = 70
         self._muted = False
@@ -157,6 +159,9 @@ class AudioPlayerViewModel(BaseViewModel):
         self._source_generation = 0
         self._playback_token = 0
         self._media_loaded = False
+        self._playback_started = False
+        self._transport_intent = "stopped"
+        self._seek_resume_pending = False
         self._ignore_backend_events = False
         self._signal_bindings: list[tuple[object, object]] = []
         self._active_operation_token = ""
@@ -504,6 +509,9 @@ class AudioPlayerViewModel(BaseViewModel):
         self._state = "loading"
         self._error = ""
         self._media_loaded = False
+        self._playback_started = False
+        self._transport_intent = "playing" if autoplay else "stopped"
+        self._seek_resume_pending = False
         self._playback_source_path = source_path
         self._playback_source_label = str(label or "音频")
         self._playback_source_type = self._normalize_source_type(source_type)
@@ -520,6 +528,7 @@ class AudioPlayerViewModel(BaseViewModel):
             restored_position = max(0, int(position))
             self._player.setPosition(restored_position)
             self._position = restored_position
+            self._furthest_position = restored_position
         if autoplay:
             self._player.play()
         self._emit_state(f"正在加载{self._playback_source_label}。")
@@ -561,11 +570,17 @@ class AudioPlayerViewModel(BaseViewModel):
             return
         if self._state == "finished":
             self._player.setPosition(0)
+            self._position = 0
+            self._furthest_position = 0
+        self._transport_intent = "playing"
+        self._seek_resume_pending = False
         self._player.play()
 
     @Slot()
     def pause(self) -> None:
-        if self._state == "playing":
+        if self._state == "playing" or self._transport_intent == "playing":
+            self._transport_intent = "paused"
+            self._seek_resume_pending = False
             self._player.pause()
 
     @Slot()
@@ -577,6 +592,8 @@ class AudioPlayerViewModel(BaseViewModel):
             "stopped",
             "finished",
         }:
+            self._transport_intent = "stopped"
+            self._seek_resume_pending = False
             self._player.stop()
             self._player.setPosition(0)
             self._position = 0
@@ -591,9 +608,35 @@ class AudioPlayerViewModel(BaseViewModel):
             or not self._playback_source_path
         ):
             return
-        self._player.setPosition(
-            max(0, min(int(round(position)), self._duration))
-        )
+        target = max(0, min(int(round(position)), self._duration))
+        resume_after_seek = (
+            self._state == "playing"
+            or self._transport_intent == "playing"
+        ) and target < self._duration
+        pause_after_seek = (
+            self._state == "paused"
+            or self._transport_intent == "paused"
+        ) and target < self._duration
+        if resume_after_seek:
+            self._transport_intent = "playing"
+        elif pause_after_seek:
+            self._transport_intent = "paused"
+        self._seek_resume_pending = resume_after_seek or pause_after_seek
+        self._player.setPosition(target)
+        self._position = target
+        self._furthest_position = max(self._furthest_position, target)
+        if resume_after_seek:
+            self._transport_intent = "playing"
+            self._state = "playing"
+            # Some Qt backends transiently stop/reload while seeking. Reassert
+            # the existing play intent so transport controls remain coherent.
+            self._player.play()
+        elif pause_after_seek:
+            self._state = "paused"
+        elif self._state == "finished" and target < self._duration:
+            self._state = "ready"
+            self._transport_intent = "stopped"
+        self.stateChanged.emit()
 
     @Slot(float)
     def setVolume(self, value: float) -> None:
@@ -876,7 +919,11 @@ class AudioPlayerViewModel(BaseViewModel):
             self._ignore_backend_events = False
         self._position = 0
         self._duration = 0
+        self._furthest_position = 0
         self._media_loaded = False
+        self._playback_started = False
+        self._transport_intent = "stopped"
+        self._seek_resume_pending = False
 
     def _rebind_player_signals(self) -> None:
         for signal, handler in self._signal_bindings:
@@ -928,14 +975,26 @@ class AudioPlayerViewModel(BaseViewModel):
         if state == QMediaPlayer.PlaybackState.PlayingState:
             self._state = "playing"
             self._media_loaded = True
+            self._playback_started = True
+            self._transport_intent = "playing"
+            self._seek_resume_pending = False
             message = f"正在播放{self._playback_source_label}。"
         elif state == QMediaPlayer.PlaybackState.PausedState:
             self._state = "paused"
+            self._transport_intent = "paused"
+            self._seek_resume_pending = False
             message = "播放已暂停。"
-        elif self._state == "loading":
+        elif self._state in {"loading", "finished"}:
+            return
+        elif (
+            self._seek_resume_pending
+            and self._transport_intent in {"playing", "paused"}
+        ):
             return
         else:
             self._state = "stopped" if self._playback_source_path else "empty"
+            self._transport_intent = "stopped"
+            self._seek_resume_pending = False
             message = "播放已停止。"
         self._emit_state(message)
 
@@ -943,6 +1002,10 @@ class AudioPlayerViewModel(BaseViewModel):
         if not self._accept_event(token) or not self._media_loaded:
             return
         self._position = max(0, int(position))
+        self._furthest_position = max(
+            self._furthest_position,
+            self._position,
+        )
         self.stateChanged.emit()
 
     def _on_duration_changed(self, token: int, duration: int) -> None:
@@ -956,12 +1019,20 @@ class AudioPlayerViewModel(BaseViewModel):
             return
         if status == QMediaPlayer.MediaStatus.LoadedMedia:
             self._media_loaded = True
-            self._state = "ready"
             self._error = ""
             duration_getter = getattr(self._player, "duration", None)
             if callable(duration_getter):
                 self._duration = max(0, int(duration_getter() or 0))
-            self._emit_state("音频已加载，可以播放。")
+            if self._transport_intent == "playing":
+                self._state = "playing"
+                message = f"正在播放{self._playback_source_label}。"
+            elif self._transport_intent == "paused":
+                self._state = "paused"
+                message = "播放已暂停。"
+            else:
+                self._state = "ready"
+                message = "音频已加载，可以播放。"
+            self._emit_state(message)
         elif status == QMediaPlayer.MediaStatus.EndOfMedia:
             self._mark_playback_finished()
         elif status == QMediaPlayer.MediaStatus.InvalidMedia:
@@ -997,16 +1068,21 @@ class AudioPlayerViewModel(BaseViewModel):
             return False
         if self._state == "finished":
             return True
-        if self._duration <= 0:
+        if self._duration <= 0 or not self._playback_started:
             return False
         tolerance = min(
             self._END_ERROR_TOLERANCE_MAX_MS,
             max(
                 self._END_ERROR_TOLERANCE_MIN_MS,
-                self._duration // 100,
+                self._duration // self._END_ERROR_TOLERANCE_DIVISOR,
             ),
         )
-        if self._position < max(0, self._duration - tolerance):
+        observed_position = max(
+            self._position,
+            self._furthest_position,
+            self._backend_position(),
+        )
+        if observed_position < max(0, self._duration - tolerance):
             return False
         if assume_decoder_error:
             return True
@@ -1025,11 +1101,26 @@ class AudioPlayerViewModel(BaseViewModel):
 
     def _mark_playback_finished(self) -> None:
         self._media_loaded = True
+        self._playback_started = True
+        self._transport_intent = "finished"
+        self._seek_resume_pending = False
         self._state = "finished"
         self._error = ""
         if self._duration > 0:
             self._position = self._duration
         self._emit_state("播放已结束。")
+
+    def _backend_position(self) -> int:
+        position_member = getattr(self._player, "position", 0)
+        try:
+            value = (
+                position_member()
+                if callable(position_member)
+                else position_member
+            )
+            return max(0, int(value or 0))
+        except (TypeError, ValueError):
+            return 0
 
     def _accept_event(self, token: int) -> bool:
         return (

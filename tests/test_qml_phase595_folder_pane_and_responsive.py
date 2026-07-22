@@ -412,6 +412,9 @@ Item {
                 self.assertEqual(220, int(pane.property("minimumPaneWidth")))
                 self.assertEqual(260, int(pane.property("defaultPaneWidth")))
                 self.assertEqual(360, int(pane.property("maximumPaneWidth")))
+                self.assertFalse(
+                    pane.property("favoriteDirectoryControlsVisible")
+                )
                 for object_name in (
                     "chooseFolderBrowserRootButton",
                     "folderBrowserFavorites",
@@ -427,6 +430,16 @@ Item {
                         container.findChild(QObject, object_name),
                         object_name,
                     )
+                self.assertFalse(
+                    container.findChild(
+                        QObject, "folderBrowserFavorites"
+                    ).property("visible")
+                )
+                self.assertFalse(
+                    container.findChild(
+                        QObject, "toggleFolderBrowserFavoriteButton"
+                    ).property("visible")
+                )
             finally:
                 view.close()
                 container.deleteLater()

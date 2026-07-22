@@ -63,6 +63,7 @@ Item {
             SectionCard {
                 id: compactHeader
                 objectName: "lyricsCoverSafetyCard"
+                theme: root.theme
                 Layout.fillWidth: true; Layout.minimumWidth: 0
                 implicitHeight: headerContent.implicitHeight + root.theme.spacing * 2
                 RowLayout {

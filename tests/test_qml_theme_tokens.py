@@ -86,6 +86,129 @@ Item {
         self.app.processEvents()
         self.assertEqual("dark", self.theme.property("mode"))
 
+    def test_derived_section_card_uses_the_supplied_light_palette(self):
+        component = QQmlComponent(self.view.engine())
+        component.setData(
+            b'''import QtQuick
+import "ui_next/qml/components"
+import "ui_next/qml/theme"
+
+Item {
+    width: 320
+    height: 480
+    Theme { id: lightTheme; objectName: "lightTheme"; requestedMode: "light" }
+    CoverDraftEditor {
+        objectName: "coverCard"
+        width: parent.width
+        theme: lightTheme
+    }
+}
+''',
+            QUrl.fromLocalFile(str(PROJECT_ROOT / "light_section_card_probe.qml")),
+        )
+        container = component.create()
+        self.assertIsNotNone(container, component.errors())
+        try:
+            theme = container.findChild(QObject, "lightTheme")
+            cover_card = container.findChild(QObject, "coverCard")
+            self.assertIsNotNone(theme)
+            self.assertIsNotNone(cover_card)
+            self.assertEqual(
+                QColor(theme.property("panelBackground")),
+                QColor(cover_card.property("color")),
+            )
+        finally:
+            container.deleteLater()
+            self.app.processEvents()
+
+    def test_lyrics_actions_use_light_workstation_button_states(self):
+        component = QQmlComponent(self.view.engine())
+        component.setData(
+            b'''import QtQuick
+import "ui_next/qml/components"
+import "ui_next/qml/theme"
+
+Item {
+    width: 900
+    height: 520
+
+    Theme { id: lightTheme; objectName: "lyricsLightTheme"; requestedMode: "light" }
+    QtObject {
+        id: editStub
+        property bool hasSession: true
+        property bool anyExporting: false
+        property bool canUndoLyrics: false
+        property bool lyricsDirty: false
+        property bool lyricsExporting: false
+        property string draftLyrics: "[00:01.000]Line"
+    }
+    QtObject {
+        id: playerStub
+        property bool hasPlaybackSource: true
+        property int position: 1000
+        property string timestampPrecision: "millisecond"
+    }
+
+    LyricsPreviewList {
+        width: 360
+        height: parent.height
+        theme: lightTheme
+        lines: [{
+            "index": 1,
+            "time": "00:01.000",
+            "text": "Line",
+            "translation": "",
+            "hasTimestamp": true
+        }]
+    }
+    LyricsDraftEditor {
+        x: 372
+        width: parent.width - x
+        height: parent.height
+        theme: lightTheme
+        editSession: editStub
+        audioPlayer: playerStub
+    }
+}
+''',
+            QUrl.fromLocalFile(str(PROJECT_ROOT / "lyrics_light_button_probe.qml")),
+        )
+        container = component.create()
+        self.assertIsNotNone(container, component.errors())
+        try:
+            theme = container.findChild(QObject, "lyricsLightTheme")
+            follow = container.findChild(QObject, "lyricsFollowToggle")
+            import_lrc = container.findChild(QObject, "importLrcButton")
+            undo = container.findChild(QObject, "undoLyricsButton")
+            insert = container.findChild(QObject, "insertCurrentTimestampButton")
+            self.assertTrue(all((theme, follow, import_lrc, undo, insert)))
+
+            def background_color(button):
+                return QColor(button.property("background").property("color"))
+
+            self.assertTrue(follow.property("selectedState"))
+            selected = QColor(theme.property("selectedIndicator"))
+            follow_color = background_color(follow)
+            self.assertEqual(selected.red(), follow_color.red())
+            self.assertEqual(selected.green(), follow_color.green())
+            self.assertEqual(selected.blue(), follow_color.blue())
+            self.assertLess(follow_color.alpha(), 255)
+            self.assertEqual(
+                QColor(theme.property("inputBackground")),
+                background_color(import_lrc),
+            )
+            self.assertEqual(
+                QColor(theme.property("disabledBackground")),
+                background_color(undo),
+            )
+            self.assertEqual(
+                QColor(theme.property("inputBackground")),
+                background_color(insert),
+            )
+        finally:
+            container.deleteLater()
+            self.app.processEvents()
+
     def test_non_theme_qml_has_no_literal_theme_colours(self):
         qml_root = PROJECT_ROOT / "ui_next/qml"
         literal_pattern = re.compile(r"#[0-9A-Fa-f]{3,8}")

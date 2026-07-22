@@ -52,6 +52,27 @@ class QmlLightThemeCoverageTests(unittest.TestCase):
         ):
             self.assertIn("ThemedSlider", self._source(path), path)
 
+    def test_derived_section_cards_inherit_the_page_theme(self):
+        for path in (
+            "ui_next/qml/components/TaskQueueView.qml",
+            "ui_next/qml/components/ConvertActionBar.qml",
+            "ui_next/qml/components/CoverDraftEditor.qml",
+            "ui_next/qml/components/EditorFileBrowser.qml",
+        ):
+            source = self._source(path)
+            self.assertIn("SectionCard {", source, path)
+            self.assertNotIn("property QtObject theme:", source, path)
+
+        metadata_page = self._source("ui_next/qml/pages/MetadataPage.qml")
+        info_panel = metadata_page.split("component InfoPanel: SectionCard {", 1)[1]
+        info_panel = info_panel.split("component InfoRow:", 1)[0]
+        self.assertIn("theme: root.theme", info_panel)
+
+        lyrics_page = self._source("ui_next/qml/pages/LyricsCoverPage.qml")
+        lyrics_header = lyrics_page.split("SectionCard {", 1)[1]
+        lyrics_header = lyrics_header.split("GridLayout {", 1)[0]
+        self.assertIn("theme: root.theme", lyrics_header)
+
     def test_shell_keeps_focus_and_capability_boundaries_outside_theme_switching(self):
         shell = self._source("ui_next/qml/AppShell.qml")
         switcher = self._source("ui_next/qml/components/WorkspaceSwitcher.qml")

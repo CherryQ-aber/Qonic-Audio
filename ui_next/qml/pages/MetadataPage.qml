@@ -117,6 +117,7 @@ Item {
 
     component InfoPanel: SectionCard {
         id: panelCard
+        theme: root.theme
         property string title: ""
         property string statusLabel: ""
         default property alias content: panelContent.data

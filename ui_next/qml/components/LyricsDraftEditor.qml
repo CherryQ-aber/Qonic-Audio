@@ -121,17 +121,23 @@ Rectangle {
         Flow {
             Layout.fillWidth: true
             spacing: 8
-            Button {
+            WorkstationButton {
                 id: importLrcButton
                 objectName: "importLrcButton"
+                implicitWidth: 126
+                theme: root.theme
+                typography: root.typography
                 text: "导入 .lrc"
                 enabled: root.editSession && root.editSession.hasSession
                     && !root.editSession.anyExporting
                 onClicked: root.manualSourceRequested()
             }
-            Button {
+            WorkstationButton {
                 id: undoButton
                 objectName: "undoLyricsButton"
+                implicitWidth: 126
+                theme: root.theme
+                typography: root.typography
                 text: "撤回"
                 enabled: root.editSession && root.editSession.canUndoLyrics
                 onPressed: root.rememberDraftSelection(false)
@@ -140,9 +146,12 @@ Rectangle {
                     root.restoreDraftFocus()
                 }
             }
-            Button {
+            WorkstationButton {
                 id: insertTimestampButton
                 objectName: "insertCurrentTimestampButton"
+                implicitWidth: 126
+                theme: root.theme
+                typography: root.typography
                 text: "插入时间点"
                 enabled: root.editSession && root.editSession.hasSession
                     && !root.editSession.lyricsExporting
@@ -150,9 +159,12 @@ Rectangle {
                 onPressed: root.rememberDraftSelection(false)
                 onClicked: root.insertCurrentTimestamp()
             }
-            Button {
+            WorkstationButton {
                 id: restoreLyricsButton
                 objectName: "restoreOriginalLyricsButton"
+                implicitWidth: 126
+                theme: root.theme
+                typography: root.typography
                 text: "恢复原始"
                 visible: root.editSession && root.editSession.lyricsDirty
                 enabled: root.editSession && !root.editSession.anyExporting
