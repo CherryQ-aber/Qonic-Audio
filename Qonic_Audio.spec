@@ -12,11 +12,14 @@ if str(SPEC_DIR) not in sys.path:
 from app_info import APP_PACKAGE_BASENAME
 
 a = Analysis(
-    ['gui.py'],
+    ['main_qml.py'],
     pathex=[],
     binaries=[],
     datas=[
+        ('ui_next/qml', 'ui_next/qml'),
+        ('Assets/icon.ico', 'Assets'),
         ('Tools/ffmpeg/bin/ffmpeg.exe', 'Tools/ffmpeg/bin'),
+        ('Tools/ffmpeg/bin/ffprobe.exe', 'Tools/ffmpeg/bin'),
         ('Tools/ncmdump/ncmdump.exe', 'Tools/ncmdump'),
     ],
     hiddenimports=[],
@@ -46,6 +49,7 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon=['Assets\\icon.ico'],
+    version='windows_version_info.txt',
 )
 coll = COLLECT(
     exe,

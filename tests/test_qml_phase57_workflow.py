@@ -59,9 +59,15 @@ class Phase57WorkflowTests(unittest.TestCase):
                 "preserve_relative_structure": True,
             }
 
-            with patch(
-                "ui_next.bridge.auto_convert_viewmodel.load_config",
-                return_value=config_data,
+            with (
+                patch(
+                    "ui_next.bridge.auto_convert_viewmodel.load_config",
+                    return_value=config_data,
+                ),
+                patch(
+                    "ui_next.bridge.auto_convert_viewmodel.get_output_folder",
+                    return_value=str(root / "missing-global-output"),
+                ),
             ):
                 auto = AutoConvertViewModel(queue_model, capability_gate=gate)
                 scan = ScanPreviewViewModel(gate)
