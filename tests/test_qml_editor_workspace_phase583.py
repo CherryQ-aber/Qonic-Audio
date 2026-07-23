@@ -301,7 +301,7 @@ class EditorWorkspacePhase583Tests(unittest.TestCase):
             )
             edit.removeCoverDraft()
             self.assertEqual(
-                ["Metadata", "Lyrics", "Cover"],
+                ["文件信息", "歌词", "封面"],
                 edit.unsavedDraftLabels,
             )
 

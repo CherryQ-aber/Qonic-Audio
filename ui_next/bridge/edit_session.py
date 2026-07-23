@@ -1718,7 +1718,7 @@ class EditSessionViewModel(BaseViewModel):
         return True
 
     def _apply_export_result(self, result: dict) -> None:
-        self._export_worker = None
+        self._join_export_worker("_export_worker")
         self._finish_audio_export_transaction()
         self._last_export_result = dict(result or {})
         self._record_unified_export_result(result)
@@ -1804,7 +1804,7 @@ class EditSessionViewModel(BaseViewModel):
         self.stateChanged.emit()
 
     def _apply_lyrics_export_result(self, result: dict) -> None:
-        self._lyrics_export_worker = None
+        self._join_export_worker("_lyrics_export_worker")
         lrc_only = list(result.get("applied_operations") or []) == ["lrc"]
         if not lrc_only:
             self._finish_audio_export_transaction()
@@ -1876,7 +1876,7 @@ class EditSessionViewModel(BaseViewModel):
         return True
 
     def _apply_cover_export_result(self, result: dict) -> None:
-        self._cover_export_worker = None
+        self._join_export_worker("_cover_export_worker")
         self._finish_audio_export_transaction()
         self._cover_last_export_result = dict(result or {})
         self._record_unified_export_result(result)
@@ -1891,7 +1891,7 @@ class EditSessionViewModel(BaseViewModel):
         self.stateChanged.emit()
 
     def _apply_unified_export_result(self, result: dict) -> None:
-        self._unified_export_worker = None
+        self._join_export_worker("_unified_export_worker")
         self._finish_audio_export_transaction()
         self._record_unified_export_result(result)
         if result.get("success"):
@@ -2127,6 +2127,17 @@ class EditSessionViewModel(BaseViewModel):
         if self._export_service is None:
             self._export_service = EditExportService(self.capabilityGate)
         return self._export_service
+
+    def _join_export_worker(self, attribute_name: str) -> None:
+        """Keep the QThread wrapper alive until its run method has returned."""
+        worker = getattr(self, attribute_name, None)
+        if worker is None:
+            return
+        # resultReady can reach the GUI thread before QThread has emitted
+        # finished. Dropping the last Python reference in that window makes
+        # Qt abort the process with "QThread: Destroyed while thread is running".
+        worker.wait()
+        setattr(self, attribute_name, None)
 
     def _finish_audio_export_transaction(
         self,

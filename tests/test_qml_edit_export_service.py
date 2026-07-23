@@ -147,6 +147,37 @@ class EditExportServiceTests(unittest.TestCase):
             self.assertTrue(removed["success"], removed)
             self.assertFalse(state["cover"])
 
+    def test_lyrics_verification_accepts_reader_normalized_outer_newline(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source = self._source(root)
+            output = root / "edited.flac"
+            service, state, stack = self._service_with_backend((LYRICS_WRITE,))
+            requested = "[00:01.00]First line\n[00:02.00]Edited line\n"
+
+            def normalized_lyrics_read(_path):
+                return {
+                    "ok": True,
+                    "has_lyrics": True,
+                    "lyrics_text": str(state["lyrics"]).strip(),
+                }
+
+            with stack, patch(
+                "ui_next.bridge.edit_export_service.read_embedded_lyrics",
+                side_effect=normalized_lyrics_read,
+            ):
+                result = service.export(
+                    EditExportRequest(
+                        str(source),
+                        str(output),
+                        lyrics_text=requested,
+                    )
+                )
+
+            self.assertTrue(result["success"], result)
+            self.assertTrue(result["verification_success"])
+            self.assertEqual(requested, state["lyrics"])
+
     def test_missing_one_combined_capability_rejects_before_temp_copy(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)

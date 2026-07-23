@@ -620,7 +620,10 @@ class EditExportService:
             lyrics = read_embedded_lyrics(str(path))
             if (
                 not lyrics.get("ok")
-                or str(lyrics.get("lyrics_text") or "") != str(request.lyrics_text or "")
+                or _normalized_lyrics_for_verification(
+                    lyrics.get("lyrics_text")
+                )
+                != _normalized_lyrics_for_verification(request.lyrics_text)
             ):
                 return "verification_failed", "内嵌歌词与请求不一致。"
         return None
@@ -682,6 +685,11 @@ def _merged_metadata_changes(source: Path, requested: dict[str, str]):
 
 def _same_path(first: Path, second: Path) -> bool:
     return os.path.normcase(os.path.normpath(str(first))) == os.path.normcase(os.path.normpath(str(second)))
+
+
+def _normalized_lyrics_for_verification(value: object) -> str:
+    """Match the newline and outer-space normalization used by lyric readers."""
+    return str(value or "").replace("\r\n", "\n").replace("\r", "\n").strip()
 
 
 def _make_temp_path(output: Path) -> Path:

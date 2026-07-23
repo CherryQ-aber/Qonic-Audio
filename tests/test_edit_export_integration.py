@@ -61,6 +61,15 @@ class _ProcessingDraft(QObject):
         self.stateChanged.emit()
 
 
+class _FinishingWorker:
+    def __init__(self):
+        self.wait_called = False
+
+    def wait(self):
+        self.wait_called = True
+        return True
+
+
 def _metadata(path: str) -> dict:
     return {
         "ok": True,
@@ -117,6 +126,64 @@ def test_preflight_defaults_to_current_module_and_never_applies_other_dirty_draf
         assert session.dirty and session.lyricsDirty
         assert session.unifiedExportResult["applied_operations"] == ["lyrics"]
         assert session.sourcePath == str(source)
+
+
+def test_imported_lrc_edits_are_the_lyrics_snapshot_sent_to_audio_export():
+    app = QApplication.instance() or QApplication([])
+    with tempfile.TemporaryDirectory() as temp_dir:
+        root = Path(temp_dir)
+        source = root / "source.flac"
+        source.write_bytes(b"source")
+        imported = root / "imported.lrc"
+        service = _RecordingExportService()
+        session = EditSessionViewModel(
+            CapabilityGate((LYRICS_WRITE,)),
+            export_service=service,
+        )
+        session.loadMetadataResult(_metadata(str(source)))
+        session.loadLyricsResult(
+            {
+                "ok": True,
+                "path": str(source),
+                "lyrics_text": "[00:01.00]Original",
+            }
+        )
+        assert session.applyImportedLyricsDraft(
+            {
+                "ok": True,
+                "path": str(imported),
+                "audio_path": str(source),
+                "session_generation": session.sessionGeneration,
+                "lyrics_text": "[00:01.00]Imported\n",
+            }
+        )
+        latest_draft = "[00:01.00]Imported\n[00:02.00]Edited after import\n"
+        session.updateLyricsDraft(latest_draft)
+
+        output = root / "edited.flac"
+        session.openUnifiedExportDialog("lyrics")
+        session.setUnifiedExportOutputPath(str(output))
+        session.startUnifiedAudioExport(False, True, False)
+        _wait(app, session)
+
+        assert service.requests[0].lyrics_text == latest_draft
+
+
+def test_unified_export_result_joins_worker_before_releasing_reference():
+    session = EditSessionViewModel(CapabilityGate())
+    worker = _FinishingWorker()
+    session._unified_export_worker = worker
+
+    session._apply_unified_export_result(
+        {
+            "success": False,
+            "error_code": "verification_failed",
+            "message": "failed",
+        }
+    )
+
+    assert worker.wait_called
+    assert session._unified_export_worker is None
 
 
 def test_missing_capability_and_invalid_paths_stop_before_worker_creation():
