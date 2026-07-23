@@ -1,0 +1,288 @@
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+
+import "../theme"
+
+Rectangle {
+    id: root
+    property QtObject theme: Theme {}
+    property QtObject typography: Typography {}
+    property var audioPlayer: null
+    property var editSession: null
+    property var lyricsSync: null
+    property int rememberedCursorPosition: 0
+    property int rememberedSelectionStart: 0
+    property int rememberedSelectionEnd: 0
+    readonly property bool playbackLineAvailable: Boolean(
+        lyricsSync
+        && lyricsSync.availableForPlayback
+        && lyricsSync.currentLineIndex >= 0
+    )
+    readonly property int playbackLineStart: playbackLineAvailable
+        ? lyricsSync.currentLineSourceStart : -1
+    readonly property int playbackLineEnd: playbackLineAvailable
+        ? lyricsSync.currentLineSourceEnd : -1
+    readonly property real draftViewportOffsetY:
+        draftScrollView.contentItem
+        ? draftScrollView.contentItem.contentY : 0
+    readonly property rect playbackLineStartRect: {
+        var editorWidth = draftEditor.width
+        return draftEditor.positionToRectangle(
+            Math.max(0, Math.min(playbackLineStart, draftEditor.length))
+        )
+    }
+    readonly property rect playbackLineEndRect: {
+        var editorWidth = draftEditor.width
+        return draftEditor.positionToRectangle(
+            Math.max(0, Math.min(playbackLineEnd, draftEditor.length))
+        )
+    }
+    signal manualSourceRequested()
+
+    function rememberDraftSelection(force) {
+        if (!force && !draftEditor.activeFocus) {
+            return
+        }
+        rememberedCursorPosition = draftEditor.cursorPosition
+        rememberedSelectionStart = draftEditor.selectionStart
+        rememberedSelectionEnd = draftEditor.selectionEnd
+    }
+
+    function restoreDraftFocus() {
+        Qt.callLater(function() {
+            draftEditor.forceActiveFocus()
+            draftEditor.cursorPosition = Math.min(
+                rememberedCursorPosition,
+                draftEditor.length
+            )
+            root.rememberDraftSelection(true)
+        })
+    }
+
+    function insertCurrentTimestamp() {
+        if (!editSession || !editSession.hasSession || editSession.lyricsExporting
+                || !audioPlayer || !audioPlayer.hasPlaybackSource) {
+            return
+        }
+        var result = editSession.insertLyricsTimestamp(
+            rememberedSelectionStart,
+            rememberedSelectionEnd,
+            rememberedCursorPosition,
+            audioPlayer.position,
+            audioPlayer.timestampPrecision
+        )
+        if (!result || result.ok !== true) {
+            return
+        }
+        Qt.callLater(function() {
+            draftEditor.forceActiveFocus()
+            var selectionStart = Number(result.selection_start)
+            var selectionEnd = Number(result.selection_end)
+            if (selectionStart !== selectionEnd) {
+                draftEditor.select(selectionStart, selectionEnd)
+            } else {
+                draftEditor.cursorPosition = Number(result.cursor_position)
+            }
+            root.rememberDraftSelection(true)
+        })
+    }
+
+    color: theme.panel
+    border.color: theme.border
+    radius: theme.radiusSmall
+    implicitHeight: 500
+
+    ColumnLayout {
+        id: content
+        anchors.fill: parent
+        anchors.margins: theme.spacing
+        spacing: 7
+
+        RowLayout {
+            Layout.fillWidth: true
+            Text {
+                text: "歌词编辑"
+                color: theme.textPrimary
+                font.family: typography.fontFamily
+                font.pixelSize: typography.sizeMedium
+                font.weight: typography.weightBold
+                Layout.fillWidth: true
+            }
+            StatusBadge {
+                visible: root.editSession && root.editSession.lyricsDirty
+                theme: root.theme
+                typography: root.typography
+                label: "未保存"
+                tone: "warning"
+            }
+        }
+
+        Flow {
+            Layout.fillWidth: true
+            spacing: 8
+            WorkstationButton {
+                id: importLrcButton
+                objectName: "importLrcButton"
+                implicitWidth: 126
+                theme: root.theme
+                typography: root.typography
+                text: "导入 .lrc"
+                enabled: root.editSession && root.editSession.hasSession
+                    && !root.editSession.anyExporting
+                onClicked: root.manualSourceRequested()
+            }
+            WorkstationButton {
+                id: undoButton
+                objectName: "undoLyricsButton"
+                implicitWidth: 126
+                theme: root.theme
+                typography: root.typography
+                text: "撤回"
+                enabled: root.editSession && root.editSession.canUndoLyrics
+                onPressed: root.rememberDraftSelection(false)
+                onClicked: {
+                    root.editSession.undoLyricsDraft()
+                    root.restoreDraftFocus()
+                }
+            }
+            WorkstationButton {
+                id: insertTimestampButton
+                objectName: "insertCurrentTimestampButton"
+                implicitWidth: 126
+                theme: root.theme
+                typography: root.typography
+                text: "插入时间点"
+                enabled: root.editSession && root.editSession.hasSession
+                    && !root.editSession.lyricsExporting
+                    && root.audioPlayer && root.audioPlayer.hasPlaybackSource
+                onPressed: root.rememberDraftSelection(false)
+                onClicked: root.insertCurrentTimestamp()
+            }
+            WorkstationButton {
+                id: restoreLyricsButton
+                objectName: "restoreOriginalLyricsButton"
+                implicitWidth: 126
+                theme: root.theme
+                typography: root.typography
+                text: "恢复原始"
+                visible: root.editSession && root.editSession.lyricsDirty
+                enabled: root.editSession && !root.editSession.anyExporting
+                onClicked: root.editSession.restoreOriginalLyrics()
+            }
+        }
+
+        ColumnLayout {
+            id: currentLyricsPane
+            objectName: "currentLyricsPane"
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.minimumWidth: 0
+            Layout.minimumHeight: 230
+            spacing: 5
+
+            Text {
+                text: "当前歌词"
+                color: theme.textPrimary
+                font.family: typography.fontFamily
+                font.pixelSize: typography.sizeSmall
+                font.weight: typography.weightBold
+                Layout.fillWidth: true
+            }
+
+            ScrollView {
+                id: draftScrollView
+                objectName: "lyricsDraftScrollView"
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.minimumHeight: 180
+                Layout.rightMargin: root.theme.spacing
+                clip: true
+                rightPadding: draftLyricsVerticalScrollBar.width + 4
+                contentWidth: availableWidth
+                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                ScrollBar.vertical: ThemeScrollBar {
+                    id: draftLyricsVerticalScrollBar
+                    objectName: "draftLyricsVerticalScrollBar"
+                    parent: draftScrollView
+                    anchors.top: draftScrollView.top
+                    anchors.right: draftScrollView.right
+                    anchors.bottom: draftScrollView.bottom
+                    anchors.margins: 2
+                    z: 2
+                    theme: root.theme
+                    policy: ScrollBar.AlwaysOn
+                }
+                background: Rectangle {
+                    color: theme.inputBackground
+                    border.color: draftEditor.activeFocus
+                        ? theme.focusRing : theme.borderNormal
+                    border.width: draftEditor.activeFocus ? 2 : 1
+                    radius: theme.radiusSmall
+                }
+
+                TextArea {
+                    id: draftEditor
+                    objectName: "lyricsDraftTextArea"
+                    width: draftScrollView.availableWidth
+                    height: Math.max(implicitHeight, draftScrollView.availableHeight)
+                    enabled: root.editSession && root.editSession.hasSession
+                        && !root.editSession.lyricsExporting
+                    text: root.editSession ? root.editSession.draftLyrics : ""
+                    wrapMode: TextEdit.Wrap
+                    selectByMouse: true
+                    font.family: "Consolas"
+                    font.pixelSize: typography.sizeBody
+                    color: theme.textPrimary
+                    placeholderText: "可输入普通歌词或保留 LRC 时间戳。"
+                    placeholderTextColor: theme.textMuted
+                    onCursorPositionChanged: root.rememberDraftSelection(false)
+                    onSelectionStartChanged: root.rememberDraftSelection(false)
+                    onSelectionEndChanged: root.rememberDraftSelection(false)
+                    onTextChanged: if (activeFocus && root.editSession)
+                        root.editSession.updateLyricsDraft(text)
+                    background: Item {
+                        Rectangle {
+                            id: draftCurrentLineHighlight
+                            objectName: "draftCurrentLineHighlight"
+                            visible: root.playbackLineAvailable
+                                && root.playbackLineStart >= 0
+                                && root.playbackLineEnd
+                                    >= root.playbackLineStart
+                            x: draftEditor.leftPadding
+                            y: root.playbackLineStartRect.y
+                                - root.draftViewportOffsetY
+                            width: Math.max(
+                                0,
+                                draftEditor.width
+                                    - draftEditor.leftPadding
+                                    - draftEditor.rightPadding
+                            )
+                            height: Math.max(
+                                root.playbackLineStartRect.height,
+                                root.playbackLineEndRect.y
+                                    - root.playbackLineStartRect.y
+                                    + root.playbackLineEndRect.height
+                            )
+                            color: Qt.rgba(
+                                theme.warning.r,
+                                theme.warning.g,
+                                theme.warning.b,
+                                0.16
+                            )
+                            border.color: Qt.rgba(
+                                theme.warning.r,
+                                theme.warning.g,
+                                theme.warning.b,
+                                0.72
+                            )
+                            border.width: 1
+                            radius: theme.radiusSmall
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+}

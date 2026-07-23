@@ -1,0 +1,21 @@
+{
+    "watch_folder": "C:/CloudMusic/VipSongsDownload",
+    "output_folder": "__PROGRAM_DIR__/Music_Output",
+    "editor_output_folder": "__PROGRAM_DIR__/AudioEditor_Output",
+    "target_format": "flac",
+    "create_format_subfolder": true,
+    "embed_lyrics_after_convert": true,
+    "copy_lrc_to_output": false,
+    "overwrite_existing_lyrics": false,
+    "auto_start_monitor": true,
+    "scan_existing_on_start": false,
+    "editor_file_bar_mode": "fixed",
+    "folder_browser_root": "",
+    "folder_browser_favorites": [],
+    "folder_browser_recent": [],
+    "folder_browser_visible": true,
+    "folder_browser_width": 260,
+    "lyrics_timestamp_precision": "millisecond",
+    "theme_mode": "system",
+    "first_launch_completed": false
+}

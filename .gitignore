@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local runtime state
+config.json
+config.json.bak
+logs/
+Temp/
+Music_input/
+Music_Output/
+*.log
+
+# Internal planning and review artifacts
+Codex_memory/
+Codex执行记录/
+Code_Review_Packages/
+.reasonix/
+v3大版本总结_v4启动引用.md
+
+# Build and release output
+build/
+dist/
+Release/
+gui.spec
+main.spec
+
+# Large local binaries and audio fixtures
+Tools/ffmpeg/bin/*.exe
+Tools/ncmdump/ncmdump.exe
+Test_Files/*
+!Test_Files/README.md
+!Test_Files/converted/README.md
+
+# Editor and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
