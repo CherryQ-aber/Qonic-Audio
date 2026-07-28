@@ -1,6 +1,6 @@
 # Candidate validation report
 
-Status: **B3 PASS — B4/B5 PENDING**
+Status: **B3 + B4 PASS — B5 PENDING**
 
 On 2026-07-26 the pinned Qonic build route completed on Docker Desktop
 `linux/amd64`. All seven locked source archives matched their SHA-256 values,
@@ -56,6 +56,27 @@ Windows PowerShell 5.1 native-stderr handling, and source-bundle cache/backup
 filtering. Upstream compiler warnings remain recorded, but no warning caused a
 build or validation failure.
 
+## B4 isolated package regression
+
+On 2026-07-28 the candidate was copied into a fresh isolated clone of the
+authoritative PyInstaller onedir. Before the app was launched, all 3,004
+non-FFmpeg files were byte-identical to the authoritative expanded release;
+only `ffmpeg.exe` and `ffprobe.exe` had the candidate hashes above.
+
+The reproducible B4 runner completed **55/55 checks** with no failures or
+blocked items. It covered all 11 promised input formats, all seven output
+formats, project single-file and queue conversion APIs, cancellation,
+corrupted and occupied input, Unicode/space/long/cross-drive paths, ffprobe,
+Rubber Band preview/export at negative and positive semitones, metadata,
+embedded lyrics and cover preservation, and packaged offscreen smoke tests for
+Audio Editor, Auto Convert and Settings.
+
+APE was generated from the synthetic WAV with the official Monkey's Audio
+13.20 console encoder extracted without installation. The encoder and all
+generated media remain outside the release package.
+
+Detailed results are in `b4-regression-report.json`.
+
 ## Boundary and remaining work
 
 The formal binaries and authoritative release archive were not modified.
@@ -63,7 +84,8 @@ The formal binaries and authoritative release archive were not modified.
 `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test.7z`
 retain their frozen hashes.
 
-B3 is complete. B4 must still run the candidate inside an isolated PyInstaller
-onedir copy with the full automated and real-media matrix. Only after B4 may a
-B5 replacement proposal be prepared for the project owner's explicit approval.
-`FFMPEG_BUILD_CHAIN_INCOMPLETE` therefore remains open.
+B3 and B4 are complete. No candidate binary was copied into `Tools/ffmpeg/bin`,
+the authoritative expanded release or the authoritative archive. B5 remains a
+separate replacement proposal and requires the project owner's explicit
+approval before any formal binary replacement. `FFMPEG_BUILD_CHAIN_INCOMPLETE`
+therefore remains open until B5 is approved and completed.

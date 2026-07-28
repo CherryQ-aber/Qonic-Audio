@@ -1,0 +1,405 @@
+{
+  "schema_version": 1,
+  "phase": "B4",
+  "overall_status": "pass",
+  "started_at": "2026-07-28T05:34:49.741458+00:00",
+  "finished_at": "2026-07-28T05:35:11.103027+00:00",
+  "release_baseline": "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test.7z",
+  "isolated_package": "third_party/ffmpeg-build/output/b4-isolated/2026-07-28-verified/Qonic_Audio_v5.0_internal_test",
+  "fixture_policy": "synthetic-only",
+  "monkey_audio_fixture_tool": {
+    "version": "13.20",
+    "source": "https://monkeysaudio.com/x64",
+    "installer_sha256": "091931DC828ADE7A7EC3ABB380D8612FCC44E956F9AD1B3BEC227F8A70C492F1",
+    "included_in_release": false
+  },
+  "counts": {
+    "pass": 55,
+    "fail": 0,
+    "blocked": 0
+  },
+  "tests": [
+    {
+      "name": "before_archive_hash",
+      "status": "pass",
+      "detail": "649E38524AF2F3DCE33FCBC43AC29B7111623D033F3537DE55EF5CD45994E926",
+      "evidence": {
+        "expected": "649E38524AF2F3DCE33FCBC43AC29B7111623D033F3537DE55EF5CD45994E926"
+      }
+    },
+    {
+      "name": "before_formal_ffmpeg_hash",
+      "status": "pass",
+      "detail": "09948D4CDD0650DA6FF5A87577469F2A218DC2615AE379F8F734D24C49DE0F73",
+      "evidence": {
+        "expected": "09948D4CDD0650DA6FF5A87577469F2A218DC2615AE379F8F734D24C49DE0F73"
+      }
+    },
+    {
+      "name": "before_formal_ffprobe_hash",
+      "status": "pass",
+      "detail": "A6618E99BB58869DED3C6F37B53AA1A8D701C3591DBB7B5B317D47369C112BE2",
+      "evidence": {
+        "expected": "A6618E99BB58869DED3C6F37B53AA1A8D701C3591DBB7B5B317D47369C112BE2"
+      }
+    },
+    {
+      "name": "isolated_candidate_ffmpeg_hash",
+      "status": "pass",
+      "detail": "CA2BCCBF1A2A5A379AE484AD127D120CC3E394833B69767694A1E738F2D6BE55",
+      "evidence": {
+        "expected": "CA2BCCBF1A2A5A379AE484AD127D120CC3E394833B69767694A1E738F2D6BE55"
+      }
+    },
+    {
+      "name": "isolated_candidate_ffprobe_hash",
+      "status": "pass",
+      "detail": "4EC2AC9385AACBAF927B7E8D031291059CEA2E02EE6BFAE0D708F78E1C528251",
+      "evidence": {
+        "expected": "4EC2AC9385AACBAF927B7E8D031291059CEA2E02EE6BFAE0D708F78E1C528251"
+      }
+    },
+    {
+      "name": "isolated_package_file_set",
+      "status": "pass",
+      "detail": "baseline=3006, isolated=3006",
+      "evidence": {}
+    },
+    {
+      "name": "isolated_package_only_ffmpeg_changed",
+      "status": "pass",
+      "detail": "all non-FFmpeg files byte-identical",
+      "evidence": {
+        "unexpected_paths": []
+      }
+    },
+    {
+      "name": "synthetic_ape_fixture",
+      "status": "pass",
+      "detail": "official MAC.exe encoded the synthetic WAV",
+      "evidence": {}
+    },
+    {
+      "name": "synthetic_fixture_generation",
+      "status": "pass",
+      "detail": "formats=11",
+      "evidence": {}
+    },
+    {
+      "name": "decode_mp3",
+      "status": "pass",
+      "detail": "exit=0",
+      "evidence": {}
+    },
+    {
+      "name": "decode_flac",
+      "status": "pass",
+      "detail": "exit=0",
+      "evidence": {}
+    },
+    {
+      "name": "decode_wav",
+      "status": "pass",
+      "detail": "exit=0",
+      "evidence": {}
+    },
+    {
+      "name": "decode_m4a",
+      "status": "pass",
+      "detail": "exit=0",
+      "evidence": {}
+    },
+    {
+      "name": "decode_aac",
+      "status": "pass",
+      "detail": "exit=0",
+      "evidence": {}
+    },
+    {
+      "name": "decode_ogg",
+      "status": "pass",
+      "detail": "exit=0",
+      "evidence": {}
+    },
+    {
+      "name": "decode_opus",
+      "status": "pass",
+      "detail": "exit=0",
+      "evidence": {}
+    },
+    {
+      "name": "decode_ape",
+      "status": "pass",
+      "detail": "exit=0",
+      "evidence": {}
+    },
+    {
+      "name": "decode_aiff",
+      "status": "pass",
+      "detail": "exit=0",
+      "evidence": {}
+    },
+    {
+      "name": "decode_alac",
+      "status": "pass",
+      "detail": "exit=0",
+      "evidence": {}
+    },
+    {
+      "name": "decode_wma",
+      "status": "pass",
+      "detail": "exit=0",
+      "evidence": {}
+    },
+    {
+      "name": "encode_mp3",
+      "status": "pass",
+      "detail": "exit=0, bytes=24429",
+      "evidence": {}
+    },
+    {
+      "name": "encode_flac",
+      "status": "pass",
+      "detail": "exit=0, bytes=46062",
+      "evidence": {}
+    },
+    {
+      "name": "encode_wav",
+      "status": "pass",
+      "detail": "exit=0, bytes=288078",
+      "evidence": {}
+    },
+    {
+      "name": "encode_aac",
+      "status": "pass",
+      "detail": "exit=0, bytes=27391",
+      "evidence": {}
+    },
+    {
+      "name": "encode_m4a",
+      "status": "pass",
+      "detail": "exit=0, bytes=27772",
+      "evidence": {}
+    },
+    {
+      "name": "encode_ogg",
+      "status": "pass",
+      "detail": "exit=0, bytes=13537",
+      "evidence": {}
+    },
+    {
+      "name": "encode_opus",
+      "status": "pass",
+      "detail": "exit=0, bytes=29056",
+      "evidence": {}
+    },
+    {
+      "name": "single_convert_mp3",
+      "status": "pass",
+      "detail": "ok",
+      "evidence": {}
+    },
+    {
+      "name": "single_convert_flac",
+      "status": "pass",
+      "detail": "ok",
+      "evidence": {}
+    },
+    {
+      "name": "single_convert_wav",
+      "status": "pass",
+      "detail": "ok",
+      "evidence": {}
+    },
+    {
+      "name": "single_convert_m4a",
+      "status": "pass",
+      "detail": "ok",
+      "evidence": {}
+    },
+    {
+      "name": "single_convert_aac",
+      "status": "pass",
+      "detail": "ok",
+      "evidence": {}
+    },
+    {
+      "name": "single_convert_ogg",
+      "status": "pass",
+      "detail": "ok",
+      "evidence": {}
+    },
+    {
+      "name": "single_convert_opus",
+      "status": "pass",
+      "detail": "ok",
+      "evidence": {}
+    },
+    {
+      "name": "single_convert_ape",
+      "status": "pass",
+      "detail": "ok",
+      "evidence": {}
+    },
+    {
+      "name": "single_convert_aiff",
+      "status": "pass",
+      "detail": "ok",
+      "evidence": {}
+    },
+    {
+      "name": "single_convert_alac",
+      "status": "pass",
+      "detail": "ok",
+      "evidence": {}
+    },
+    {
+      "name": "single_convert_wma",
+      "status": "pass",
+      "detail": "ok",
+      "evidence": {}
+    },
+    {
+      "name": "corrupt_input_rejected",
+      "status": "pass",
+      "detail": "FFMPEG_FAILED",
+      "evidence": {}
+    },
+    {
+      "name": "unicode_and_space_paths",
+      "status": "pass",
+      "detail": "ok",
+      "evidence": {}
+    },
+    {
+      "name": "long_path_over_260",
+      "status": "pass",
+      "detail": "path_length=287",
+      "evidence": {}
+    },
+    {
+      "name": "cross_drive_output",
+      "status": "pass",
+      "detail": "source_drive=D:, output_drive=C:",
+      "evidence": {}
+    },
+    {
+      "name": "manual_multi_item_queue_engine",
+      "status": "pass",
+      "detail": "successes=2/2",
+      "evidence": {}
+    },
+    {
+      "name": "queue_cancel_reaps_ffmpeg",
+      "status": "pass",
+      "detail": "cancelled child was reaped",
+      "evidence": {}
+    },
+    {
+      "name": "pitch_preview_negative",
+      "status": "pass",
+      "detail": "ok",
+      "evidence": {}
+    },
+    {
+      "name": "pitch_export_-2_metadata_cover",
+      "status": "pass",
+      "detail": "success=True, metadata=True, cover=True",
+      "evidence": {
+        "tags": {
+          "lyrics": "[00:00.00]synthetic lyric",
+          "title": "Qonic B4 synthetic",
+          "artist": "CherryQ Studio",
+          "album": "B4 Regression",
+          "encoder": "Lavf62.12.101"
+        }
+      }
+    },
+    {
+      "name": "pitch_export_+2_metadata_cover",
+      "status": "pass",
+      "detail": "success=True, metadata=True, cover=True",
+      "evidence": {
+        "tags": {
+          "lyrics": "[00:00.00]synthetic lyric",
+          "title": "Qonic B4 synthetic",
+          "artist": "CherryQ Studio",
+          "album": "B4 Regression",
+          "encoder": "Lavf62.12.101"
+        }
+      }
+    },
+    {
+      "name": "occupied_input_fails_cleanly",
+      "status": "pass",
+      "detail": "exit=4294967283",
+      "evidence": {}
+    },
+    {
+      "name": "packaged_smoke_audioEditor",
+      "status": "pass",
+      "detail": "exit=0",
+      "evidence": {
+        "stderr_tail": ""
+      }
+    },
+    {
+      "name": "packaged_smoke_autoConvert",
+      "status": "pass",
+      "detail": "exit=0",
+      "evidence": {
+        "stderr_tail": ""
+      }
+    },
+    {
+      "name": "packaged_smoke_settings",
+      "status": "pass",
+      "detail": "exit=0",
+      "evidence": {
+        "stderr_tail": "2026-07-28 13:35:10,185 [INFO] ��ʼɨ�軺��...\n2026-07-28 13:35:10,197 [INFO] ����ɨ����ɣ��� 0 ���ļ���0 B�������� 0 ���ļ���0 B\n"
+      }
+    },
+    {
+      "name": "after_archive_hash",
+      "status": "pass",
+      "detail": "649E38524AF2F3DCE33FCBC43AC29B7111623D033F3537DE55EF5CD45994E926",
+      "evidence": {
+        "expected": "649E38524AF2F3DCE33FCBC43AC29B7111623D033F3537DE55EF5CD45994E926"
+      }
+    },
+    {
+      "name": "after_formal_ffmpeg_hash",
+      "status": "pass",
+      "detail": "09948D4CDD0650DA6FF5A87577469F2A218DC2615AE379F8F734D24C49DE0F73",
+      "evidence": {
+        "expected": "09948D4CDD0650DA6FF5A87577469F2A218DC2615AE379F8F734D24C49DE0F73"
+      }
+    },
+    {
+      "name": "after_formal_ffprobe_hash",
+      "status": "pass",
+      "detail": "A6618E99BB58869DED3C6F37B53AA1A8D701C3591DBB7B5B317D47369C112BE2",
+      "evidence": {
+        "expected": "A6618E99BB58869DED3C6F37B53AA1A8D701C3591DBB7B5B317D47369C112BE2"
+      }
+    },
+    {
+      "name": "formal_boundaries_unchanged",
+      "status": "pass",
+      "detail": "archive and formal tools unchanged",
+      "evidence": {}
+    }
+  ],
+  "formal_hashes_before": {
+    "archive": "649E38524AF2F3DCE33FCBC43AC29B7111623D033F3537DE55EF5CD45994E926",
+    "formal_ffmpeg": "09948D4CDD0650DA6FF5A87577469F2A218DC2615AE379F8F734D24C49DE0F73",
+    "formal_ffprobe": "A6618E99BB58869DED3C6F37B53AA1A8D701C3591DBB7B5B317D47369C112BE2"
+  },
+  "formal_hashes_after": {
+    "archive": "649E38524AF2F3DCE33FCBC43AC29B7111623D033F3537DE55EF5CD45994E926",
+    "formal_ffmpeg": "09948D4CDD0650DA6FF5A87577469F2A218DC2615AE379F8F734D24C49DE0F73",
+    "formal_ffprobe": "A6618E99BB58869DED3C6F37B53AA1A8D701C3591DBB7B5B317D47369C112BE2"
+  },
+  "evidence_directory": "third_party/ffmpeg-build/output/b4-evidence/2026-07-28T053449Z",
+  "b5_authorized": false
+}
