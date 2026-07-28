@@ -438,7 +438,7 @@ def _make_temp_output_path(output_path: Path) -> Path | None:
     for _ in range(_TEMP_NAME_ATTEMPTS):
         token = uuid.uuid4().hex
         candidate = output_path.with_name(
-            f".{output_path.stem}.{token}.cherryq_tmp{output_path.suffix}"
+            f".{output_path.stem}.{token}.qonic_tmp{output_path.suffix}"
         )
         if not candidate.exists():
             return candidate

@@ -92,13 +92,13 @@ class EditSessionCoverTests(unittest.TestCase):
 
     def test_no_cover_and_cover_read_failure_are_distinct(self):
         session = EditSessionViewModel(CapabilityGate((COVER_READ,)))
-        session.beginCurrentFile("D:/CherryQ_Test/no-cover.flac", 1)
-        session.loadCoverResult({"ok": True, "path": "D:/CherryQ_Test/no-cover.flac", "has_cover": False})
+        session.beginCurrentFile("D:/Qonic_Test/no-cover.flac", 1)
+        session.loadCoverResult({"ok": True, "path": "D:/Qonic_Test/no-cover.flac", "has_cover": False})
         self.assertEqual("no_cover", session.coverEditState)
         self.assertFalse(session.hasOriginalCover)
         session.removeCoverDraft()
         self.assertFalse(session.coverDirty)
-        session.loadCoverResult({"ok": False, "path": "D:/CherryQ_Test/no-cover.flac", "error": "damaged"})
+        session.loadCoverResult({"ok": False, "path": "D:/Qonic_Test/no-cover.flac", "error": "damaged"})
         self.assertEqual("error", session.coverEditState)
         self.assertEqual("damaged", session.coverValidationError)
 

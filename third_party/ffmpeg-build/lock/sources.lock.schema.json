@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qonic.example/schemas/ffmpeg-sources-lock-v1.json",
+  "type": "object",
+  "required": ["schema_version", "sources"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "name", "purpose", "upstream_repository", "version", "filename",
+          "url", "sha256", "license", "license_files", "build_system",
+          "configure_options", "patches", "static_linked",
+          "required_by_feature", "source_available"
+        ],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "purpose": {"type": "string", "minLength": 1},
+          "upstream_repository": {"type": "string", "format": "uri"},
+          "version": {"type": "string", "minLength": 1},
+          "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+          "filename": {"type": "string", "minLength": 1},
+          "url": {"type": "string", "format": "uri"},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "license": {"type": "string", "not": {"const": "UNKNOWN"}},
+          "license_files": {"type": "array", "minItems": 1},
+          "build_system": {"type": "string", "minLength": 1},
+          "configure_options": {},
+          "patches": {"type": "array"},
+          "static_linked": {"const": true},
+          "required_by_feature": {"type": "array", "minItems": 1},
+          "source_available": {"const": true}
+        }
+      }
+    }
+  }
+}

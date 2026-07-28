@@ -70,7 +70,7 @@ class SettingsStorageViewModelTests(unittest.TestCase):
         self.config = dict(DEFAULT_CONFIG)
 
     def test_cleanup_plan_uses_scanned_categories_without_clearing(self):
-        gate = CapabilityGate.from_environment({"CHERRYQ_QML_USER_TEST": "1"})
+        gate = CapabilityGate.from_environment({"QONIC_QML_USER_TEST": "1"})
         scan = {
             "logs": {
                 "total_size": 3,

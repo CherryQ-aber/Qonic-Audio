@@ -331,7 +331,7 @@ Item {{
             self._dispose_title_bar(view, container, controller)
 
     def test_window_controls_and_icon_remain_visible_in_both_themes(self):
-        for theme_mode in ("dark", "light"):
+        for theme_mode in ("dark", "light", "black", "purple"):
             with self.subTest(theme=theme_mode):
                 view, _component, container, controller = self._create_title_bar(
                     1280,

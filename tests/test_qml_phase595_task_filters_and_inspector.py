@@ -510,7 +510,11 @@ Item {
             main_source,
         )
         self.assertIn(
-            "file_session_view_model.setCurrentFile(path, \"audio_editor\")",
+            'open_source_in_editor(path, "audio_editor")',
+            main_source,
+        )
+        self.assertIn(
+            "result = file_session_view_model.setCurrentFile(path, source)",
             main_source,
         )
         self.assertIn("property var taskQueueBridge:", shell_qml)

@@ -13,15 +13,19 @@ class QmlLightThemeCoverageTests(unittest.TestCase):
         source = self._source("ui_next/qml/pages/SettingsPage.qml")
         self.assertIn('"value": "dark"', source)
         self.assertIn('"value": "light"', source)
+        self.assertIn('"value": "black"', source)
+        self.assertIn('"value": "purple"', source)
         self.assertIn("onFormatSelected: theme.setMode(value)", source)
         self.assertIn("仅本次运行生效", source)
         self.assertNotIn('updatePendingValue("theme_mode"', source)
         self.assertNotIn("save_config", source)
 
-    def test_optional_environment_theme_input_is_limited_to_dark_or_light(self):
+    def test_optional_environment_theme_input_is_limited_to_supported_palettes(self):
         source = self._source("main_qml.py")
-        self.assertIn('os.environ.get("CHERRYQ_QML_THEME", "dark")', source)
-        self.assertIn('{"dark", "light"}', source)
+        self.assertIn('"QONIC_QML_THEME"', source)
+        self.assertIn('"CHERRYQ_QML_THEME"', source)
+        self.assertIn('{"dark", "light", "black", "purple"}', source)
+        self.assertIn("requested_theme not in supported_themes", source)
         self.assertIn('setContextProperty("qmlThemeMode", qml_theme_mode)', source)
 
     def test_light_critical_controls_use_shared_theme_components(self):

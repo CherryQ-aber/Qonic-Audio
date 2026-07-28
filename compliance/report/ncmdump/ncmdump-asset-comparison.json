@@ -1,0 +1,27 @@
+{
+  "asset_file": "ncmdump-1.5.1-windows-amd64.zip",
+  "asset_members": [
+    {
+      "path": "ncmdump.exe",
+      "sha256": "A1F6F6CE87500B7B1F2A89DBF85B13E81D327EEA4641DAF8AFE0AB840F2C518C",
+      "size": 850432
+    }
+  ],
+  "asset_sha256": "BB849221C06B8FDBFF42AEFB86BAEA9C07256568658D80F4BE72A39A2A1632DC",
+  "asset_size": 406438,
+  "byte_identical_to_upstream": true,
+  "candidates": [
+    {
+      "asset_member": "ncmdump.exe",
+      "byte_identical": true,
+      "machine": "x86_64",
+      "sha256": "A1F6F6CE87500B7B1F2A89DBF85B13E81D327EEA4641DAF8AFE0AB840F2C518C",
+      "size": 850432
+    }
+  ],
+  "local_file": "ncmdump.exe",
+  "local_machine": "x86_64",
+  "local_sha256": "A1F6F6CE87500B7B1F2A89DBF85B13E81D327EEA4641DAF8AFE0AB840F2C518C",
+  "local_size": 850432,
+  "status": "BYTE_IDENTICAL"
+}

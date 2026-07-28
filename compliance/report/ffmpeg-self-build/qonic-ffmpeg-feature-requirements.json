@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "project": "Qonic Audio",
+  "release_structure": "PyInstaller onedir",
+  "runtime_paths": {
+    "ffmpeg": "Tools/ffmpeg/bin/ffmpeg.exe",
+    "ffprobe": "Tools/ffmpeg/bin/ffprobe.exe"
+  },
+  "required_inputs": [
+    "mp3",
+    "flac",
+    "wav",
+    "m4a",
+    "aac",
+    "ogg",
+    "opus",
+    "ape",
+    "aiff",
+    "alac",
+    "wma"
+  ],
+  "required_outputs": [
+    "mp3",
+    "flac",
+    "wav",
+    "aac",
+    "m4a",
+    "ogg",
+    "opus"
+  ],
+  "required_external_libraries": [
+    "libmp3lame",
+    "libogg",
+    "libvorbis",
+    "libopus",
+    "librubberband",
+    "zlib"
+  ],
+  "required_filters": [
+    "aresample",
+    "asetrate",
+    "atempo",
+    "rubberband",
+    "sine"
+  ],
+  "required_protocols": [
+    "file",
+    "pipe"
+  ],
+  "required_behaviors": [
+    "duration-preserving pitch shift from -12 to +12 semitones",
+    "metadata and chapter mapping",
+    "optional attached-cover and auxiliary stream copy",
+    "raw signed 16-bit little-endian mono waveform extraction",
+    "ffprobe JSON duration channel sample-rate size and format probing",
+    "Unicode Windows paths and hidden child process operation"
+  ],
+  "feature_classification": [
+    {"feature": "automatic conversion", "status": "REQUIRED"},
+    {"feature": "single-file conversion", "status": "REQUIRED"},
+    {"feature": "batch queue and cancellation", "status": "REQUIRED"},
+    {"feature": "ffprobe JSON metadata probing", "status": "REQUIRED"},
+    {"feature": "positive and negative pitch preview/export", "status": "REQUIRED"},
+    {"feature": "sample-rate and channel conversion", "status": "REQUIRED"},
+    {"feature": "metadata and chapter mapping", "status": "REQUIRED"},
+    {"feature": "attached cover stream copy", "status": "NEEDS_REAL_MEDIA_TEST"},
+    {"feature": "embedded lyrics survival through conversion", "status": "NEEDS_REAL_MEDIA_TEST"},
+    {"feature": "concat demuxer/filter", "status": "UNUSED"},
+    {"feature": "network input", "status": "UNUSED"},
+    {"feature": "video encoding", "status": "UNUSED"},
+    {"feature": "hardware acceleration", "status": "UNUSED"},
+    {"feature": "volume/loudness normalization", "status": "OPTIONAL"},
+    {"feature": "long Windows path behavior in packaged app", "status": "NEEDS_REAL_MEDIA_TEST"}
+  ],
+  "excluded_scope": [
+    "network protocols",
+    "video encoders",
+    "hardware acceleration",
+    "subtitle rendering",
+    "optical media and broadcast inputs",
+    "nonfree components"
+  ]
+}

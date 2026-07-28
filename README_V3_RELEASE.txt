@@ -1,4 +1,4 @@
-CherryQ Audio Converter v5.0 Internal Test
+Qonic Audio v5.0 Internal Test
 ============================
 
 本文件仅作为历史兼容保留。

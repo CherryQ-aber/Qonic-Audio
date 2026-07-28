@@ -142,7 +142,7 @@ Item {
         self.assertIn("selectByMouse: true", self.drawer_source)
         self.assertIn("textFormat: TextEdit.PlainText", self.drawer_source)
         self.assertNotIn("positionViewAtEnd", self.drawer_source)
-        self.assertIn("_cherryq_qml_log_handler", self.log_model_source)
+        self.assertIn("_qonic_qml_log_handler", self.log_model_source)
         self.assertIn("return handler", self.log_model_source)
 
     def test_runtime_layout_uses_bottom_overlay_on_narrow_windows(self):

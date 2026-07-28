@@ -3,7 +3,7 @@
 ## 1. 文档状态
 
 - 日期：2026-07-19
-- 项目：CherryQ Audio Converter v5.0 Internal Test
+- 项目：Qonic Audio v5.0 Internal Test
 - 阶段：Phase 5.9.5-E 自动转码筛选、播放动作与任务检查器
 - 状态：Phase 5.9.5-A～F2 已完成工程实现、自动化回归和提交收尾，当前未推送；Phase F/F2 的 Windows 真实 DPI 与真实媒体鼠标操作仍保留为最终人工门禁
 - 当前阶段：Phase E 已提交为 `cdd1d5e`，Phase F/F2 已提交为 `f4445d7`；顶部工作区与全局工具语义优化已提交为 `b22b1e5`
@@ -193,12 +193,12 @@ failed
 ```text
 --qml-smoke-test
 → --preview
-→ CHERRYQ_QML_USER_TEST=1
-→ CHERRYQ_QML_CAPS
+→ QONIC_QML_USER_TEST=1
+→ QONIC_QML_CAPS
 → 默认用户能力
 ```
 
-- `CHERRYQ_QML_LIVE=1` 单独存在时仍不授予能力；
+- `QONIC_QML_LIVE=1` 单独存在时仍不授予能力；
 - 主题选择独立于 capability，不得成为能力旁路；
 - `LEGACY_SAFE` 只约束 Legacy 启动验证，不参与 QML 能力计算；
 - Preview/smoke 继续禁止真实媒体读取、设备枚举、播放和写入。

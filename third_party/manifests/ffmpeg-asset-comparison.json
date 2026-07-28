@@ -1,0 +1,40 @@
+{
+  "asset_file": "ffmpeg-8.1.1-full_build.7z",
+  "asset_identity_verified": true,
+  "asset_sha256": "5DF9759304B5714CC99FF46AF8A73D83217A51726524516FFB25501E754A5873",
+  "asset_size": 162766175,
+  "binary_identity_verified": true,
+  "expected_asset_sha256": "5DF9759304B5714CC99FF46AF8A73D83217A51726524516FFB25501E754A5873",
+  "ffmpeg_source": {
+    "archive_url": "https://codeload.github.com/FFmpeg/FFmpeg/tar.gz/239f2c733de417201d7ad3b3b8b0d9b63285b2b1",
+    "commit": "239f2c733de417201d7ad3b3b8b0d9b63285b2b1",
+    "commit_date": "2026-05-03T22:07:35Z",
+    "commit_page": "https://github.com/FFmpeg/FFmpeg/commit/239f2c733de417201d7ad3b3b8b0d9b63285b2b1",
+    "tree_sha": "493659fb069b94913926e4b664ef50655b424cfd"
+  },
+  "provider": "gyan.dev",
+  "provider_build_scripts_present": false,
+  "provider_release_commit": "d52813a57578e84b89b9a74926dbd8187b2c97c7",
+  "provider_release_tag": "8.1.1",
+  "status": "BYTE_IDENTICAL",
+  "tools": [
+    {
+      "asset_member": "ffmpeg-8.1.1-full_build/bin/ffmpeg.exe",
+      "asset_member_sha256": "09948D4CDD0650DA6FF5A87577469F2A218DC2615AE379F8F734D24C49DE0F73",
+      "asset_member_size": 227398656,
+      "byte_identical": true,
+      "local_sha256": "09948D4CDD0650DA6FF5A87577469F2A218DC2615AE379F8F734D24C49DE0F73",
+      "local_size": 227398656,
+      "name": "ffmpeg.exe"
+    },
+    {
+      "asset_member": "ffmpeg-8.1.1-full_build/bin/ffprobe.exe",
+      "asset_member_sha256": "A6618E99BB58869DED3C6F37B53AA1A8D701C3591DBB7B5B317D47369C112BE2",
+      "asset_member_size": 227193344,
+      "byte_identical": true,
+      "local_sha256": "A6618E99BB58869DED3C6F37B53AA1A8D701C3591DBB7B5B317D47369C112BE2",
+      "local_size": 227193344,
+      "name": "ffprobe.exe"
+    }
+  ]
+}

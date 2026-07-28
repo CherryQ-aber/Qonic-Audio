@@ -190,7 +190,7 @@ def _make_task_temp_output_path(output_path: str) -> str:
     final_path = Path(output_path)
     for _ in range(8):
         candidate = final_path.with_name(
-            f".{final_path.stem}.{uuid.uuid4().hex}.cherryq_tmp{final_path.suffix}"
+            f".{final_path.stem}.{uuid.uuid4().hex}.qonic_tmp{final_path.suffix}"
         )
         if not candidate.exists():
             return str(candidate)
@@ -206,7 +206,7 @@ def _publish_task_temp_output(temp_path: str, output_path: str) -> dict[str, obj
 
 def _cleanup_owned_task_temp_output(temp_path: str) -> None:
     candidate = Path(str(temp_path or ""))
-    if ".cherryq_tmp" not in candidate.name or not candidate.is_file():
+    if ".qonic_tmp" not in candidate.name or not candidate.is_file():
         return
     try:
         identity = (candidate.stat().st_dev, candidate.stat().st_ino)

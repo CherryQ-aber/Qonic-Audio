@@ -1,0 +1,86 @@
+{
+  "artifact_divergence": false,
+  "audited_archive": {
+    "path": "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test.7z",
+    "sha256": "649E38524AF2F3DCE33FCBC43AC29B7111623D033F3537DE55EF5CD45994E926",
+    "size": 238640389
+  },
+  "audited_distribution": "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test.7z",
+  "audited_extracted_tools": {
+    "ffmpeg": true,
+    "ffplay": false,
+    "ffprobe": true,
+    "ncmdump": true
+  },
+  "authority_validation": {
+    "archive_matches_owner_hash": true,
+    "audited_archive_is_authoritative": true,
+    "audited_expanded_is_authoritative": true,
+    "authority_file": "Release/External_Test/2026-07-24_b4edd4d/RELEASE_AUTHORITY.json",
+    "authority_file_count": 1,
+    "non_authoritative_marker_present": true,
+    "passed": true
+  },
+  "divergence_basis": {
+    "distinct_sha256_count": 1,
+    "distinct_tool_signature_count": 1,
+    "same_name_qonic_archive_count": 1
+  },
+  "release_archives": [
+    {
+      "contains_ffmpeg": true,
+      "contains_ffplay": false,
+      "contains_ffprobe": false,
+      "contains_ncmdump": true,
+      "file_count": 243,
+      "name": "CherryQ_Audio_Converter_v4.0.7z",
+      "path": "Release/CherryQ_Audio_Converter_v4.0.7z",
+      "release_status": "UNCLASSIFIED",
+      "sha256": "2135E5C9F49C08C043DF046011AE70D36BD7E85980B599EBB20E9767E709D83E",
+      "size": 93569478
+    },
+    {
+      "contains_ffmpeg": true,
+      "contains_ffplay": false,
+      "contains_ffprobe": true,
+      "contains_ncmdump": true,
+      "file_count": 3232,
+      "name": "Qonic_Audio_v5.0_internal_test.7z",
+      "path": "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test.7z",
+      "release_status": "AUTHORITATIVE",
+      "sha256": "649E38524AF2F3DCE33FCBC43AC29B7111623D033F3537DE55EF5CD45994E926",
+      "size": 238640389
+    },
+    {
+      "contains_ffmpeg": true,
+      "contains_ffplay": false,
+      "contains_ffprobe": false,
+      "contains_ncmdump": true,
+      "file_count": 3230,
+      "name": "Qonic_Audio_v5.0_internal_test.7z",
+      "path": "Release/Non_Authoritative/2026-07-24_pre_freeze/Qonic_Audio_v5.0_internal_test.7z",
+      "release_status": "NOT_FOR_RELEASE",
+      "sha256": "42BA937ED98E652896BBE069FFBB4EEB569C516016CFD9E7FD9C568E8B318E67",
+      "size": 182180990
+    }
+  ],
+  "release_authority": {
+    "archive": "Qonic_Audio_v5.0_internal_test.7z",
+    "archive_sha256": "649E38524AF2F3DCE33FCBC43AC29B7111623D033F3537DE55EF5CD45994E926",
+    "archive_size": 238640389,
+    "authority_status": "AUTHORITATIVE_RELEASE_BASELINE",
+    "expanded_directory": "Qonic_Audio_v5.0_internal_test",
+    "expanded_file_count": 3006,
+    "expanded_total_bytes": 943228703,
+    "frozen_by_owner_on": "2026-07-24",
+    "product_description": "Qonic Audio Converter & Editor",
+    "product_name": "Qonic Audio",
+    "release_structure": "onedir",
+    "rules": [
+      "All manifests, hashes, notices, source materials, and regression evidence for this compliance cycle must use this archive and its corresponding expanded directory.",
+      "Other same-version artifacts are not release candidates.",
+      "The frozen archive and bundled third-party binaries must not be replaced without renewed owner approval."
+    ],
+    "version": "5.0 Internal Test"
+  }
+}

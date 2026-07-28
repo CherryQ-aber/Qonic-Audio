@@ -77,14 +77,14 @@ class EditSessionMetadataTests(unittest.TestCase):
         session = EditSessionViewModel(CapabilityGate((METADATA_READ,)))
         metadata = MetadataViewModel(CapabilityGate((METADATA_READ,)))
         metadata.metadataReadApplied.connect(session.loadMetadataResult)
-        result = self._metadata("D:/CherryQ_Test/source.flac")
+        result = self._metadata("D:/Qonic_Test/source.flac")
         metadata.applySessionReadResult(result)
         self.assertEqual(result["path"], session.sourcePath)
         self.assertEqual("Original title", session.draftMetadata["title"])
         session.updateField("title", "Draft")
-        session.beginCurrentFile("D:/CherryQ_Test/new.flac", 2)
+        session.beginCurrentFile("D:/Qonic_Test/new.flac", 2)
         self.assertTrue(session.hasSession)
-        self.assertEqual("D:/CherryQ_Test/new.flac", session.sourcePath)
+        self.assertEqual("D:/Qonic_Test/new.flac", session.sourcePath)
         self.assertEqual(2, session.sessionGeneration)
         self.assertEqual({}, session.draftMetadata)
         self.assertFalse(session.dirty)
@@ -105,7 +105,7 @@ class EditSessionMetadataTests(unittest.TestCase):
                 self.assertEqual("capability_denied", session.lastExportResult["error_code"])
                 copy.assert_not_called()
                 self.assertFalse(output.exists())
-                self.assertFalse(list(root.glob(".*.cherryq_edit_*.tmp.flac")))
+                self.assertFalse(list(root.glob(".*.qonic_edit_*.tmp.flac")))
 
     def test_authorized_export_preserves_source_and_writes_complete_draft(self):
         with tempfile.TemporaryDirectory() as temp_dir:

@@ -23,7 +23,7 @@
 - 单任务串行批量转换、NCM 解码、阶段状态、取消、当前后停止、重试、移除、终态清理和输出定位。
 - watcher 显式启动/停止、稳定文件自动入队、输出/临时目录排除；不会启动时静默运行。
 - 设置草稿与显式确认保存；配置使用临时文件、单个备份和原子替换。
-- `CHERRYQ_QML_USER_TEST=1` 固定人工验收能力集；它不是最终产品模式。
+- `QONIC_QML_USER_TEST=1` 固定人工验收能力集；它不是最终产品模式。
 
 ## 自动化与启动验证
 
@@ -43,7 +43,7 @@
 
 - 默认 Preview Mode 仍无真实能力。
 - User Trial Mode 不能启用 `overwrite_file`；源文件不会自动修改或删除。
-- `CHERRYQ_QML_LIVE=1` 不能绕过 CapabilityGate。
+- `QONIC_QML_LIVE=1` 不能绕过 CapabilityGate。
 - 正式输出仍以临时文件和 no-clobber 发布，不覆盖已有目标。
 - watcher、扫描和转换不会在启动时自动开始。
 - Metadata、Lyrics、Cover 草稿不会自动写入；Pitch Shift 不会自动替换 FileSession。
@@ -83,7 +83,7 @@
 ## 临时文件、缓存与 Git
 
 - 本轮完整回归未启用 pytest cache provider；既有 `.pytest_cache/` 未在本轮更新。
-- 回归产生了受 Git 忽略的 `Temp/Editor/` 工作区、备份和试听缓存文件；失败单测还保留一个系统临时目录 `%LOCALAPPDATA%\Temp\tmp19jw9_cc`，未在本轮删除。
+- 回归产生了受 Git 忽略的 `Temp/Editor/` 工作区、备份和试听缓存文件；失败单测曾保留一个 `%LOCALAPPDATA%\Temp\...` 系统临时目录，未在该轮删除。
 - 未发现残留 Python、FFmpeg、ncmdump 或 watcher 进程。
 - 工作区存在大量历史阶段的已暂存、未暂存和未跟踪内容。本次只暂存结项文档及必要项目记忆更新；不创建 commit。
 

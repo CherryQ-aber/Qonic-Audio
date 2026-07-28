@@ -1,0 +1,80 @@
+{
+  "evidence_observed_at": "2026-07-24",
+  "provider": "gyan.dev",
+  "provider_repository": "https://github.com/GyanD/codexffmpeg",
+  "provider_release_page": "https://github.com/GyanD/codexffmpeg/releases/tag/8.1.1",
+  "provider_release_api": "https://api.github.com/repos/GyanD/codexffmpeg/releases/tags/8.1.1",
+  "provider_release_tag": "8.1.1",
+  "provider_release_commit": "d52813a57578e84b89b9a74926dbd8187b2c97c7",
+  "provider_release_published_at": "2026-05-04T11:10:06Z",
+  "asset": {
+    "local_path": "third_party/upstream-assets/ffmpeg/ffmpeg-8.1.1-full_build.7z",
+    "name": "ffmpeg-8.1.1-full_build.7z",
+    "size": 162766175,
+    "sha256": "5DF9759304B5714CC99FF46AF8A73D83217A51726524516FFB25501E754A5873",
+    "url": "https://github.com/GyanD/codexffmpeg/releases/download/8.1.1/ffmpeg-8.1.1-full_build.7z"
+  },
+  "ffmpeg_source": {
+    "commit": "239f2c733de417201d7ad3b3b8b0d9b63285b2b1",
+    "commit_page": "https://github.com/FFmpeg/FFmpeg/commit/239f2c733de417201d7ad3b3b8b0d9b63285b2b1",
+    "commit_date": "2026-05-03T22:07:35Z",
+    "tree_sha": "493659fb069b94913926e4b664ef50655b424cfd",
+    "archive_url": "https://codeload.github.com/FFmpeg/FFmpeg/tar.gz/239f2c733de417201d7ad3b3b8b0d9b63285b2b1",
+    "archive_name": "ffmpeg-239f2c733de417201d7ad3b3b8b0d9b63285b2b1.tar.gz",
+    "archive_size": 16879390,
+    "archive_sha256": "EC0AA20FB9F6FD3692FFC04DC12FFA43CFFFC4A479E388CCD7910EC6CFE188A2"
+  },
+  "provider_tag_tree": [
+    ".github/FUNDING.yml",
+    "README.md"
+  ],
+  "provider_public_statements": {
+    "build_environment": {
+      "statement": "MSYS2 / mingw-64 environment with gcc + GNU toolchain",
+      "url": "https://github.com/GyanD/codexffmpeg/issues/91#issuecomment-1474806731"
+    },
+    "dependency_versioning": {
+      "statement": "Most dependencies normally used git HEAD at compilation time, with some versions clamped for API/ABI compatibility.",
+      "url": "https://github.com/GyanD/codexffmpeg/issues/16#issuecomment-793356401"
+    },
+    "script_guidance": {
+      "classification": "REPRODUCTION_CANDIDATE_ONLY",
+      "statement": "When asked for build scripts, the provider pointed users to media-autobuild_suite; this does not identify the exact scripts or commit used for the 8.1.1 asset.",
+      "url": "https://github.com/GyanD/codexffmpeg/issues/25#issuecomment-896110133"
+    }
+  },
+  "provider_evidence_snapshots": [
+    {
+      "local_path": "third_party/source-information/ffmpeg-provider/gyan-8.1.1-release-api.json",
+      "sha256": "F2B770E1456ADFE20D7D124102294555D7A6DCC8B2BE43326229053CF7AE9A8B",
+      "source_url": "https://api.github.com/repos/GyanD/codexffmpeg/releases/tags/8.1.1"
+    },
+    {
+      "local_path": "third_party/source-information/ffmpeg-provider/gyan-codexffmpeg-8.1.1.tar.gz",
+      "sha256": "C71D808292217ADFA502AB2D1F15DC439EF0F76B884878B6B2B1A36B4D26CAED",
+      "source_url": "https://codeload.github.com/GyanD/codexffmpeg/tar.gz/refs/tags/8.1.1"
+    },
+    {
+      "local_path": "third_party/source-information/ffmpeg-provider/gyan-builds-page-2026-07-26.html",
+      "sha256": "8F323ECB20FF8E55205DCD73C68CD2E249ED58C8F141BE0E7DC3B011A9A433CB",
+      "source_url": "https://www.gyan.dev/ffmpeg/builds/"
+    },
+    {
+      "local_path": "third_party/source-information/ffmpeg-provider/gyan-issue-16-comments.json",
+      "sha256": "00A8843F640EAE74406408785C2D3D4A5C8CE7648D7DAB2CEC3C7B1001690D6A",
+      "source_url": "https://api.github.com/repos/GyanD/codexffmpeg/issues/16/comments"
+    },
+    {
+      "local_path": "third_party/source-information/ffmpeg-provider/gyan-issue-25-comments.json",
+      "sha256": "4F2E7A676858B3EB3D1D2754E7CF37E8BB28C4AC64CDD1033E180A3942A88345",
+      "source_url": "https://api.github.com/repos/GyanD/codexffmpeg/issues/25/comments"
+    },
+    {
+      "local_path": "third_party/source-information/ffmpeg-provider/gyan-issue-91-comments.json",
+      "sha256": "E122BCC3DE7AA7F1EBC45B7418FDC0ABF403397541BC17AFD31A1C4107C63E6F",
+      "source_url": "https://api.github.com/repos/GyanD/codexffmpeg/issues/91/comments"
+    }
+  ],
+  "provider_build_scripts_present": false,
+  "provider_build_scripts_note": "The exact Gyan release tag contains only support repository metadata. The provider publicly recommends media-autobuild_suite for reproduction requests, but has not identified the exact script revision, local modifications, patch set, or dependency lock manifest used for the 8.1.1 asset."
+}

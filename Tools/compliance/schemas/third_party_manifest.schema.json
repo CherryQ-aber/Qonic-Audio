@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CherryQ-aber/Qonic-Audio/schemas/third_party_manifest.schema.json",
+  "title": "Qonic Audio Third-Party Manifest",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema_version",
+    "product",
+    "generated_at",
+    "identity_algorithm",
+    "components",
+    "findings",
+    "blockers",
+    "warnings",
+    "manual_decisions_required"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "product": {
+      "type": "object",
+      "required": [
+        "name",
+        "version",
+        "repository_license"
+      ],
+      "properties": {
+        "name": {
+          "const": "Qonic Audio"
+        },
+        "description": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "package_basename": {
+          "type": "string"
+        },
+        "repository_license": {
+          "type": "string"
+        }
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "identity_algorithm": {
+      "const": "SHA-256"
+    },
+    "components": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "category",
+          "bundled_files",
+          "binary_sha256",
+          "detected_version",
+          "upstream_repository",
+          "upstream_release",
+          "upstream_commit",
+          "upstream_asset",
+          "upstream_asset_sha256",
+          "byte_identical_to_upstream",
+          "build_configuration",
+          "build_provider",
+          "source_package",
+          "source_sha256",
+          "declared_license",
+          "selected_license",
+          "license_status",
+          "local_modifications",
+          "usage_mode",
+          "dynamically_linked",
+          "replaceable",
+          "evidence_files",
+          "unresolved_questions"
+        ]
+      }
+    },
+    "findings": {
+      "type": "array"
+    },
+    "blockers": {
+      "type": "array"
+    },
+    "warnings": {
+      "type": "array"
+    },
+    "manual_decisions_required": {
+      "type": "array"
+    }
+  }
+}

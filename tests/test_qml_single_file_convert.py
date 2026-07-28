@@ -45,7 +45,7 @@ class SingleFileConvertServiceTests(unittest.TestCase):
                 self.assertEqual(command[0], str(ffmpeg))
                 self.assertTrue(Path(command[command.index("-i") + 1]).samefile(source))
                 temp_output = Path(command[-1])
-                self.assertIn(".cherryq_tmp", temp_output.name)
+                self.assertIn(".qonic_tmp", temp_output.name)
                 self.assertEqual(temp_output.suffix, ".mp3")
                 temp_output.write_bytes(b"converted-audio")
                 return subprocess.CompletedProcess(
@@ -73,7 +73,7 @@ class SingleFileConvertServiceTests(unittest.TestCase):
             self.assertEqual(result["ffmpeg_returncode"], 0)
             self.assertEqual(result["finalization_strategy"], "hardlink")
             self.assertTrue(result["temp_cleanup_ok"])
-            self.assertEqual(len(list(root.glob("*.cherryq_tmp.*"))), 0)
+            self.assertEqual(len(list(root.glob("*.qonic_tmp.*"))), 0)
             run.assert_called_once()
             self.assertEqual(len(commands), 1)
 
@@ -136,7 +136,7 @@ class SingleFileConvertServiceTests(unittest.TestCase):
             self.assertFalse(output.exists())
             self.assertEqual(file_sha(source), before_source)
             self.assertEqual(result["error_code"], "FFMPEG_FAILED")
-            self.assertEqual(len(list(root.glob("*.cherryq_tmp.*"))), 0)
+            self.assertEqual(len(list(root.glob("*.qonic_tmp.*"))), 0)
             self.assertEqual(result["ffmpeg_returncode"], 1)
 
     def test_ncm_is_rejected_before_ffmpeg(self):
@@ -215,7 +215,7 @@ class SingleFileConvertServiceTests(unittest.TestCase):
             self.assertEqual(result["error_code"], "OUTPUT_CONFLICT")
             self.assertTrue(result["output_conflict"])
             self.assertEqual(output.read_bytes(), b"external-output")
-            self.assertEqual(len(list(root.glob("*.cherryq_tmp.*"))), 0)
+            self.assertEqual(len(list(root.glob("*.qonic_tmp.*"))), 0)
 
     def test_exclusive_copy_fallback_is_no_clobber_when_hardlinks_unavailable(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -247,7 +247,7 @@ class SingleFileConvertServiceTests(unittest.TestCase):
             self.assertTrue(result["ok"])
             self.assertEqual(result["finalization_strategy"], "exclusive_copy")
             self.assertEqual(output.read_bytes(), b"converted-audio")
-            self.assertEqual(len(list(root.glob("*.cherryq_tmp.*"))), 0)
+            self.assertEqual(len(list(root.glob("*.qonic_tmp.*"))), 0)
 
     def test_exclusive_copy_fallback_rejects_external_output_race(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -284,7 +284,7 @@ class SingleFileConvertServiceTests(unittest.TestCase):
             self.assertEqual(result["error_code"], "OUTPUT_CONFLICT")
             self.assertEqual(result["finalization_strategy"], "exclusive_copy")
             self.assertEqual(output.read_bytes(), b"external-output")
-            self.assertEqual(len(list(root.glob("*.cherryq_tmp.*"))), 0)
+            self.assertEqual(len(list(root.glob("*.qonic_tmp.*"))), 0)
 
     def test_empty_temp_output_is_rejected_and_cleaned(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -310,7 +310,7 @@ class SingleFileConvertServiceTests(unittest.TestCase):
             self.assertFalse(result["ok"])
             self.assertEqual(result["error_code"], "TEMP_OUTPUT_EMPTY")
             self.assertFalse(output.exists())
-            self.assertEqual(len(list(root.glob("*.cherryq_tmp.*"))), 0)
+            self.assertEqual(len(list(root.glob("*.qonic_tmp.*"))), 0)
 
     def test_temp_paths_are_unique_keep_audio_extension_and_do_not_touch_similar_file(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -318,7 +318,7 @@ class SingleFileConvertServiceTests(unittest.TestCase):
             output = root / "song.flac"
             first = single_file_convert._make_temp_output_path(output)
             second = single_file_convert._make_temp_output_path(output)
-            similar = root / ".song.unrelated.cherryq_tmp.flac"
+            similar = root / ".song.unrelated.qonic_tmp.flac"
             similar.write_bytes(b"do-not-delete")
             ffmpeg = root / "ffmpeg.exe"
             ffmpeg.write_bytes(b"ffmpeg")
@@ -329,7 +329,7 @@ class SingleFileConvertServiceTests(unittest.TestCase):
             self.assertIsNotNone(second)
             self.assertNotEqual(first, second)
             self.assertEqual(first.suffix, ".flac")
-            self.assertIn(".cherryq_tmp", first.name)
+            self.assertIn(".qonic_tmp", first.name)
 
             def fake_run(command, **kwargs):
                 Path(command[-1]).write_bytes(b"partial")
@@ -375,7 +375,7 @@ class SingleFileConvertServiceTests(unittest.TestCase):
             self.assertFalse(result["ok"])
             self.assertFalse(result["temp_cleanup_ok"])
             self.assertIn("临时文件清理失败", result["warning"])
-            for path in root.glob("*.cherryq_tmp.*"):
+            for path in root.glob("*.qonic_tmp.*"):
                 path.unlink()
 
     def test_same_path_case_variant_and_relative_path_are_rejected(self):

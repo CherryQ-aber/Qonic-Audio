@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "project": "Qonic Audio",
+  "commands": [
+    {
+      "id": "queue-validate",
+      "source": "converter.py",
+      "executable": "ffmpeg",
+      "template": "-v error -i INPUT -f null -",
+      "capabilities": ["decode", "null-muxer", "file", "pipe"]
+    },
+    {
+      "id": "queue-convert",
+      "source": "converter.py",
+      "executable": "ffmpeg",
+      "template": "-n -i INPUT [target args] OUTPUT",
+      "capabilities": ["audio-decode", "audio-encode", "container-mux"]
+    },
+    {
+      "id": "single-file-convert",
+      "source": "single_file_convert.py",
+      "executable": "ffmpeg",
+      "template": "-nostdin -n -i INPUT -map_metadata -1 -map_chapters -1 -vn [target args] OUTPUT",
+      "capabilities": ["metadata-map", "chapter-map", "audio-only"]
+    },
+    {
+      "id": "legacy-pitch",
+      "source": "audio_editor_backend.py",
+      "executable": "ffmpeg",
+      "template": "-i INPUT -vn -filter:a asetrate=SR*RATIO,aresample=SR,atempo=... OUTPUT",
+      "capabilities": ["asetrate", "aresample", "atempo"]
+    },
+    {
+      "id": "qml-pitch-preview",
+      "source": "ui_next/bridge/audio_processing_service.py",
+      "executable": "ffmpeg",
+      "template": "-progress pipe:1 -n -i INPUT -map 0:a:0? -map_metadata -1 -map_chapters -1 -filter:a rubberband=tempo=1:pitch=RATIO [codec] OUTPUT",
+      "capabilities": ["rubberband", "progress-protocol", "pipe"]
+    },
+    {
+      "id": "qml-pitch-export",
+      "source": "ui_next/bridge/audio_processing_service.py",
+      "executable": "ffmpeg",
+      "template": "-progress pipe:1 -n -i INPUT -map 0:a:0? -map 0:v? -map 0:s? -map 0:d? -map_metadata 0 -map_chapters 0 -filter:a rubberband=tempo=1:pitch=RATIO [codec] -c:v copy -c:s copy -c:d copy OUTPUT",
+      "capabilities": ["rubberband", "stream-copy", "cover-preservation", "metadata-map", "chapter-map"]
+    },
+    {
+      "id": "pitch-probe",
+      "source": "ui_next/bridge/audio_processing_service.py",
+      "executable": "ffprobe",
+      "template": "-v error -show_entries format=duration,size,format_name -show_entries stream=codec_type,channels,sample_rate -of json INPUT",
+      "capabilities": ["ffprobe-json", "format-probe", "stream-probe"]
+    },
+    {
+      "id": "waveform",
+      "source": "ui/waveform_widget.py",
+      "executable": "ffmpeg",
+      "template": "-hide_banner -loglevel error -i INPUT -ac 1 -ar 8000 -f s16le -",
+      "capabilities": ["audio-decode", "resample", "pcm-s16le", "pipe"]
+    },
+    {
+      "id": "regression-tone",
+      "source": "tests/test_pitch_shift_processing_service.py",
+      "executable": "ffmpeg",
+      "template": "-f lavfi -i sine=frequency=440:duration=1 -c:a pcm_s16le OUTPUT",
+      "capabilities": ["lavfi-input", "sine-source", "pcm-s16le"]
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "schema_version": 2,
+  "phase": "B3",
+  "completed_at": "2026-07-26T15:05:10+08:00",
+  "command": "third_party/ffmpeg-build/build.ps1",
+  "result": "PASS",
+  "runtime": {
+    "product": "Docker Desktop 4.83.0 (234302)",
+    "client_version": "29.6.2",
+    "server_version": "29.6.2",
+    "server_os_arch": "linux/amd64",
+    "kernel": "6.18.33.2-microsoft-standard-WSL2"
+  },
+  "builder_image": {
+    "tag": "qonic-ffmpeg-build:2026-07-26",
+    "digest": "sha256:2f0011b5e4618c8da63b2ddde3a6a25138cc014d294da5937a65dfc3314679a2",
+    "platform": "linux/amd64"
+  },
+  "sources": {
+    "all_sha256_verified": true,
+    "count": 7,
+    "ffmpeg_version": "8.1.1",
+    "ffmpeg_commit": "239f2c733de417201d7ad3b3b8b0d9b63285b2b1",
+    "ffmpeg_archive_sha256": "ec0aa20fb9f6fd3692ffc04dc12ffa43cfffc4a479e388ccd7910ec6cfe188a2"
+  },
+  "candidate": {
+    "directory": "third_party/ffmpeg-build/output/candidate",
+    "ffmpeg": {
+      "sha256": "ca2bccbf1a2a5a379ae484ad127d120cc3e394833b69767694a1e738f2d6be55",
+      "size": 6362112
+    },
+    "ffprobe": {
+      "sha256": "4ec2ac9385aacbaf927b7e8d031291059cea2e02ee6bfae0d708f78e1c528251",
+      "size": 6162944
+    },
+    "imported_dlls": [
+      "KERNEL32.dll",
+      "SHELL32.dll",
+      "bcrypt.dll",
+      "msvcrt.dll"
+    ],
+    "required_capabilities_ok": true,
+    "missing_filters": [],
+    "missing_protocols": []
+  },
+  "corresponding_source": {
+    "file": "third_party/ffmpeg-build/output/source-bundle/qonic-ffmpeg-complete-corresponding-source.tar.gz",
+    "sha256": "ecc7838b64c530852c766df55ecc6fc9432fbda924d229b4497fb6b68c377bb7",
+    "size": 32280949,
+    "entry_count": 49,
+    "cache_or_backup_entries": 0
+  },
+  "validation": {
+    "windows_functional_matrix": {
+      "passed": 21,
+      "failed": 0,
+      "includes": [
+        "MP3/FLAC/AAC/M4A/OGG/Opus encode and ffprobe JSON",
+        "Unicode input and output paths",
+        "rubberband pitch +12/-12 with duration preservation",
+        "-progress pipe:1",
+        "raw s16le file and stdout pipe"
+      ]
+    },
+    "post_full_build_raw_pipe_bytes": 32000,
+    "static_build_tests_passed": 23,
+    "combined_compliance_tests_passed": 44
+  },
+  "issues_resolved_during_build": [
+    "Python 3.11 tar extraction compatibility while retaining path and member-type guards",
+    "Opus MinGW static linkage failure caused by glibc fortify symbols",
+    "raw s16le muxer configured under the wrong internal component name",
+    "Windows PowerShell 5.1 treating successful FFmpeg stderr banners as terminating errors",
+    "Python cache and backup files entering the corresponding-source archive"
+  ],
+  "warnings": [
+    "Upstream LAME, Vorbis and FFmpeg compiler warnings were emitted; compilation and all recorded validation completed successfully."
+  ],
+  "release_boundary": {
+    "formal_ffmpeg_modified": false,
+    "formal_ffprobe_modified": false,
+    "authoritative_archive_modified": false,
+    "replacement_authorized": false
+  },
+  "next_phase": "B4 isolated onedir and real-media regression; B5 replacement proposal requires owner approval"
+}

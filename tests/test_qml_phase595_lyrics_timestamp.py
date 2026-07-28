@@ -226,16 +226,18 @@ class Phase595LyricsTimestampSourceContractTests(unittest.TestCase):
         editor = (
             PROJECT_ROOT / "ui_next/qml/components/LyricsDraftEditor.qml"
         ).read_text(encoding="utf-8")
+        current_file = (
+            PROJECT_ROOT / "ui_next/qml/components/CurrentFileBar.qml"
+        ).read_text(encoding="utf-8")
+        export_dialog = (
+            PROJECT_ROOT / "ui_next/qml/components/EditExportDialog.qml"
+        ).read_text(encoding="utf-8")
 
         for label in (
             'text: "导入 .lrc"',
-            'text: "导出"',
             'text: "撤回"',
             'text: "插入时间点"',
-            'text: "嵌入歌词"',
-            'text: "另存 .lrc 文件"',
-            'text: "覆盖 .lrc 文件"',
-            'text: "导出音频副本"',
+            'text: "恢复原始"',
             'text: "当前歌词"',
         ):
             self.assertIn(label, editor)
@@ -252,9 +254,12 @@ class Phase595LyricsTimestampSourceContractTests(unittest.TestCase):
             self.assertNotIn(removed, page)
         self.assertIn('objectName: "currentLyricsPane"', editor)
         self.assertNotIn('objectName: "originalLyricsPane"', editor)
-        self.assertIn("root.editSession.lyricsDraftStatusLabel", editor)
-        self.assertIn("root.editSession.lyricsDraftStatusLabel", page)
-        self.assertIn("root.editSession.overwriteCurrentLrc()", page)
+        self.assertNotIn('text: "导出"', editor)
+        self.assertIn('objectName: "exportEditorDraftsButton"', current_file)
+        self.assertIn('text: "导出"', current_file)
+        self.assertIn('objectName: "unifiedEditExportDialog"', export_dialog)
+        self.assertIn('text: "LRC 歌词"', export_dialog)
+        self.assertIn('"嵌入所选草稿并生成音频"', export_dialog)
 
     def test_settings_exposes_both_precision_choices_and_runtime_wiring(self):
         settings = (

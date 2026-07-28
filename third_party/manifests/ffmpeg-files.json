@@ -1,0 +1,1106 @@
+{
+  "configuration": {
+    "classification": "FFmpeg-GPL-CANDIDATE",
+    "compiler": "gcc 15.2.0 (Rev13, Built by MSYS2 project)",
+    "detected_version": "8.1.1-full_build-www.gyan.dev",
+    "flags": [
+      "--disable-autodetect",
+      "--disable-w32threads",
+      "--enable-amf",
+      "--enable-avisynth",
+      "--enable-bzlib",
+      "--enable-cairo",
+      "--enable-chromaprint",
+      "--enable-cuda-llvm",
+      "--enable-cuvid",
+      "--enable-d3d11va",
+      "--enable-d3d12va",
+      "--enable-dxva2",
+      "--enable-ffnvcodec",
+      "--enable-fontconfig",
+      "--enable-frei0r",
+      "--enable-gmp",
+      "--enable-gnutls",
+      "--enable-gpl",
+      "--enable-iconv",
+      "--enable-ladspa",
+      "--enable-lcms2",
+      "--enable-libaom",
+      "--enable-libaribb24",
+      "--enable-libaribcaption",
+      "--enable-libass",
+      "--enable-libbluray",
+      "--enable-libbs2b",
+      "--enable-libcaca",
+      "--enable-libcdio",
+      "--enable-libcodec2",
+      "--enable-libdav1d",
+      "--enable-libdavs2",
+      "--enable-libdvdnav",
+      "--enable-libdvdread",
+      "--enable-libflite",
+      "--enable-libfreetype",
+      "--enable-libfribidi",
+      "--enable-libgme",
+      "--enable-libgsm",
+      "--enable-libharfbuzz",
+      "--enable-libilbc",
+      "--enable-libjxl",
+      "--enable-liblc3",
+      "--enable-liblensfun",
+      "--enable-libmodplug",
+      "--enable-libmp3lame",
+      "--enable-libmysofa",
+      "--enable-liboapv",
+      "--enable-libopencore-amrnb",
+      "--enable-libopencore-amrwb",
+      "--enable-libopenjpeg",
+      "--enable-libopenmpt",
+      "--enable-libopus",
+      "--enable-libplacebo",
+      "--enable-libqrencode",
+      "--enable-libquirc",
+      "--enable-librav1e",
+      "--enable-librist",
+      "--enable-librubberband",
+      "--enable-libshaderc",
+      "--enable-libshine",
+      "--enable-libsnappy",
+      "--enable-libsoxr",
+      "--enable-libspeex",
+      "--enable-libsrt",
+      "--enable-libssh",
+      "--enable-libsvtav1",
+      "--enable-libsvtjpegxs",
+      "--enable-libtheora",
+      "--enable-libtwolame",
+      "--enable-libuavs3d",
+      "--enable-libvidstab",
+      "--enable-libvmaf",
+      "--enable-libvo-amrwbenc",
+      "--enable-libvorbis",
+      "--enable-libvpl",
+      "--enable-libvpx",
+      "--enable-libvvenc",
+      "--enable-libwebp",
+      "--enable-libx264",
+      "--enable-libx265",
+      "--enable-libxavs2",
+      "--enable-libxevd",
+      "--enable-libxeve",
+      "--enable-libxml2",
+      "--enable-libxvid",
+      "--enable-libzimg",
+      "--enable-libzmq",
+      "--enable-libzvbi",
+      "--enable-lzma",
+      "--enable-mediafoundation",
+      "--enable-nvdec",
+      "--enable-nvenc",
+      "--enable-openal",
+      "--enable-opencl",
+      "--enable-sdl2",
+      "--enable-static",
+      "--enable-vaapi",
+      "--enable-version3",
+      "--enable-vulkan",
+      "--enable-whisper",
+      "--enable-zlib"
+    ],
+    "tracked_flags": {
+      "--disable-debug": false,
+      "--enable-gnutls": true,
+      "--enable-gpl": true,
+      "--enable-libaom": true,
+      "--enable-libass": true,
+      "--enable-libdav1d": true,
+      "--enable-libfdk-aac": false,
+      "--enable-libmp3lame": true,
+      "--enable-libopus": true,
+      "--enable-libvmaf": true,
+      "--enable-libvorbis": true,
+      "--enable-libwebp": true,
+      "--enable-libx264": true,
+      "--enable-libx265": true,
+      "--enable-libxvid": true,
+      "--enable-nonfree": false,
+      "--enable-openssl": false,
+      "--enable-shared": false,
+      "--enable-static": true,
+      "--enable-version3": true
+    }
+  },
+  "duplicate_groups": [
+    {
+      "paths": [
+        "Release/CherryQ_Audio_Converter_v4.0/_internal/Tools/ffmpeg/bin/ffmpeg.exe",
+        "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/Tools/ffmpeg/bin/ffmpeg.exe",
+        "Release/Non_Authoritative/2026-07-24_pre_freeze/Qonic_Audio_v5.0_internal_test/_internal/Tools/ffmpeg/bin/ffmpeg.exe",
+        "Tools/ffmpeg/bin/ffmpeg.exe",
+        "build/release/dist/Qonic_Audio_v5.0_internal_test/_internal/Tools/ffmpeg/bin/ffmpeg.exe"
+      ],
+      "sha256": "09948D4CDD0650DA6FF5A87577469F2A218DC2615AE379F8F734D24C49DE0F73"
+    },
+    {
+      "paths": [
+        "Release/CherryQ_Audio_Converter_v4.0/_internal/PySide6/swscale-8.dll",
+        "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/swscale-8.dll",
+        "Release/Non_Authoritative/2026-07-24_pre_freeze/Qonic_Audio_v5.0_internal_test/_internal/PySide6/swscale-8.dll",
+        "build/release/dist/Qonic_Audio_v5.0_internal_test/_internal/PySide6/swscale-8.dll"
+      ],
+      "sha256": "2F21C52FD2EB73484B448666903C5EEE1B4948D28239CB18D93428A989ED3ECC"
+    },
+    {
+      "paths": [
+        "Release/CherryQ_Audio_Converter_v4.0/_internal/PySide6/avutil-59.dll",
+        "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avutil-59.dll",
+        "Release/Non_Authoritative/2026-07-24_pre_freeze/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avutil-59.dll",
+        "build/release/dist/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avutil-59.dll"
+      ],
+      "sha256": "615DF5BB9903887B6F56A47F17FC169CD42753B9B9DB7F162C74731C45612DF6"
+    },
+    {
+      "paths": [
+        "Release/CherryQ_Audio_Converter_v4.0/_internal/PySide6/swresample-5.dll",
+        "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/swresample-5.dll",
+        "Release/Non_Authoritative/2026-07-24_pre_freeze/Qonic_Audio_v5.0_internal_test/_internal/PySide6/swresample-5.dll",
+        "build/release/dist/Qonic_Audio_v5.0_internal_test/_internal/PySide6/swresample-5.dll"
+      ],
+      "sha256": "878E0FBF647DC8E6BECB32DC031701B19DAC8C9867192D571F0D72D02842F7ED"
+    },
+    {
+      "paths": [
+        "Release/CherryQ_Audio_Converter_v4.0/_internal/PySide6/avcodec-61.dll",
+        "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avcodec-61.dll",
+        "Release/Non_Authoritative/2026-07-24_pre_freeze/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avcodec-61.dll",
+        "build/release/dist/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avcodec-61.dll"
+      ],
+      "sha256": "A3127F36742B58827411A561489505E38A8CCBCC6A3BC2F1EE58ABFE700CED15"
+    },
+    {
+      "paths": [
+        "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/Tools/ffmpeg/bin/ffprobe.exe",
+        "Tools/ffmpeg/bin/ffprobe.exe"
+      ],
+      "sha256": "A6618E99BB58869DED3C6F37B53AA1A8D701C3591DBB7B5B317D47369C112BE2"
+    },
+    {
+      "paths": [
+        "Release/CherryQ_Audio_Converter_v4.0/_internal/PySide6/avformat-61.dll",
+        "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avformat-61.dll",
+        "Release/Non_Authoritative/2026-07-24_pre_freeze/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avformat-61.dll",
+        "build/release/dist/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avformat-61.dll"
+      ],
+      "sha256": "BBACFF3524C192EAF129DD6F838C0EEE65ABE56FE5109B9BEDE839A0823F8FA3"
+    }
+  ],
+  "failures": [],
+  "files": [
+    {
+      "actually_called": false,
+      "call_evidence": [],
+      "in_distribution": false,
+      "name": "avcodec-61.dll",
+      "path": "build/release/dist/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avcodec-61.dll",
+      "pe": {
+        "imports": [
+          "avutil-59.dll",
+          "KERNEL32.dll",
+          "ole32.dll",
+          "swresample-5.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "A3127F36742B58827411A561489505E38A8CCBCC6A3BC2F1EE58ABFE700CED15",
+      "size": 13921592
+    },
+    {
+      "actually_called": false,
+      "call_evidence": [],
+      "in_distribution": false,
+      "name": "avformat-61.dll",
+      "path": "build/release/dist/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avformat-61.dll",
+      "pe": {
+        "imports": [
+          "avcodec-61.dll",
+          "avutil-59.dll",
+          "KERNEL32.dll",
+          "Secur32.dll",
+          "WS2_32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "BBACFF3524C192EAF129DD6F838C0EEE65ABE56FE5109B9BEDE839A0823F8FA3",
+      "size": 2643256
+    },
+    {
+      "actually_called": false,
+      "call_evidence": [],
+      "in_distribution": false,
+      "name": "avutil-59.dll",
+      "path": "build/release/dist/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avutil-59.dll",
+      "pe": {
+        "imports": [
+          "bcrypt.dll",
+          "KERNEL32.dll",
+          "USER32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "615DF5BB9903887B6F56A47F17FC169CD42753B9B9DB7F162C74731C45612DF6",
+      "size": 1198392
+    },
+    {
+      "actually_called": false,
+      "call_evidence": [],
+      "in_distribution": false,
+      "name": "swresample-5.dll",
+      "path": "build/release/dist/Qonic_Audio_v5.0_internal_test/_internal/PySide6/swresample-5.dll",
+      "pe": {
+        "imports": [
+          "avutil-59.dll",
+          "KERNEL32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "878E0FBF647DC8E6BECB32DC031701B19DAC8C9867192D571F0D72D02842F7ED",
+      "size": 247096
+    },
+    {
+      "actually_called": false,
+      "call_evidence": [],
+      "in_distribution": false,
+      "name": "swscale-8.dll",
+      "path": "build/release/dist/Qonic_Audio_v5.0_internal_test/_internal/PySide6/swscale-8.dll",
+      "pe": {
+        "imports": [
+          "avutil-59.dll",
+          "KERNEL32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "2F21C52FD2EB73484B448666903C5EEE1B4948D28239CB18D93428A989ED3ECC",
+      "size": 751928
+    },
+    {
+      "actually_called": true,
+      "call_evidence": [
+        "audio_editor_backend.py",
+        "config.py",
+        "converter.py",
+        "single_file_convert.py",
+        "tests/test_pitch_shift_processing_service.py",
+        "tests/test_processed_audio_export.py",
+        "tests/test_qml_editor_export_phase584.py",
+        "tests/test_qml_phase57_workflow.py",
+        "tests/test_qml_single_file_convert.py",
+        "tests/test_release_baseline.py",
+        "ui/audio_editor.py",
+        "ui/waveform_widget.py",
+        "ui_next/bridge/audio_processing_service.py"
+      ],
+      "in_distribution": false,
+      "name": "ffmpeg.exe",
+      "path": "build/release/dist/Qonic_Audio_v5.0_internal_test/_internal/Tools/ffmpeg/bin/ffmpeg.exe",
+      "pe": {
+        "imports": [
+          "ADVAPI32.dll",
+          "api-ms-win-core-synch-l1-2-0.dll",
+          "api-ms-win-crt-conio-l1-1-0.dll",
+          "api-ms-win-crt-convert-l1-1-0.dll",
+          "api-ms-win-crt-environment-l1-1-0.dll",
+          "api-ms-win-crt-filesystem-l1-1-0.dll",
+          "api-ms-win-crt-heap-l1-1-0.dll",
+          "api-ms-win-crt-locale-l1-1-0.dll",
+          "api-ms-win-crt-math-l1-1-0.dll",
+          "api-ms-win-crt-multibyte-l1-1-0.dll",
+          "api-ms-win-crt-private-l1-1-0.dll",
+          "api-ms-win-crt-process-l1-1-0.dll",
+          "api-ms-win-crt-runtime-l1-1-0.dll",
+          "api-ms-win-crt-stdio-l1-1-0.dll",
+          "api-ms-win-crt-string-l1-1-0.dll",
+          "api-ms-win-crt-time-l1-1-0.dll",
+          "api-ms-win-crt-utility-l1-1-0.dll",
+          "AVICAP32.dll",
+          "AVRT.dll",
+          "bcrypt.dll",
+          "CFGMGR32.dll",
+          "CRYPT32.dll",
+          "d2d1.dll",
+          "DWrite.dll",
+          "GDI32.dll",
+          "IPHLPAPI.DLL",
+          "KERNEL32.dll",
+          "MSIMG32.dll",
+          "ncrypt.dll",
+          "ntdll.dll",
+          "ole32.dll",
+          "OLEAUT32.dll",
+          "SHELL32.dll",
+          "SHLWAPI.dll",
+          "USER32.dll",
+          "WINMM.dll",
+          "WS2_32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "09948D4CDD0650DA6FF5A87577469F2A218DC2615AE379F8F734D24C49DE0F73",
+      "size": 227398656
+    },
+    {
+      "actually_called": false,
+      "call_evidence": [],
+      "in_distribution": false,
+      "name": "avcodec-61.dll",
+      "path": "Release/CherryQ_Audio_Converter_v4.0/_internal/PySide6/avcodec-61.dll",
+      "pe": {
+        "imports": [
+          "avutil-59.dll",
+          "KERNEL32.dll",
+          "ole32.dll",
+          "swresample-5.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "A3127F36742B58827411A561489505E38A8CCBCC6A3BC2F1EE58ABFE700CED15",
+      "size": 13921592
+    },
+    {
+      "actually_called": false,
+      "call_evidence": [],
+      "in_distribution": false,
+      "name": "avformat-61.dll",
+      "path": "Release/CherryQ_Audio_Converter_v4.0/_internal/PySide6/avformat-61.dll",
+      "pe": {
+        "imports": [
+          "avcodec-61.dll",
+          "avutil-59.dll",
+          "KERNEL32.dll",
+          "Secur32.dll",
+          "WS2_32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "BBACFF3524C192EAF129DD6F838C0EEE65ABE56FE5109B9BEDE839A0823F8FA3",
+      "size": 2643256
+    },
+    {
+      "actually_called": false,
+      "call_evidence": [],
+      "in_distribution": false,
+      "name": "avutil-59.dll",
+      "path": "Release/CherryQ_Audio_Converter_v4.0/_internal/PySide6/avutil-59.dll",
+      "pe": {
+        "imports": [
+          "bcrypt.dll",
+          "KERNEL32.dll",
+          "USER32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "615DF5BB9903887B6F56A47F17FC169CD42753B9B9DB7F162C74731C45612DF6",
+      "size": 1198392
+    },
+    {
+      "actually_called": false,
+      "call_evidence": [],
+      "in_distribution": false,
+      "name": "swresample-5.dll",
+      "path": "Release/CherryQ_Audio_Converter_v4.0/_internal/PySide6/swresample-5.dll",
+      "pe": {
+        "imports": [
+          "avutil-59.dll",
+          "KERNEL32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "878E0FBF647DC8E6BECB32DC031701B19DAC8C9867192D571F0D72D02842F7ED",
+      "size": 247096
+    },
+    {
+      "actually_called": false,
+      "call_evidence": [],
+      "in_distribution": false,
+      "name": "swscale-8.dll",
+      "path": "Release/CherryQ_Audio_Converter_v4.0/_internal/PySide6/swscale-8.dll",
+      "pe": {
+        "imports": [
+          "avutil-59.dll",
+          "KERNEL32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "2F21C52FD2EB73484B448666903C5EEE1B4948D28239CB18D93428A989ED3ECC",
+      "size": 751928
+    },
+    {
+      "actually_called": true,
+      "call_evidence": [
+        "audio_editor_backend.py",
+        "config.py",
+        "converter.py",
+        "single_file_convert.py",
+        "tests/test_pitch_shift_processing_service.py",
+        "tests/test_processed_audio_export.py",
+        "tests/test_qml_editor_export_phase584.py",
+        "tests/test_qml_phase57_workflow.py",
+        "tests/test_qml_single_file_convert.py",
+        "tests/test_release_baseline.py",
+        "ui/audio_editor.py",
+        "ui/waveform_widget.py",
+        "ui_next/bridge/audio_processing_service.py"
+      ],
+      "in_distribution": false,
+      "name": "ffmpeg.exe",
+      "path": "Release/CherryQ_Audio_Converter_v4.0/_internal/Tools/ffmpeg/bin/ffmpeg.exe",
+      "pe": {
+        "imports": [
+          "ADVAPI32.dll",
+          "api-ms-win-core-synch-l1-2-0.dll",
+          "api-ms-win-crt-conio-l1-1-0.dll",
+          "api-ms-win-crt-convert-l1-1-0.dll",
+          "api-ms-win-crt-environment-l1-1-0.dll",
+          "api-ms-win-crt-filesystem-l1-1-0.dll",
+          "api-ms-win-crt-heap-l1-1-0.dll",
+          "api-ms-win-crt-locale-l1-1-0.dll",
+          "api-ms-win-crt-math-l1-1-0.dll",
+          "api-ms-win-crt-multibyte-l1-1-0.dll",
+          "api-ms-win-crt-private-l1-1-0.dll",
+          "api-ms-win-crt-process-l1-1-0.dll",
+          "api-ms-win-crt-runtime-l1-1-0.dll",
+          "api-ms-win-crt-stdio-l1-1-0.dll",
+          "api-ms-win-crt-string-l1-1-0.dll",
+          "api-ms-win-crt-time-l1-1-0.dll",
+          "api-ms-win-crt-utility-l1-1-0.dll",
+          "AVICAP32.dll",
+          "AVRT.dll",
+          "bcrypt.dll",
+          "CFGMGR32.dll",
+          "CRYPT32.dll",
+          "d2d1.dll",
+          "DWrite.dll",
+          "GDI32.dll",
+          "IPHLPAPI.DLL",
+          "KERNEL32.dll",
+          "MSIMG32.dll",
+          "ncrypt.dll",
+          "ntdll.dll",
+          "ole32.dll",
+          "OLEAUT32.dll",
+          "SHELL32.dll",
+          "SHLWAPI.dll",
+          "USER32.dll",
+          "WINMM.dll",
+          "WS2_32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "09948D4CDD0650DA6FF5A87577469F2A218DC2615AE379F8F734D24C49DE0F73",
+      "size": 227398656
+    },
+    {
+      "actually_called": false,
+      "call_evidence": [],
+      "in_distribution": true,
+      "name": "avcodec-61.dll",
+      "path": "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avcodec-61.dll",
+      "pe": {
+        "imports": [
+          "avutil-59.dll",
+          "KERNEL32.dll",
+          "ole32.dll",
+          "swresample-5.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": true,
+      "sha256": "A3127F36742B58827411A561489505E38A8CCBCC6A3BC2F1EE58ABFE700CED15",
+      "size": 13921592
+    },
+    {
+      "actually_called": false,
+      "call_evidence": [],
+      "in_distribution": true,
+      "name": "avformat-61.dll",
+      "path": "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avformat-61.dll",
+      "pe": {
+        "imports": [
+          "avcodec-61.dll",
+          "avutil-59.dll",
+          "KERNEL32.dll",
+          "Secur32.dll",
+          "WS2_32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": true,
+      "sha256": "BBACFF3524C192EAF129DD6F838C0EEE65ABE56FE5109B9BEDE839A0823F8FA3",
+      "size": 2643256
+    },
+    {
+      "actually_called": false,
+      "call_evidence": [],
+      "in_distribution": true,
+      "name": "avutil-59.dll",
+      "path": "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avutil-59.dll",
+      "pe": {
+        "imports": [
+          "bcrypt.dll",
+          "KERNEL32.dll",
+          "USER32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": true,
+      "sha256": "615DF5BB9903887B6F56A47F17FC169CD42753B9B9DB7F162C74731C45612DF6",
+      "size": 1198392
+    },
+    {
+      "actually_called": false,
+      "call_evidence": [],
+      "in_distribution": true,
+      "name": "swresample-5.dll",
+      "path": "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/swresample-5.dll",
+      "pe": {
+        "imports": [
+          "avutil-59.dll",
+          "KERNEL32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": true,
+      "sha256": "878E0FBF647DC8E6BECB32DC031701B19DAC8C9867192D571F0D72D02842F7ED",
+      "size": 247096
+    },
+    {
+      "actually_called": false,
+      "call_evidence": [],
+      "in_distribution": true,
+      "name": "swscale-8.dll",
+      "path": "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/swscale-8.dll",
+      "pe": {
+        "imports": [
+          "avutil-59.dll",
+          "KERNEL32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": true,
+      "sha256": "2F21C52FD2EB73484B448666903C5EEE1B4948D28239CB18D93428A989ED3ECC",
+      "size": 751928
+    },
+    {
+      "actually_called": true,
+      "call_evidence": [
+        "audio_editor_backend.py",
+        "config.py",
+        "converter.py",
+        "single_file_convert.py",
+        "tests/test_pitch_shift_processing_service.py",
+        "tests/test_processed_audio_export.py",
+        "tests/test_qml_editor_export_phase584.py",
+        "tests/test_qml_phase57_workflow.py",
+        "tests/test_qml_single_file_convert.py",
+        "tests/test_release_baseline.py",
+        "ui/audio_editor.py",
+        "ui/waveform_widget.py",
+        "ui_next/bridge/audio_processing_service.py"
+      ],
+      "in_distribution": true,
+      "name": "ffmpeg.exe",
+      "path": "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/Tools/ffmpeg/bin/ffmpeg.exe",
+      "pe": {
+        "imports": [
+          "ADVAPI32.dll",
+          "api-ms-win-core-synch-l1-2-0.dll",
+          "api-ms-win-crt-conio-l1-1-0.dll",
+          "api-ms-win-crt-convert-l1-1-0.dll",
+          "api-ms-win-crt-environment-l1-1-0.dll",
+          "api-ms-win-crt-filesystem-l1-1-0.dll",
+          "api-ms-win-crt-heap-l1-1-0.dll",
+          "api-ms-win-crt-locale-l1-1-0.dll",
+          "api-ms-win-crt-math-l1-1-0.dll",
+          "api-ms-win-crt-multibyte-l1-1-0.dll",
+          "api-ms-win-crt-private-l1-1-0.dll",
+          "api-ms-win-crt-process-l1-1-0.dll",
+          "api-ms-win-crt-runtime-l1-1-0.dll",
+          "api-ms-win-crt-stdio-l1-1-0.dll",
+          "api-ms-win-crt-string-l1-1-0.dll",
+          "api-ms-win-crt-time-l1-1-0.dll",
+          "api-ms-win-crt-utility-l1-1-0.dll",
+          "AVICAP32.dll",
+          "AVRT.dll",
+          "bcrypt.dll",
+          "CFGMGR32.dll",
+          "CRYPT32.dll",
+          "d2d1.dll",
+          "DWrite.dll",
+          "GDI32.dll",
+          "IPHLPAPI.DLL",
+          "KERNEL32.dll",
+          "MSIMG32.dll",
+          "ncrypt.dll",
+          "ntdll.dll",
+          "ole32.dll",
+          "OLEAUT32.dll",
+          "SHELL32.dll",
+          "SHLWAPI.dll",
+          "USER32.dll",
+          "WINMM.dll",
+          "WS2_32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": true,
+      "sha256": "09948D4CDD0650DA6FF5A87577469F2A218DC2615AE379F8F734D24C49DE0F73",
+      "size": 227398656
+    },
+    {
+      "actually_called": true,
+      "call_evidence": [
+        "CHANGELOG.md",
+        "Codex执行记录/v3.5.1发行基线修复记录.md",
+        "LICENSES/FFmpeg-NOTICE.md",
+        "Qonic_Audio.spec",
+        "README.md",
+        "TEST_CHECKLIST.md",
+        "Tools/README.md",
+        "build_release.ps1",
+        "tests/test_release_baseline.py",
+        "ui_next/bridge/audio_processing_service.py"
+      ],
+      "in_distribution": true,
+      "name": "ffprobe.exe",
+      "path": "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/Tools/ffmpeg/bin/ffprobe.exe",
+      "pe": {
+        "imports": [
+          "ADVAPI32.dll",
+          "api-ms-win-core-synch-l1-2-0.dll",
+          "api-ms-win-crt-convert-l1-1-0.dll",
+          "api-ms-win-crt-environment-l1-1-0.dll",
+          "api-ms-win-crt-filesystem-l1-1-0.dll",
+          "api-ms-win-crt-heap-l1-1-0.dll",
+          "api-ms-win-crt-locale-l1-1-0.dll",
+          "api-ms-win-crt-math-l1-1-0.dll",
+          "api-ms-win-crt-multibyte-l1-1-0.dll",
+          "api-ms-win-crt-private-l1-1-0.dll",
+          "api-ms-win-crt-process-l1-1-0.dll",
+          "api-ms-win-crt-runtime-l1-1-0.dll",
+          "api-ms-win-crt-stdio-l1-1-0.dll",
+          "api-ms-win-crt-string-l1-1-0.dll",
+          "api-ms-win-crt-time-l1-1-0.dll",
+          "api-ms-win-crt-utility-l1-1-0.dll",
+          "AVICAP32.dll",
+          "AVRT.dll",
+          "bcrypt.dll",
+          "CFGMGR32.dll",
+          "CRYPT32.dll",
+          "d2d1.dll",
+          "DWrite.dll",
+          "GDI32.dll",
+          "IPHLPAPI.DLL",
+          "KERNEL32.dll",
+          "MSIMG32.dll",
+          "ncrypt.dll",
+          "ntdll.dll",
+          "ole32.dll",
+          "OLEAUT32.dll",
+          "SHELL32.dll",
+          "SHLWAPI.dll",
+          "USER32.dll",
+          "WINMM.dll",
+          "WS2_32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": true,
+      "sha256": "A6618E99BB58869DED3C6F37B53AA1A8D701C3591DBB7B5B317D47369C112BE2",
+      "size": 227193344
+    },
+    {
+      "actually_called": false,
+      "call_evidence": [],
+      "in_distribution": false,
+      "name": "avcodec-61.dll",
+      "path": "Release/Non_Authoritative/2026-07-24_pre_freeze/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avcodec-61.dll",
+      "pe": {
+        "imports": [
+          "avutil-59.dll",
+          "KERNEL32.dll",
+          "ole32.dll",
+          "swresample-5.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "A3127F36742B58827411A561489505E38A8CCBCC6A3BC2F1EE58ABFE700CED15",
+      "size": 13921592
+    },
+    {
+      "actually_called": false,
+      "call_evidence": [],
+      "in_distribution": false,
+      "name": "avformat-61.dll",
+      "path": "Release/Non_Authoritative/2026-07-24_pre_freeze/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avformat-61.dll",
+      "pe": {
+        "imports": [
+          "avcodec-61.dll",
+          "avutil-59.dll",
+          "KERNEL32.dll",
+          "Secur32.dll",
+          "WS2_32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "BBACFF3524C192EAF129DD6F838C0EEE65ABE56FE5109B9BEDE839A0823F8FA3",
+      "size": 2643256
+    },
+    {
+      "actually_called": false,
+      "call_evidence": [],
+      "in_distribution": false,
+      "name": "avutil-59.dll",
+      "path": "Release/Non_Authoritative/2026-07-24_pre_freeze/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avutil-59.dll",
+      "pe": {
+        "imports": [
+          "bcrypt.dll",
+          "KERNEL32.dll",
+          "USER32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "615DF5BB9903887B6F56A47F17FC169CD42753B9B9DB7F162C74731C45612DF6",
+      "size": 1198392
+    },
+    {
+      "actually_called": false,
+      "call_evidence": [],
+      "in_distribution": false,
+      "name": "swresample-5.dll",
+      "path": "Release/Non_Authoritative/2026-07-24_pre_freeze/Qonic_Audio_v5.0_internal_test/_internal/PySide6/swresample-5.dll",
+      "pe": {
+        "imports": [
+          "avutil-59.dll",
+          "KERNEL32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "878E0FBF647DC8E6BECB32DC031701B19DAC8C9867192D571F0D72D02842F7ED",
+      "size": 247096
+    },
+    {
+      "actually_called": false,
+      "call_evidence": [],
+      "in_distribution": false,
+      "name": "swscale-8.dll",
+      "path": "Release/Non_Authoritative/2026-07-24_pre_freeze/Qonic_Audio_v5.0_internal_test/_internal/PySide6/swscale-8.dll",
+      "pe": {
+        "imports": [
+          "avutil-59.dll",
+          "KERNEL32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "2F21C52FD2EB73484B448666903C5EEE1B4948D28239CB18D93428A989ED3ECC",
+      "size": 751928
+    },
+    {
+      "actually_called": true,
+      "call_evidence": [
+        "audio_editor_backend.py",
+        "config.py",
+        "converter.py",
+        "single_file_convert.py",
+        "tests/test_pitch_shift_processing_service.py",
+        "tests/test_processed_audio_export.py",
+        "tests/test_qml_editor_export_phase584.py",
+        "tests/test_qml_phase57_workflow.py",
+        "tests/test_qml_single_file_convert.py",
+        "tests/test_release_baseline.py",
+        "ui/audio_editor.py",
+        "ui/waveform_widget.py",
+        "ui_next/bridge/audio_processing_service.py"
+      ],
+      "in_distribution": false,
+      "name": "ffmpeg.exe",
+      "path": "Release/Non_Authoritative/2026-07-24_pre_freeze/Qonic_Audio_v5.0_internal_test/_internal/Tools/ffmpeg/bin/ffmpeg.exe",
+      "pe": {
+        "imports": [
+          "ADVAPI32.dll",
+          "api-ms-win-core-synch-l1-2-0.dll",
+          "api-ms-win-crt-conio-l1-1-0.dll",
+          "api-ms-win-crt-convert-l1-1-0.dll",
+          "api-ms-win-crt-environment-l1-1-0.dll",
+          "api-ms-win-crt-filesystem-l1-1-0.dll",
+          "api-ms-win-crt-heap-l1-1-0.dll",
+          "api-ms-win-crt-locale-l1-1-0.dll",
+          "api-ms-win-crt-math-l1-1-0.dll",
+          "api-ms-win-crt-multibyte-l1-1-0.dll",
+          "api-ms-win-crt-private-l1-1-0.dll",
+          "api-ms-win-crt-process-l1-1-0.dll",
+          "api-ms-win-crt-runtime-l1-1-0.dll",
+          "api-ms-win-crt-stdio-l1-1-0.dll",
+          "api-ms-win-crt-string-l1-1-0.dll",
+          "api-ms-win-crt-time-l1-1-0.dll",
+          "api-ms-win-crt-utility-l1-1-0.dll",
+          "AVICAP32.dll",
+          "AVRT.dll",
+          "bcrypt.dll",
+          "CFGMGR32.dll",
+          "CRYPT32.dll",
+          "d2d1.dll",
+          "DWrite.dll",
+          "GDI32.dll",
+          "IPHLPAPI.DLL",
+          "KERNEL32.dll",
+          "MSIMG32.dll",
+          "ncrypt.dll",
+          "ntdll.dll",
+          "ole32.dll",
+          "OLEAUT32.dll",
+          "SHELL32.dll",
+          "SHLWAPI.dll",
+          "USER32.dll",
+          "WINMM.dll",
+          "WS2_32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "09948D4CDD0650DA6FF5A87577469F2A218DC2615AE379F8F734D24C49DE0F73",
+      "size": 227398656
+    },
+    {
+      "actually_called": true,
+      "call_evidence": [
+        "audio_editor_backend.py",
+        "config.py",
+        "converter.py",
+        "single_file_convert.py",
+        "tests/test_pitch_shift_processing_service.py",
+        "tests/test_processed_audio_export.py",
+        "tests/test_qml_editor_export_phase584.py",
+        "tests/test_qml_phase57_workflow.py",
+        "tests/test_qml_single_file_convert.py",
+        "tests/test_release_baseline.py",
+        "ui/audio_editor.py",
+        "ui/waveform_widget.py",
+        "ui_next/bridge/audio_processing_service.py"
+      ],
+      "in_distribution": false,
+      "name": "ffmpeg.exe",
+      "path": "Tools/ffmpeg/bin/ffmpeg.exe",
+      "pe": {
+        "imports": [
+          "ADVAPI32.dll",
+          "api-ms-win-core-synch-l1-2-0.dll",
+          "api-ms-win-crt-conio-l1-1-0.dll",
+          "api-ms-win-crt-convert-l1-1-0.dll",
+          "api-ms-win-crt-environment-l1-1-0.dll",
+          "api-ms-win-crt-filesystem-l1-1-0.dll",
+          "api-ms-win-crt-heap-l1-1-0.dll",
+          "api-ms-win-crt-locale-l1-1-0.dll",
+          "api-ms-win-crt-math-l1-1-0.dll",
+          "api-ms-win-crt-multibyte-l1-1-0.dll",
+          "api-ms-win-crt-private-l1-1-0.dll",
+          "api-ms-win-crt-process-l1-1-0.dll",
+          "api-ms-win-crt-runtime-l1-1-0.dll",
+          "api-ms-win-crt-stdio-l1-1-0.dll",
+          "api-ms-win-crt-string-l1-1-0.dll",
+          "api-ms-win-crt-time-l1-1-0.dll",
+          "api-ms-win-crt-utility-l1-1-0.dll",
+          "AVICAP32.dll",
+          "AVRT.dll",
+          "bcrypt.dll",
+          "CFGMGR32.dll",
+          "CRYPT32.dll",
+          "d2d1.dll",
+          "DWrite.dll",
+          "GDI32.dll",
+          "IPHLPAPI.DLL",
+          "KERNEL32.dll",
+          "MSIMG32.dll",
+          "ncrypt.dll",
+          "ntdll.dll",
+          "ole32.dll",
+          "OLEAUT32.dll",
+          "SHELL32.dll",
+          "SHLWAPI.dll",
+          "USER32.dll",
+          "WINMM.dll",
+          "WS2_32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "09948D4CDD0650DA6FF5A87577469F2A218DC2615AE379F8F734D24C49DE0F73",
+      "size": 227398656
+    },
+    {
+      "actually_called": false,
+      "call_evidence": [
+        "Codex执行记录/v3.5.1发行基线修复记录.md",
+        "TEST_CHECKLIST.md",
+        "Tools/README.md",
+        "build_release.ps1"
+      ],
+      "in_distribution": false,
+      "name": "ffplay.exe",
+      "path": "Tools/ffmpeg/bin/ffplay.exe",
+      "pe": {
+        "imports": [
+          "ADVAPI32.dll",
+          "api-ms-win-core-synch-l1-2-0.dll",
+          "api-ms-win-crt-convert-l1-1-0.dll",
+          "api-ms-win-crt-environment-l1-1-0.dll",
+          "api-ms-win-crt-filesystem-l1-1-0.dll",
+          "api-ms-win-crt-heap-l1-1-0.dll",
+          "api-ms-win-crt-locale-l1-1-0.dll",
+          "api-ms-win-crt-math-l1-1-0.dll",
+          "api-ms-win-crt-multibyte-l1-1-0.dll",
+          "api-ms-win-crt-private-l1-1-0.dll",
+          "api-ms-win-crt-process-l1-1-0.dll",
+          "api-ms-win-crt-runtime-l1-1-0.dll",
+          "api-ms-win-crt-stdio-l1-1-0.dll",
+          "api-ms-win-crt-string-l1-1-0.dll",
+          "api-ms-win-crt-time-l1-1-0.dll",
+          "api-ms-win-crt-utility-l1-1-0.dll",
+          "AVICAP32.dll",
+          "AVRT.dll",
+          "bcrypt.dll",
+          "CFGMGR32.dll",
+          "CRYPT32.dll",
+          "d2d1.dll",
+          "DWrite.dll",
+          "GDI32.dll",
+          "IMM32.dll",
+          "IPHLPAPI.DLL",
+          "KERNEL32.dll",
+          "MSIMG32.dll",
+          "ncrypt.dll",
+          "ntdll.dll",
+          "ole32.dll",
+          "OLEAUT32.dll",
+          "SETUPAPI.dll",
+          "SHELL32.dll",
+          "SHLWAPI.dll",
+          "USER32.dll",
+          "VERSION.dll",
+          "WINMM.dll",
+          "WS2_32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "9C772760685421C4EDC67FFA9B75DD5F74755F322C8FD7636567849CCF73AC93",
+      "size": 228915712
+    },
+    {
+      "actually_called": true,
+      "call_evidence": [
+        "CHANGELOG.md",
+        "Codex执行记录/v3.5.1发行基线修复记录.md",
+        "LICENSES/FFmpeg-NOTICE.md",
+        "Qonic_Audio.spec",
+        "README.md",
+        "TEST_CHECKLIST.md",
+        "Tools/README.md",
+        "build_release.ps1",
+        "tests/test_release_baseline.py",
+        "ui_next/bridge/audio_processing_service.py"
+      ],
+      "in_distribution": false,
+      "name": "ffprobe.exe",
+      "path": "Tools/ffmpeg/bin/ffprobe.exe",
+      "pe": {
+        "imports": [
+          "ADVAPI32.dll",
+          "api-ms-win-core-synch-l1-2-0.dll",
+          "api-ms-win-crt-convert-l1-1-0.dll",
+          "api-ms-win-crt-environment-l1-1-0.dll",
+          "api-ms-win-crt-filesystem-l1-1-0.dll",
+          "api-ms-win-crt-heap-l1-1-0.dll",
+          "api-ms-win-crt-locale-l1-1-0.dll",
+          "api-ms-win-crt-math-l1-1-0.dll",
+          "api-ms-win-crt-multibyte-l1-1-0.dll",
+          "api-ms-win-crt-private-l1-1-0.dll",
+          "api-ms-win-crt-process-l1-1-0.dll",
+          "api-ms-win-crt-runtime-l1-1-0.dll",
+          "api-ms-win-crt-stdio-l1-1-0.dll",
+          "api-ms-win-crt-string-l1-1-0.dll",
+          "api-ms-win-crt-time-l1-1-0.dll",
+          "api-ms-win-crt-utility-l1-1-0.dll",
+          "AVICAP32.dll",
+          "AVRT.dll",
+          "bcrypt.dll",
+          "CFGMGR32.dll",
+          "CRYPT32.dll",
+          "d2d1.dll",
+          "DWrite.dll",
+          "GDI32.dll",
+          "IPHLPAPI.DLL",
+          "KERNEL32.dll",
+          "MSIMG32.dll",
+          "ncrypt.dll",
+          "ntdll.dll",
+          "ole32.dll",
+          "OLEAUT32.dll",
+          "SHELL32.dll",
+          "SHLWAPI.dll",
+          "USER32.dll",
+          "WINMM.dll",
+          "WS2_32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "A6618E99BB58869DED3C6F37B53AA1A8D701C3591DBB7B5B317D47369C112BE2",
+      "size": 227193344
+    }
+  ],
+  "selected": "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/Tools/ffmpeg/bin/ffmpeg.exe"
+}

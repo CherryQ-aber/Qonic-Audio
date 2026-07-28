@@ -1,0 +1,5 @@
+QONIC_BUILD_CONTAINER=1
+SOURCE_DATE_EPOCH=1777848300
+TZ=UTC
+LC_ALL=C.UTF-8
+PKG_CONFIG_LIBDIR=/repo/third_party/ffmpeg-build/work/prefix/lib/pkgconfig

@@ -1,0 +1,117 @@
+{
+  "pip_freeze_returncode": 0,
+  "python_version": "3.12.1",
+  "requirements": [
+    {
+      "declared_versions": [
+        "1.47.0",
+        "1.47.0"
+      ],
+      "distribution_presence_evidence": [
+        "mutagen-gpl-2.0.txt"
+      ],
+      "home_page": "https://github.com/quodlibet/mutagen",
+      "installed": true,
+      "installed_version": "1.47.0",
+      "license": "GPL-2.0-or-later",
+      "license_files": [
+        "COPYING"
+      ],
+      "name": "mutagen",
+      "possibly_bundled": true,
+      "project_urls": [],
+      "source_files": [
+        "requirements.txt",
+        "requirements.txt"
+      ]
+    },
+    {
+      "declared_versions": [
+        "6.20.0"
+      ],
+      "distribution_presence_evidence": [
+        "pyinstaller-gpl-2.0-with-bootloader-exception.txt"
+      ],
+      "home_page": null,
+      "installed": true,
+      "installed_version": "6.20.0",
+      "license": "GPLv2-or-later with a special exception which allows to use PyInstaller to build and distribute non-free programs (including commercial ones)",
+      "license_files": [
+        "COPYING.txt"
+      ],
+      "name": "PyInstaller",
+      "possibly_bundled": true,
+      "project_urls": [
+        "Homepage, https://pyinstaller.org",
+        "Documentation, https://pyinstaller.org",
+        "Source Code, https://github.com/pyinstaller/pyinstaller",
+        "Release Notes, https://pyinstaller.org/en/stable/CHANGES.html"
+      ],
+      "source_files": [
+        "requirements-dev.txt"
+      ]
+    },
+    {
+      "declared_versions": [
+        "6.11.1",
+        "6.11.1"
+      ],
+      "distribution_presence_evidence": [
+        "pyside6",
+        "pyside6-licenseref-qt-commercial.txt",
+        "pyside6.abi3.dll",
+        "pyside6qml.abi3.dll"
+      ],
+      "home_page": null,
+      "installed": true,
+      "installed_version": "6.11.1",
+      "license": "LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only",
+      "license_files": [
+        "LicenseRef-Qt-Commercial.txt"
+      ],
+      "name": "PySide6",
+      "possibly_bundled": true,
+      "project_urls": [
+        "Homepage, https://pyside.org",
+        "Documentation, https://doc.qt.io/qtforpython",
+        "Repository, https://code.qt.io/cgit/pyside/pyside-setup.git/",
+        "Changelog, https://code.qt.io/cgit/pyside/pyside-setup.git/tree/doc/changelogs",
+        "Tracker, https://qt-project.atlassian.net/browse/PYSIDE"
+      ],
+      "source_files": [
+        "requirements.txt",
+        "requirements.txt"
+      ]
+    },
+    {
+      "declared_versions": [
+        "6.0.0",
+        "6.0.0"
+      ],
+      "distribution_presence_evidence": [
+        "watchdog-apache-2.0.txt"
+      ],
+      "home_page": "https://github.com/gorakhargosh/watchdog",
+      "installed": true,
+      "installed_version": "6.0.0",
+      "license": "Apache-2.0",
+      "license_files": [
+        "LICENSE",
+        "COPYING",
+        "AUTHORS"
+      ],
+      "name": "watchdog",
+      "possibly_bundled": true,
+      "project_urls": [
+        "Documentation, https://python-watchdog.readthedocs.io/en/stable/",
+        "Source, https://github.com/gorakhargosh/watchdog/",
+        "Issues, https://github.com/gorakhargosh/watchdog/issues",
+        "Changelog, https://github.com/gorakhargosh/watchdog/blob/master/changelog.rst"
+      ],
+      "source_files": [
+        "requirements.txt",
+        "requirements.txt"
+      ]
+    }
+  ]
+}

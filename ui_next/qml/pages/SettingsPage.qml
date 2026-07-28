@@ -12,7 +12,9 @@ Item {
     property QtObject typography: Typography {}
     property var themeModeOptions: [
         {"value": "dark", "label": "深色主题"},
-        {"value": "light", "label": "浅色主题"}
+        {"value": "light", "label": "浅色主题"},
+        {"value": "black", "label": "黑色主题"},
+        {"value": "purple", "label": "紫色主题"}
     ]
     property var logLevelOptions: [
         {"value": "DEBUG", "label": "Debug"},
@@ -464,7 +466,7 @@ Item {
                     theme: root.theme
                     typography: root.typography
                     title: "主题与界面"
-                    subtitle: "主题可立即预览；确认应用后保留为下次启动设置。"
+                    subtitle: "主题可立即预览且仅本次运行生效；其它界面设置确认后保存。"
                     statusLabel: root.settingChanged("theme_mode")
                         || root.settingChanged("ui_density")
                         || root.settingChanged("editor_file_bar_mode") ? "未保存" : ""

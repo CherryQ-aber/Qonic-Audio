@@ -86,6 +86,24 @@ Item {
         self.app.processEvents()
         self.assertEqual("dark", self.theme.property("mode"))
 
+    def test_black_and_purple_are_distinct_runtime_palettes(self):
+        self.theme.setMode("black")
+        self.app.processEvents()
+        self.assertEqual("black", self.theme.property("mode"))
+        black_window = QColor(self.theme.property("windowBackground"))
+        black_accent = QColor(self.theme.property("selectedIndicator"))
+
+        self.theme.setMode("purple")
+        self.app.processEvents()
+        self.assertEqual("purple", self.theme.property("mode"))
+        purple_window = QColor(self.theme.property("windowBackground"))
+        purple_accent = QColor(self.theme.property("selectedIndicator"))
+
+        self.assertTrue(black_window.isValid())
+        self.assertTrue(purple_window.isValid())
+        self.assertNotEqual(black_window, purple_window)
+        self.assertNotEqual(black_accent, purple_accent)
+
     def test_derived_section_card_uses_the_supplied_light_palette(self):
         component = QQmlComponent(self.view.engine())
         component.setData(

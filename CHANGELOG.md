@@ -1,20 +1,36 @@
-# CherryQ Audio Converter Changelog
+# Qonic Audio Changelog
 
 ## v5.0 内部测试版
 
 ### Changed
 
+- 产品品牌由 `CherryQ Audio Converter` 迁移为 `Qonic Audio`，完整说明统一为 `Qonic Audio Converter & Editor`。
+- 运行日志、打包名称、规范文件、临时文件标记和新环境变量统一使用 `Qonic` / `QONIC_*`；旧 `CHERRYQ_*` 环境变量仅保留迁移期兼容。
+- PyInstaller 发行入口由旧 `gui.py` 切换为 `main_qml.py`，并显式携带 `ui_next/qml` 与应用图标运行时资源。
+- 发行脚本新增打包后 QML smoke、QML 入口/图标检查和归档 SHA-256 清单。
+- 项目开源许可确定为 `GPL-3.0-or-later`，顶层许可证和第三方许可材料纳入发行包。
+- `.7z` 确定为当前默认主分发工件；SFX 改为显式 `-IncludeSfx` 的内部验证选项，不作为主下载。
+- 安装器、数字签名、自动更新和文件关联延期到 RC 之后的独立计划。
+- 新增 RC1 晋级门禁，当前版本在人工桌面、真实媒体、干净 Windows 和第三方合规完成前继续保持 Internal Test。
+- 新增异机便携包测试说明，覆盖校验、解压、环境记录、最小功能矩阵、日志反馈和测试后清理。
+- Windows 可执行文件补充 Qonic Audio 产品名、完整说明、内部测试版本和原始文件名属性。
 - 项目定位调整为 `v5.0 Internal Test / v5.0 内部测试版`：用于 UI 重构后的内部人工验收和代码审查，不是正式对外发行。
-- 版本源、窗口标题、打包目录名和发行说明文件名统一由 `app_info.py` 管理为 `CherryQ_Audio_Converter_v5.0_internal_test`。
+- 版本源、窗口标题、打包目录名和发行说明文件名统一由 `app_info.py` 管理为 `Qonic_Audio_v5.0_internal_test`。
 - 归档 UI 重构后的完整变更总结，覆盖 Legacy Widgets 收口、QML 工作台、能力门、会话边界、真实业务回归和 User Trial Mode。
 - Phase 5.9.2 将单一任务队列扩展为转码控制中心：任务可控制本轮参与、单独目标格式和临时输出目录，并可转换单个、选中或全部已启用任务。
 - 队列多选和右键操作使用规范化路径，不依赖表格行号；格式菜单复用统一格式注册表，所有转换继续复用既有 `ConvertThread`。
 
 ### Frozen
 
-- Phase 5.7 工程功能与数据安全通过、用户体验未通过；后续不得继续累加 Phase 5.7 功能，先重组普通用户任务流。
+- Phase 5.9.5 工作区与普通用户任务流整合已完成；发行收尾期间冻结新功能和大范围导航改造。
 - `CapabilityGate`、默认 Preview Mode、no-clobber 发布、源文件保护、显式配置保存和三类会话边界继续有效。
 - “本轮跳过”保持为独立内存策略，不成为任务终态；任务级输出目录不写全局配置。
+
+### Fixed
+
+- 修复真实 AppShell 测试销毁时未等待设置存储扫描线程，导致 `Qt6Core.dll / 0xc0000409` 的套件级崩溃。
+- 修复转换前输出目录校验忽略任务快照目录的问题；任务已经记录有效输出目录时，不再被缺失的全局默认目录错误阻止。
+- 补回 Pitch 处理运行时必需的 `ffprobe.exe`，避免开发机可用而异机包无法完成媒体和时长校验。
 
 ## v4.1 beta / 内部测试版
 

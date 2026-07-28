@@ -90,8 +90,8 @@ class RuntimeModeResolutionTests(unittest.TestCase):
         runtime = resolve_runtime_mode(
             ["main_qml.py", "--preview"],
             {
-                "CHERRYQ_QML_USER_TEST": "1",
-                "CHERRYQ_QML_CAPS": "metadata_write,overwrite_file",
+                "QONIC_QML_USER_TEST": "1",
+                "QONIC_QML_CAPS": "metadata_write,overwrite_file",
             },
         )
         gate = runtime.create_capability_gate()
@@ -104,7 +104,7 @@ class RuntimeModeResolutionTests(unittest.TestCase):
     def test_smoke_test_always_uses_safe_test_mode(self):
         runtime = resolve_runtime_mode(
             ["main_qml.py", "--qml-smoke-test"],
-            {"CHERRYQ_QML_USER_TEST": "1"},
+            {"QONIC_QML_USER_TEST": "1"},
         )
         gate = runtime.create_capability_gate()
 
@@ -118,8 +118,8 @@ class RuntimeModeResolutionTests(unittest.TestCase):
         runtime = resolve_runtime_mode(
             ["main_qml.py"],
             {
-                "CHERRYQ_QML_USER_TEST": "1",
-                "CHERRYQ_QML_CAPS": "metadata_read,overwrite_file",
+                "QONIC_QML_USER_TEST": "1",
+                "QONIC_QML_CAPS": "metadata_read,overwrite_file",
             },
         )
 
@@ -133,7 +133,7 @@ class RuntimeModeResolutionTests(unittest.TestCase):
     def test_legacy_capability_list_remains_a_narrow_compatibility_entry(self):
         runtime = resolve_runtime_mode(
             ["main_qml.py"],
-            {"CHERRYQ_QML_CAPS": "metadata_read,lyrics_read,overwrite_file"},
+            {"QONIC_QML_CAPS": "metadata_read,lyrics_read,overwrite_file"},
         )
         gate = runtime.create_capability_gate()
 
@@ -141,6 +141,38 @@ class RuntimeModeResolutionTests(unittest.TestCase):
         self.assertTrue(gate.allows(METADATA_READ))
         self.assertTrue(gate.allows(LYRICS_READ))
         self.assertFalse(gate.allows(OVERWRITE_FILE))
+
+    def test_cherryq_environment_aliases_remain_available_during_migration(self):
+        runtime = resolve_runtime_mode(
+            ["main_qml.py"],
+            {
+                "CHERRYQ_QML_CAPS": "metadata_read,overwrite_file",
+                "CHERRYQ_QML_LIVE": "1",
+            },
+        )
+        gate = runtime.create_capability_gate()
+
+        self.assertEqual(
+            runtime.legacy_environment_variables,
+            ("CHERRYQ_QML_CAPS", "CHERRYQ_QML_LIVE"),
+        )
+        self.assertTrue(gate.allows(METADATA_READ))
+        self.assertFalse(gate.allows(OVERWRITE_FILE))
+        self.assertTrue(gate.legacyLiveRequested)
+
+    def test_qonic_environment_takes_precedence_over_cherryq_alias(self):
+        runtime = resolve_runtime_mode(
+            ["main_qml.py"],
+            {
+                "QONIC_QML_CAPS": "lyrics_read",
+                "CHERRYQ_QML_CAPS": "metadata_read",
+            },
+        )
+        gate = runtime.create_capability_gate()
+
+        self.assertEqual(runtime.legacy_environment_variables, ())
+        self.assertTrue(gate.allows(LYRICS_READ))
+        self.assertFalse(gate.allows(METADATA_READ))
 
     def test_unknown_qml_argument_fails_before_qapplication_starts(self):
         with self.assertRaisesRegex(RuntimeModeParseError, "不支持的 QML 启动参数"):
@@ -185,8 +217,8 @@ class DefaultStartupSafetyTests(unittest.TestCase):
         before = hashlib.sha256(CONFIG_PATH.read_bytes()).hexdigest()
         env = os.environ.copy()
         env["QT_QPA_PLATFORM"] = "offscreen"
-        env["CHERRYQ_QML_USER_TEST"] = "1"
-        env["CHERRYQ_QML_CAPS"] = "overwrite_file,metadata_write"
+        env["QONIC_QML_USER_TEST"] = "1"
+        env["QONIC_QML_CAPS"] = "overwrite_file,metadata_write"
         completed = subprocess.run(
             [sys.executable, "-B", "main_qml.py", "--qml-smoke-test"],
             cwd=PROJECT_ROOT,

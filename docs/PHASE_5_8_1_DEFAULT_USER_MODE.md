@@ -4,12 +4,12 @@
 
 ## 本轮结论
 
-QML 新入口现在以默认用户模式启动：直接运行 `python main_qml.py` 即可使用已经接入的非破坏性工作流，不再要求设置 `CHERRYQ_QML_USER_TEST=1`。`--preview` 和 `--qml-smoke-test` 会显式进入安全预览；smoke 优先级最高，即使进程带有旧环境变量也不会开放真实能力。
+QML 新入口现在以默认用户模式启动：直接运行 `python main_qml.py` 即可使用已经接入的非破坏性工作流，不再要求设置 `QONIC_QML_USER_TEST=1`。`--preview` 和 `--qml-smoke-test` 会显式进入安全预览；smoke 优先级最高，即使进程带有旧环境变量也不会开放真实能力。
 
 ## 修改前审查结论
 
 - `main_qml.py` 以前直接调用 `CapabilityGate.from_environment()`；空环境返回空能力，因此无参数启动进入 Preview Mode。
-- `CHERRYQ_QML_USER_TEST=1` 才会注入扫描、队列、转换、设置、播放与处理能力，普通启动无法完成已实现工作流。
+- `QONIC_QML_USER_TEST=1` 才会注入扫描、队列、转换、设置、播放与处理能力，普通启动无法完成已实现工作流。
 - ViewModel 构造阶段只创建读取/刷新计时器和页面草稿；不启动 watcher、扫描、转换、FFmpeg、ncmdump 或配置保存。
 - 现有 `EditSession`、`EditExportService` 和 `ProcessingSession` 已具备草稿、另存新文件、no-clobber 和不替换原文件的安全路径，无需重写后端。
 
@@ -21,7 +21,7 @@ QML 新入口现在以默认用户模式启动：直接运行 `python main_qml.p
 | `python main_qml.py --preview` | 预览模式 | 零真实能力；用于安全审查。 |
 | `python main_qml.py --qml-smoke-test` | 测试模式 | 零真实能力并自动退出；优先覆盖旧环境变量。 |
 
-`CHERRYQ_QML_USER_TEST=1` 现映射到默认用户模式；`CHERRYQ_QML_CAPS` 保留为窄范围兼容启动入口；`CHERRYQ_QML_LIVE=1` 不单独授予能力。
+`QONIC_QML_USER_TEST=1` 现映射到默认用户模式；`QONIC_QML_CAPS` 保留为窄范围兼容启动入口；`QONIC_QML_LIVE=1` 不单独授予能力。旧 `CHERRYQ_*` 名称仅保留迁移期兼容。
 
 ## 默认用户能力与永久禁区
 

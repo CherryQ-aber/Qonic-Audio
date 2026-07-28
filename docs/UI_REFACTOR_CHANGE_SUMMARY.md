@@ -23,7 +23,7 @@
 | 会话与处理边界 | 引入 FileSession、EditSession、ProcessingSession；拆分播放源、编辑草稿、Pitch 试听缓存与导出发布。 | 编辑、试听、导出和加载结果不再混为同一动作。 |
 | 视觉与可访问性 | Theme Token、深浅主题、统一按钮/卡片/空状态/状态徽章、轻量动画、响应式布局和焦点语义。 | 不把主题或动画写入配置，也不改变业务授权。 |
 | Phase 5.7 真实业务回归 | 目录扫描、显式入队、串行批量转换、NCM、任务控制、watcher 与受限配置保存。 | 功能可用，继续受 capability 和 no-clobber 约束。 |
-| User Trial Mode | `CHERRYQ_QML_USER_TEST=1` 注入固定人工验收能力集并显示用户可读状态。 | 仅供验收，不是最终产品模式。 |
+| User Trial Mode | `QONIC_QML_USER_TEST=1` 注入固定人工验收能力集并显示用户可读状态。 | 仅供验收，不是最终产品模式。 |
 
 ## 主要代码结构
 
@@ -63,9 +63,9 @@
 | 模式 | 真实能力 | 用途 |
 | --- | --- | --- |
 | Preview Mode（默认） | 无 | UI 审查与安全基线。 |
-| 显式 capability | 只开放 `CHERRYQ_QML_CAPS` 中被白名单接受的动作 | 开发/专项回归。 |
+| 显式 capability | 只开放 `QONIC_QML_CAPS` 中被白名单接受的动作 | 开发/专项回归。 |
 | User Trial Mode | 固定启用扫描、单文件/批量转换、队列、手动 watcher、显式配置保存、读取、播放、处理和导出。 | 人工验收。 |
-| `CHERRYQ_QML_LIVE=1` | 无额外能力 | 兼容标志，不能绕过 CapabilityGate。 |
+| `QONIC_QML_LIVE=1` | 无额外能力 | 兼容标志，不能绕过 CapabilityGate。 |
 
 User Trial Mode 固定能力为：`metadata_read`、`lyrics_read`、`cover_read`、`scan_preview`、`single_file_convert`、`batch_convert`、`queue_mutation`、`watcher_control`、`config_write`、`audio_playback`、`audio_processing`、`audio_export`。
 

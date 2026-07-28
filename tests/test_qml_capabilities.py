@@ -36,7 +36,7 @@ class CapabilityGateTests(unittest.TestCase):
     def test_completed_read_capabilities_are_independent(self):
         gate = CapabilityGate.from_environment(
             {
-                "CHERRYQ_QML_CAPS": (
+                "QONIC_QML_CAPS": (
                     "metadata_read,lyrics_read,cover_read"
                 )
             }
@@ -56,7 +56,7 @@ class CapabilityGateTests(unittest.TestCase):
     def test_explicit_capabilities_are_independent(self):
         gate = CapabilityGate.from_environment(
             {
-                "CHERRYQ_QML_CAPS": (
+                "QONIC_QML_CAPS": (
                     "cover_read,cover_write,metadata_write,"
                     "watcher_control,config_write"
                 )
@@ -78,7 +78,7 @@ class CapabilityGateTests(unittest.TestCase):
     def test_scan_preview_can_be_combined_with_explicit_workflow_actions(self):
         gate = CapabilityGate.from_environment(
             {
-                "CHERRYQ_QML_CAPS": (
+                "QONIC_QML_CAPS": (
                     "scan_preview,watcher_control,queue_mutation,"
                     "batch_convert,config_write"
                 )
@@ -99,7 +99,7 @@ class CapabilityGateTests(unittest.TestCase):
     def test_single_file_convert_can_be_combined_with_workflow_without_overwrite(self):
         gate = CapabilityGate.from_environment(
             {
-                "CHERRYQ_QML_CAPS": (
+                "QONIC_QML_CAPS": (
                     "single_file_convert,watcher_control,queue_mutation,"
                     "batch_convert,config_write,overwrite_file,"
                     "metadata_write,lyrics_write,cover_write"
@@ -128,7 +128,7 @@ class CapabilityGateTests(unittest.TestCase):
         self.assertIn(OVERWRITE_FILE, gate.deniedCapabilities)
 
     def test_legacy_live_flag_does_not_change_the_default_user_profile(self):
-        gate = CapabilityGate.from_environment({"CHERRYQ_QML_LIVE": "1"})
+        gate = CapabilityGate.from_environment({"QONIC_QML_LIVE": "1"})
 
         self.assertTrue(gate.legacyLiveRequested)
         self.assertFalse(gate.previewMode)
@@ -138,9 +138,9 @@ class CapabilityGateTests(unittest.TestCase):
     def test_legacy_user_trial_environment_remains_a_fixed_compatibility_profile(self):
         gate = CapabilityGate.from_environment(
             {
-                "CHERRYQ_QML_USER_TEST": "1",
+                "QONIC_QML_USER_TEST": "1",
                 # The trial profile must not be widened by a stale shell env.
-                "CHERRYQ_QML_CAPS": "overwrite_file,metadata_write",
+                "QONIC_QML_CAPS": "overwrite_file,metadata_write",
             }
         )
 
@@ -173,7 +173,7 @@ class CapabilityGateTests(unittest.TestCase):
             "editor_output_folder": "D:/Music/Editor",
             "target_format": "mp3",
         }
-        gate = CapabilityGate.from_environment({"CHERRYQ_QML_USER_TEST": "1"})
+        gate = CapabilityGate.from_environment({"QONIC_QML_USER_TEST": "1"})
         with (
             patch(
                 "ui_next.bridge.settings_viewmodel.load_config",

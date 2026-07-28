@@ -69,7 +69,7 @@ def publish_confirmed_overwrite(
         )
 
     backup_path = output_path.parent / (
-        f".{output_path.name}.cherryq_rollback_{uuid4().hex}.bak"
+        f".{output_path.name}.qonic_rollback_{uuid4().hex}.bak"
     )
     backup_identity: tuple[int, int] | None = None
     try:

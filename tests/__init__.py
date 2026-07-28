@@ -1,1 +1,1 @@
-"""Automated tests for CherryQ Audio Converter."""
+"""Automated tests for Qonic Audio."""

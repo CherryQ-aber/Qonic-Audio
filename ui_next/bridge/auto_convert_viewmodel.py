@@ -1522,6 +1522,7 @@ class AutoConvertViewModel(BaseViewModel):
     def _effective_output_directory(self, task: dict) -> str:
         return str(
             task.get("output_directory_override")
+            or task.get("output_directory")
             or get_output_folder()
             or ""
         )

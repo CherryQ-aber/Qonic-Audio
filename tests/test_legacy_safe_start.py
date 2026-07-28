@@ -252,7 +252,7 @@ class LegacySafeStartTests(unittest.TestCase):
         app = MagicMock()
         app.exec.return_value = 0
         with (
-            patch.dict(os.environ, {"CHERRYQ_LEGACY_SAFE_START": "1"}),
+            patch.dict(os.environ, {"QONIC_LEGACY_SAFE_START": "1"}, clear=True),
             patch.object(gui, "QApplication", return_value=app),
             patch.object(gui, "apply_theme"),
             patch.object(gui, "MainWindow") as main_window,
@@ -261,6 +261,21 @@ class LegacySafeStartTests(unittest.TestCase):
 
         main_window.assert_called_once_with(safe_start=True)
         main_window.return_value.show.assert_called_once()
+
+    def test_gui_entry_keeps_cherryq_safe_start_alias_during_migration(self):
+        import gui
+
+        app = MagicMock()
+        app.exec.return_value = 0
+        with (
+            patch.dict(os.environ, {"CHERRYQ_LEGACY_SAFE_START": "1"}, clear=True),
+            patch.object(gui, "QApplication", return_value=app),
+            patch.object(gui, "apply_theme"),
+            patch.object(gui, "MainWindow") as main_window,
+        ):
+            self.assertEqual(gui.main(), 0)
+
+        main_window.assert_called_once_with(safe_start=True)
 
 
 if __name__ == "__main__":

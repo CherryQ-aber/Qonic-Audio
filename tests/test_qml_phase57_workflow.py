@@ -43,7 +43,7 @@ class Phase57WorkflowTests(unittest.TestCase):
             watcher.processed_files.clear()
 
     def test_scan_handoff_creates_snapshot_without_starting_conversion(self):
-        gate = CapabilityGate.from_environment({"CHERRYQ_QML_USER_TEST": "1"})
+        gate = CapabilityGate.from_environment({"QONIC_QML_USER_TEST": "1"})
         queue_model = MagicMock()
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -59,9 +59,15 @@ class Phase57WorkflowTests(unittest.TestCase):
                 "preserve_relative_structure": True,
             }
 
-            with patch(
-                "ui_next.bridge.auto_convert_viewmodel.load_config",
-                return_value=config_data,
+            with (
+                patch(
+                    "ui_next.bridge.auto_convert_viewmodel.load_config",
+                    return_value=config_data,
+                ),
+                patch(
+                    "ui_next.bridge.auto_convert_viewmodel.get_output_folder",
+                    return_value=str(root / "missing-global-output"),
+                ),
             ):
                 auto = AutoConvertViewModel(queue_model, capability_gate=gate)
                 scan = ScanPreviewViewModel(gate)
@@ -116,7 +122,7 @@ class Phase57WorkflowTests(unittest.TestCase):
                 auto.shutdown()
 
     def test_real_wav_batch_conversion_keeps_source_and_publishes_new_output(self):
-        gate = CapabilityGate.from_environment({"CHERRYQ_QML_USER_TEST": "1"})
+        gate = CapabilityGate.from_environment({"QONIC_QML_USER_TEST": "1"})
         queue_model = MagicMock()
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -181,7 +187,7 @@ class Phase57WorkflowTests(unittest.TestCase):
                 auto.shutdown()
 
     def test_legacy_live_flag_uses_the_same_default_user_profile(self):
-        gate = CapabilityGate.from_environment({"CHERRYQ_QML_LIVE": "1"})
+        gate = CapabilityGate.from_environment({"QONIC_QML_LIVE": "1"})
 
         self.assertFalse(gate.previewMode)
         self.assertTrue(gate.allows(QUEUE_MUTATION))
@@ -190,7 +196,7 @@ class Phase57WorkflowTests(unittest.TestCase):
         self.assertTrue(gate.allows(CONFIG_WRITE))
 
     def test_user_trial_mode_can_start_watcher_only_after_explicit_confirmation(self):
-        gate = CapabilityGate.from_environment({"CHERRYQ_QML_USER_TEST": "1"})
+        gate = CapabilityGate.from_environment({"QONIC_QML_USER_TEST": "1"})
         queue_model = MagicMock()
         with tempfile.TemporaryDirectory() as temp_dir:
             with (

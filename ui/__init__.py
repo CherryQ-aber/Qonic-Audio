@@ -1,1 +1,1 @@
-"""UI package for CherryQ Audio Converter."""
+"""UI package for Qonic Audio."""

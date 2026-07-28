@@ -6,7 +6,8 @@ def test_pitch_qml_uses_processing_session_not_mock_controls():
     card = (root / "ui_next/qml/components/PitchShiftCard.qml").read_text(encoding="utf-8")
     assert "processingSession" in card
     assert "模拟试听" not in card
-    assert "导出为新文件" in card
+    assert "试听当前设置" in card
+    assert "导出为新文件" not in card
     assert "清理试听缓存" in card
 
 

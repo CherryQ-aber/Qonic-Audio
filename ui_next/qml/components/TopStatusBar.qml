@@ -9,7 +9,7 @@ Rectangle {
 
     property QtObject theme: Theme {}
     property QtObject typography: Typography {}
-    property string appName: "CherryQ Audio Converter"
+    property string appName: "Qonic Audio"
     property string moduleName: ""
     property string statusSummary: ""
     property string versionLabel: ""

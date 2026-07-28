@@ -1,0 +1,85 @@
+{
+  "asset_comparison_status": "BYTE_IDENTICAL",
+  "build_configuration": "GitHub Actions windows-latest; CMake Release; VCPKG_TARGET_TRIPLET=x64-windows-static",
+  "build_materials": [
+    {
+      "local_path": "third_party/source-archives/ncmdump/vcpkg-a62ce77d56ee07513b4b67de1ec2daeaebfae51a.tar.gz",
+      "name": "vcpkg",
+      "sha256": "6BB68555A0653A5FF62B2133DD9B96896322AE53E6C4E1F7D9CB8DF051B77CA5",
+      "verified": true,
+      "version": "a62ce77d56ee07513b4b67de1ec2daeaebfae51a"
+    },
+    {
+      "license": "LGPL-2.1-only OR MPL-1.1",
+      "local_path": "third_party/source-archives/ncmdump/taglib-2.0.2.tar.gz",
+      "name": "TagLib",
+      "sha256": "0DE288D7FE34BA133199FD8512F19CC1100196826EAFCB67A33B224EC3A59737",
+      "sha512": "79f333dbe8ed44076010e33803e3418410516df4b70203962bbefea81ce0a6989a54a9791022488e64f1876573580cbe93920da4b2a7277d6a3f48c946e518fc",
+      "source_url": "https://codeload.github.com/taglib/taglib/tar.gz/refs/tags/v2.0.2",
+      "verified": true,
+      "version": "2.0.2"
+    },
+    {
+      "license": "Zlib",
+      "local_path": "third_party/source-archives/ncmdump/zlib-1.3.1.tar.gz",
+      "name": "zlib",
+      "sha256": "17E88863F3600672AB49182F217281B6FC4D3C762BDE361935E436A95214D05C",
+      "sha512": "8c9642495bafd6fad4ab9fb67f09b268c69ff9af0f4f20cf15dfc18852ff1f312bd8ca41de761b3f8d8e90e77d79f2ccacd3d4c5b19e475ecf09d021fdfe9088",
+      "source_url": "https://codeload.github.com/madler/zlib/tar.gz/refs/tags/v1.3.1",
+      "verified": true,
+      "version": "1.3.1"
+    },
+    {
+      "license": "BSL-1.0",
+      "local_path": "third_party/source-archives/ncmdump/utfcpp-4.0.6.tar.gz",
+      "name": "utfcpp",
+      "sha256": "6920A6A5D6A04B9A89B2A89AF7132F8ACEFD46E0C2A7B190350539E9213816C0",
+      "sha512": "53c59f2e04fe5d36faf98a238b94f774834a34982d481a8170ee144f7f8c2d4ba249a732d90654922944c1075c578690c327091883398c533d604bf49f4a6ecf",
+      "source_url": "https://codeload.github.com/nemtrif/utfcpp/tar.gz/refs/tags/v4.0.6",
+      "verified": true,
+      "version": "4.0.6"
+    }
+  ],
+  "build_materials_closed": true,
+  "build_workflow": ".github/workflows/autobuild.yml",
+  "byte_identical_to_upstream": true,
+  "detected_version": "1.5.1",
+  "evidence_files": [
+    "ncmdump-version.txt",
+    "ncmdump-files.json",
+    "tools/compliance/evidence/ncmdump-1.5.1-release.json"
+  ],
+  "local_binary_sha256": "A1F6F6CE87500B7B1F2A89DBF85B13E81D327EEA4641DAF8AFE0AB840F2C518C",
+  "provided_asset": "ncmdump-1.5.1-windows-amd64.zip",
+  "provided_asset_members": [
+    {
+      "path": "ncmdump.exe",
+      "sha256": "A1F6F6CE87500B7B1F2A89DBF85B13E81D327EEA4641DAF8AFE0AB840F2C518C",
+      "size": 850432
+    }
+  ],
+  "provided_asset_sha256": "BB849221C06B8FDBFF42AEFB86BAEA9C07256568658D80F4BE72A39A2A1632DC",
+  "selected_binary": "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe",
+  "source_archive_local": "third_party/source-archives/ncmdump/ncmdump-76a55d862f767ee20ae417ecd128fde442eea77f.tar.gz",
+  "source_archive_verified": true,
+  "source_package": "https://codeload.github.com/taurusxin/ncmdump/tar.gz/76a55d862f767ee20ae417ecd128fde442eea77f",
+  "source_sha256": "70D1C692130B0C0C53276417FD6246C02C4C39D057005F0435FF4942C7CFF11E",
+  "taglib_linkage": "STATIC_LINK_CANDIDATE",
+  "taglib_linkage_basis": {
+    "embedded_taglib_strings": true,
+    "imported_taglib_dll": false,
+    "note": "这是 PE import 与静态字符串推断，不是链接器构建记录。"
+  },
+  "unresolved_questions": [
+    "官方 GitHub Actions 的具体 runner 镜像版本与编译器补丁版本未在 Release 元数据中固定"
+  ],
+  "upstream_asset": "ncmdump-1.5.1-windows-amd64.zip",
+  "upstream_asset_archive_verified": true,
+  "upstream_asset_local": "third_party/upstream-assets/ncmdump/ncmdump-1.5.1-windows-amd64.zip",
+  "upstream_asset_sha256": "BB849221C06B8FDBFF42AEFB86BAEA9C07256568658D80F4BE72A39A2A1632DC",
+  "upstream_commit": "76a55d862f767ee20ae417ecd128fde442eea77f",
+  "upstream_release": "1.5.1",
+  "upstream_repository": "https://github.com/taurusxin/ncmdump",
+  "usage_mode": "subprocess",
+  "vcpkg_baseline": "a62ce77d56ee07513b4b67de1ec2daeaebfae51a"
+}

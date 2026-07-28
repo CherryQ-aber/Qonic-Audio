@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "target_triplet": "x86_64-w64-mingw32",
+  "compiler": {
+    "c": "x86_64-w64-mingw32-gcc-win32",
+    "cxx": "x86_64-w64-mingw32-g++-win32",
+    "version": "12.2.0-14+deb12u1+25.2+b1",
+    "thread_model": "win32"
+  },
+  "binutils": "2.40-2+10.4",
+  "mingw_w64": "10.0.0-3",
+  "cross_file": "config/mingw64-cross.ini",
+  "build_environment": "lock/build-environment.lock.json"
+}

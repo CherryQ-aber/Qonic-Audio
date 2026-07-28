@@ -1,0 +1,294 @@
+{
+  "license_document_snapshots_complete": true,
+  "license_documents": [
+    {
+      "filename": "Qt-6.11-Licensing.html",
+      "sha256": "1AB9F9FE2B8EEAF2DD78F0D17C7CCDCF72F68DABF5EF273CDD8F9B9858962E07",
+      "size": 24046,
+      "url": "https://doc.qt.io/qt-6/licensing.html"
+    },
+    {
+      "filename": "Qt-6.11.1-Third-Party-Code.html",
+      "sha256": "7E63855BC3A1AD28D6AF64A66E357889B5E7A5FB74F857E36B50089E7A40D505",
+      "size": 100050,
+      "url": "https://doc.qt.io/qt-6/licenses-used-in-qt.html"
+    },
+    {
+      "filename": "Qt-6.11.1-WebEngine-Licensing.html",
+      "sha256": "D65B29A74382245A5C515526DECBF6C3E396BA5093471D22F5342AFCEED70822",
+      "size": 59153,
+      "url": "https://doc.qt.io/qt-6/qtwebengine-licensing.html"
+    },
+    {
+      "filename": "Qt-6.11-SBOM-Documentation.html",
+      "sha256": "32C691C6F9FF0534252C2B6A177EBA4D282B058586971B643DE26CD3BE3F0AC9",
+      "size": 40769,
+      "url": "https://doc.qt.io/qt-6/sbom.html"
+    }
+  ],
+  "observed_at": "2026-07-24T07:26:49+00:00",
+  "pyside_source": {
+    "filename": "pyside-setup-everywhere-src-6.11.1.tar.xz",
+    "last_modified": "Wed, 13 May 2026 09:17:22 GMT",
+    "mirrorlist_url": "https://download.qt.io/official_releases/QtForPython/pyside6/PySide6-6.11.1-src/pyside-setup-everywhere-src-6.11.1.tar.xz.mirrorlist",
+    "package_url": "https://download.qt.io/official_releases/QtForPython/pyside6/PySide6-6.11.1-src/pyside-setup-everywhere-src-6.11.1.tar.xz",
+    "sha256": "6FFD9835BB0DD2C56F061D62F1616BB1707CFC0202B80E3165D6BE087F3965E2",
+    "size": 17963432
+  },
+  "qt_internal_third_party_sources": [
+    {
+      "attribution_path": "qtmultimedia-everywhere-src-6.11.1/src/3rdparty/ffmpeg/qt_attribution.json",
+      "commit": "f46e514491172d15bd74b4abb1814cd2f05a763e",
+      "component": "Qt Multimedia FFmpeg",
+      "copyright": "Copyright (c) 2000-2023 the FFmpeg developers",
+      "filename": "ffmpeg-f46e514491172d15bd74b4abb1814cd2f05a763e.tar.gz",
+      "license": "LGPL-2.1-or-later AND BSD-3-Clause AND BSD-2-Clause AND BSD-Source-Code AND ISC AND MIT AND MPL-2.0",
+      "package_url": "https://codeload.github.com/FFmpeg/FFmpeg/tar.gz/f46e514491172d15bd74b4abb1814cd2f05a763e",
+      "sha256": "1FA39B5A6AE9AC02C2CF280EC5CC8321A0DD0B9AB34B6C73133CAFCCAF5DFA79",
+      "size": 15926127,
+      "tag": "n7.1.3",
+      "tag_object": "0a9a757e96fdf053697084bbd1f620edeac9d084",
+      "version": "7.1.3"
+    }
+  ],
+  "qt_source_modules": [
+    {
+      "filename": "qt3d-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:38:32 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qt3d-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qt3d",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qt3d-everywhere-src-6.11.1.tar.xz",
+      "sha256": "A66D8C8E049D1EE7A7687B34940F3555D0D7084858B6DC78D1E1CB7DF40A0107",
+      "size": 141869788
+    },
+    {
+      "filename": "qtbase-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:38:35 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtbase-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtbase",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtbase-everywhere-src-6.11.1.tar.xz",
+      "sha256": "D9594A31228AA23AD6B531719A29B45F0F3989FE6C136D45767EA179F233C1AC",
+      "size": 50648500
+    },
+    {
+      "filename": "qtcharts-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:38:36 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtcharts-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtcharts",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtcharts-everywhere-src-6.11.1.tar.xz",
+      "sha256": "3FE3ED318C2A86D1417C5C29CF7494275E8FD4B537CD37453F5599C57365515C",
+      "size": 4651704
+    },
+    {
+      "filename": "qtdatavis3d-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:38:36 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtdatavis3d-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtdatavis3d",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtdatavis3d-everywhere-src-6.11.1.tar.xz",
+      "sha256": "1E1A7B9C0A947731655334F5D79252D40CDAF58C1801074EA5E9E0821D6693AC",
+      "size": 3939800
+    },
+    {
+      "filename": "qtdeclarative-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:38:37 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtdeclarative-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtdeclarative",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtdeclarative-everywhere-src-6.11.1.tar.xz",
+      "sha256": "52E670F670B0304F534B24F98C47CEB8A41BB710464414EBC9527EC71CC86AA4",
+      "size": 38744644
+    },
+    {
+      "filename": "qtgraphs-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:38:40 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtgraphs-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtgraphs",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtgraphs-everywhere-src-6.11.1.tar.xz",
+      "sha256": "84B1138AB68A8E2956439895A4B85EB68DDA48AC169DA673F67191873B1E0462",
+      "size": 9285696
+    },
+    {
+      "filename": "qtlocation-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:38:40 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtlocation-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtlocation",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtlocation-everywhere-src-6.11.1.tar.xz",
+      "sha256": "3791CE77299E6F600A593D0FBFA5BD32FBCFC2D16104782B84ACC489E382E41B",
+      "size": 3151756
+    },
+    {
+      "filename": "qtmultimedia-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:38:41 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtmultimedia-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtmultimedia",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtmultimedia-everywhere-src-6.11.1.tar.xz",
+      "sha256": "390F8E52DDEE3ACA5C4DE7EEAD900C84C4FA61FF6D1F0EBEA9C7543365C09B0A",
+      "size": 10243896
+    },
+    {
+      "filename": "qtpositioning-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:38:41 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtpositioning-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtpositioning",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtpositioning-everywhere-src-6.11.1.tar.xz",
+      "sha256": "D5E6B91801AE286E7630016CAEA3BDC5E1978B4291D6741D0D64C125650F78F5",
+      "size": 653096
+    },
+    {
+      "filename": "qtquick3d-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:38:43 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtquick3d-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtquick3d",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtquick3d-everywhere-src-6.11.1.tar.xz",
+      "sha256": "C76B85DE3F8AA2A4BEE64987ACFEF560675C1B378B92076C7C6264613E5B456F",
+      "size": 69622816
+    },
+    {
+      "filename": "qtquicktimeline-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:38:44 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtquicktimeline-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtquicktimeline",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtquicktimeline-everywhere-src-6.11.1.tar.xz",
+      "sha256": "AF53F643FD9E4045E1B9BA919998E5C048CA877452C08036C9C8C5EE07EA8C27",
+      "size": 97268
+    },
+    {
+      "filename": "qtremoteobjects-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:38:44 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtremoteobjects-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtremoteobjects",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtremoteobjects-everywhere-src-6.11.1.tar.xz",
+      "sha256": "40629895C69531A687A9C0258316CEE3F04C2D18B2BF2AD36DC83E76A58F111A",
+      "size": 529300
+    },
+    {
+      "filename": "qtscxml-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:38:44 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtscxml-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtscxml",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtscxml-everywhere-src-6.11.1.tar.xz",
+      "sha256": "8E495245E5D1FE75DE612C8A07E4043635407A1979BB1DD588F1751D1390203F",
+      "size": 550144
+    },
+    {
+      "filename": "qtsensors-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:38:44 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtsensors-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtsensors",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtsensors-everywhere-src-6.11.1.tar.xz",
+      "sha256": "23617062DA7BE526D023DEC7F9B76231001A1098A7E5F94C646F2E4F87CFCF8F",
+      "size": 1485472
+    },
+    {
+      "filename": "qtshadertools-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:38:45 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtshadertools-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtshadertools",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtshadertools-everywhere-src-6.11.1.tar.xz",
+      "sha256": "2075052F9B23BCF9DE045BBD180037084942F82CCE870AAB14A1454902C982FC",
+      "size": 1216568
+    },
+    {
+      "filename": "qtspeech-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:38:45 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtspeech-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtspeech",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtspeech-everywhere-src-6.11.1.tar.xz",
+      "sha256": "C035C318012025875A653245701A23D3807E8E46B8BF7987877842219C273F14",
+      "size": 249232
+    },
+    {
+      "filename": "qtsvg-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:38:45 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtsvg-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtsvg",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtsvg-everywhere-src-6.11.1.tar.xz",
+      "sha256": "7F3CF02F4824BF03C2C5859EA6DB173BF1482A1DAF24E6CDF7BC78CFA26A8A94",
+      "size": 2336944
+    },
+    {
+      "filename": "qtvirtualkeyboard-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:38:45 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtvirtualkeyboard-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtvirtualkeyboard",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtvirtualkeyboard-everywhere-src-6.11.1.tar.xz",
+      "sha256": "A1C6967B326243B2CA8D50BC7B7F7852C3975D9AA6CE4B186EBDF35BB1007E1C",
+      "size": 3293452
+    },
+    {
+      "filename": "qtwebchannel-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:38:45 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtwebchannel-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtwebchannel",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtwebchannel-everywhere-src-6.11.1.tar.xz",
+      "sha256": "69FBB50B71D6E6596C2D6863EE9A9C984A4D01378EE2B7B4163BB467A0158D82",
+      "size": 193204
+    },
+    {
+      "filename": "qtwebengine-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:38:54 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtwebengine-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtwebengine",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtwebengine-everywhere-src-6.11.1.tar.xz",
+      "sha256": "679C66CCC6C158FC215E9C58EF160331ECD29974232E345C05161889F8667083",
+      "size": 578914356
+    },
+    {
+      "filename": "qtwebsockets-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:39:06 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtwebsockets-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtwebsockets",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtwebsockets-everywhere-src-6.11.1.tar.xz",
+      "sha256": "243E3AA11924C8C5C1645E892F62D013CAA3766C57512CA926D5B58146646FBF",
+      "size": 452228
+    },
+    {
+      "filename": "qtwebview-everywhere-src-6.11.1.tar.xz",
+      "last_modified": "Tue, 12 May 2026 04:39:06 GMT",
+      "mirrorlist_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtwebview-everywhere-src-6.11.1.tar.xz.mirrorlist",
+      "module": "qtwebview",
+      "package_url": "https://download.qt.io/official_releases/qt/6.11/6.11.1/submodules/qtwebview-everywhere-src-6.11.1.tar.xz",
+      "sha256": "8D62C8EF70D58260E9B3E8B5FC1A8BC48495308A4437003A394483757427133D",
+      "size": 128608
+    }
+  ],
+  "source_archives_identified": true,
+  "version": "6.11.1",
+  "wheels": [
+    {
+      "filename": "pyside6-6.11.1-cp310-abi3-win_amd64.whl",
+      "package": "PySide6",
+      "python_version": "cp310",
+      "sha256": "0968877AB1FB4EF3587A284DA6FE05E8647ADA56A6A3750B6395188E01F4ABA6",
+      "size": 578377,
+      "upload_time": "2026-05-13T09:47:40.760997Z",
+      "url": "https://files.pythonhosted.org/packages/57/f2/d9d8ce1373dabb37e5919f63cd18446556079631d3f2eea3ada03c29f6b8/pyside6-6.11.1-cp310-abi3-win_amd64.whl"
+    },
+    {
+      "filename": "pyside6_essentials-6.11.1-cp310-abi3-win_amd64.whl",
+      "package": "PySide6_Essentials",
+      "python_version": "cp310",
+      "sha256": "63311BD48E32C584599AB04B9EF7C324082374CD2C9FA533F978FB893BB47E40",
+      "size": 77549267,
+      "upload_time": "2026-05-13T09:43:44.920842Z",
+      "url": "https://files.pythonhosted.org/packages/64/0e/b663ecc96ca57b5c91b83b6615d6b174380b0faf30338125c26e053d6aa7/pyside6_essentials-6.11.1-cp310-abi3-win_amd64.whl"
+    },
+    {
+      "filename": "pyside6_addons-6.11.1-cp310-abi3-win_amd64.whl",
+      "package": "PySide6_Addons",
+      "python_version": "cp310",
+      "sha256": "0D13C4DFD671B050A48E4F8D8DDC724B7248F9C0437E7FC47FDF316278572923",
+      "size": 168816308,
+      "upload_time": "2026-05-13T09:40:13.541328Z",
+      "url": "https://files.pythonhosted.org/packages/9a/bd/8adc4d350b3b363f3dfc8fccdcf5bfed25f7e36c2fff30c64e106f4f1572/pyside6_addons-6.11.1-cp310-abi3-win_amd64.whl"
+    },
+    {
+      "filename": "shiboken6-6.11.1-cp310-abi3-win_amd64.whl",
+      "package": "shiboken6",
+      "python_version": "cp310",
+      "sha256": "C2C6863AA80EC18C0F82CEA3417837B279CDC60024AC17123461DC9042577DF7",
+      "size": 1223647,
+      "upload_time": "2026-05-13T09:47:05.924195Z",
+      "url": "https://files.pythonhosted.org/packages/52/b5/3f6fb2ee65b534193fb4ef713dd619dc31dadff5d12c16979a7699ad58be/shiboken6-6.11.1-cp310-abi3-win_amd64.whl"
+    }
+  ]
+}

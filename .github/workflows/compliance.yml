@@ -1,0 +1,104 @@
+name: Third-party compliance
+
+on:
+  pull_request:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compliance:
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install pinned project and compliance test dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Select frozen authoritative onedir release
+        id: authority
+        shell: pwsh
+        run: |
+          $base = "Release/External_Test/2026-07-24_b4edd4d"
+          $dist = "$base/Qonic_Audio_v5.0_internal_test"
+          $archive = "$base/Qonic_Audio_v5.0_internal_test.7z"
+          if ((Test-Path -LiteralPath $dist) -and (Test-Path -LiteralPath $archive)) {
+            "dist=$dist" >> $env:GITHUB_OUTPUT
+            "archive=$archive" >> $env:GITHUB_OUTPUT
+          } else {
+            New-Item -ItemType Directory -Path ".compliance-empty-dist" -Force | Out-Null
+            "dist=.compliance-empty-dist" >> $env:GITHUB_OUTPUT
+            "archive=" >> $env:GITHUB_OUTPUT
+            Write-Warning "Frozen release binaries are unavailable; strict audit must remain blocked."
+          }
+
+      - name: Run compliance tool tests
+        shell: pwsh
+        run: python -m unittest discover -s Tools/compliance/tests -p "test_*.py" -v
+
+      - name: Collect compliance evidence
+        id: collect
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $arguments = @(
+            "Tools/compliance/collect_all.py",
+            "--project-root", ".",
+            "--dist-path", "${{ steps.authority.outputs.dist }}",
+            "--output", "compliance/report"
+          )
+          $archive = "${{ steps.authority.outputs.archive }}"
+          if ($archive) {
+            $arguments += @("--dist-archive", $archive)
+          }
+          python @arguments
+          "exit_code=$LASTEXITCODE" >> $env:GITHUB_OUTPUT
+
+      - name: Validate manifest strictly
+        id: validate
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          python Tools/compliance/validate_compliance.py `
+            --manifest compliance/report/THIRD_PARTY_MANIFEST.json `
+            --strict
+          "exit_code=$LASTEXITCODE" >> $env:GITHUB_OUTPUT
+
+      - name: Upload compliance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qonic-audio-compliance
+          path: |
+            compliance/
+            third_party/
+          if-no-files-found: error
+
+      - name: Enforce BLOCKER status
+        if: always()
+        shell: pwsh
+        run: |
+          $collect = [int]"${{ steps.collect.outputs.exit_code }}"
+          $validate = [int]"${{ steps.validate.outputs.exit_code }}"
+          if ($collect -ge 2 -or $validate -ge 2) {
+            throw "Compliance BLOCKER or tool failure detected."
+          }
+          if ($collect -eq 1 -or $validate -eq 1) {
+            Write-Warning "Compliance completed with warnings."
+          }

@@ -34,7 +34,7 @@ class _AudioPlayerStub(QObject):
 class LyricsSyncViewModelTests(unittest.TestCase):
     def setUp(self):
         self.edit_session = _EditSessionStub(
-            "作词：CherryQ\n"
+            "作词：Qonic\n"
             "[00:01.000]Hello\n"
             "[00:01.000]你好\n"
             "[00:03.50]Next\n"

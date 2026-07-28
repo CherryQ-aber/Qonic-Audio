@@ -67,9 +67,12 @@ class QmlNative2kWindowLayoutTests(unittest.TestCase):
         export = self._source("ui_next/qml/components/ExportResultPanel.qml")
         metadata_form = self._source("ui_next/qml/components/MetadataForm.qml")
         cover = self._source("ui_next/qml/components/CoverPreviewCard.qml")
-        self.assertIn("contentHeight: processingContent.implicitHeight", processing)
+        self.assertIn(
+            "contentHeight: Math.max(height, processingContent.implicitHeight)",
+            processing,
+        )
         self.assertIn("implicitHeight: pitchContent.implicitHeight", pitch)
-        self.assertIn("columns: root.width >= 900 ? 3 : 1", pitch)
+        self.assertIn("columns: root.width >= 700 ? 2 : 1", pitch)
         self.assertIn("implicitHeight: previewContent.implicitHeight", preview)
         self.assertIn("implicitHeight: exportContent.implicitHeight", export)
         self.assertIn("implicitHeight: metadataContent.implicitHeight", metadata_form)

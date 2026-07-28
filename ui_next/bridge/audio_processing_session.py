@@ -89,7 +89,7 @@ class ProcessingSessionViewModel(BaseViewModel):
         super().__init__(capability_gate=capability_gate)
         self._file_session, self._audio_player, self._edit_session = file_session, audio_player, edit_session
         self._session_id = uuid.uuid4().hex
-        self._workspace = Path(tempfile.gettempdir()) / "CherryQ_Audio_Converter" / "processing" / self._session_id
+        self._workspace = Path(tempfile.gettempdir()) / "Qonic_Audio" / "processing" / self._session_id
         self._source_path = ""; self._source_generation = 0; self._semitone = 0
         self._state = "empty"; self._preview_path = ""; self._preview_generation = 0; self._preview_valid = False
         self._current_playback_source = "original"; self._export_path = ""; self._export_result = {}; self._error_code = ""; self._error_message = ""; self._progress = 0
@@ -619,7 +619,7 @@ class ProcessingSessionViewModel(BaseViewModel):
             if self._workspace.exists(): shutil.rmtree(self._workspace)
         except OSError:
             pass
-        self._workspace = Path(tempfile.gettempdir()) / "CherryQ_Audio_Converter" / "processing" / uuid.uuid4().hex
+        self._workspace = Path(tempfile.gettempdir()) / "Qonic_Audio" / "processing" / uuid.uuid4().hex
 
     def _set_player_source(self, path: str, label: str, source_type: str, autoplay: bool, position: int) -> bool:
         """Use the player's explicit source model, with old test doubles supported."""

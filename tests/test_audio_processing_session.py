@@ -8,7 +8,7 @@ from ui_next.bridge.capabilities import AUDIO_EXPORT, AUDIO_PLAYBACK, AUDIO_PROC
 
 
 def test_processing_capabilities_are_explicit_and_default_user_mode_is_available():
-    assert CapabilityGate.from_environment({"CHERRYQ_QML_LIVE": "1"}).allows(AUDIO_PROCESSING)
+    assert CapabilityGate.from_environment({"QONIC_QML_LIVE": "1"}).allows(AUDIO_PROCESSING)
     gate = CapabilityGate("audio_playback,audio_processing,audio_export")
     assert gate.allows(AUDIO_PLAYBACK)
     assert gate.allows(AUDIO_PROCESSING)

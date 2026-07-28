@@ -32,12 +32,12 @@ from ui_next.bridge.window_controller import WindowController
 try:
     from app_info import APP_DISPLAY_NAME, APP_VERSION
 except ImportError:
-    APP_DISPLAY_NAME = "CherryQ Audio Converter"
+    APP_DISPLAY_NAME = "Qonic Audio"
     APP_VERSION = "QML Preview"
 
 
 def _print_startup_error(message: str) -> None:
-    print(f"[CherryQ QML UI] {message}", file=sys.stderr)
+    print(f"[Qonic QML UI] {message}", file=sys.stderr)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -48,31 +48,51 @@ def main(argv: list[str] | None = None) -> int:
         _print_startup_error(str(exc))
         return 2
 
-    requested_theme = os.environ.get("CHERRYQ_QML_THEME", "dark").strip().lower()
-    qml_theme_mode = requested_theme if requested_theme in {"dark", "light"} else "dark"
+    theme_environment_name = "QONIC_QML_THEME"
+    legacy_theme_environment_used = False
+    if theme_environment_name in os.environ:
+        requested_theme = os.environ.get(theme_environment_name, "dark")
+    else:
+        theme_environment_name = "CHERRYQ_QML_THEME"
+        requested_theme = os.environ.get(theme_environment_name, "dark")
+        legacy_theme_environment_used = theme_environment_name in os.environ
+    requested_theme = requested_theme.strip().lower()
+    supported_themes = {"dark", "light", "black", "purple"}
+    qml_theme_mode = requested_theme if requested_theme in supported_themes else "dark"
     capability_gate = runtime_config.create_capability_gate()
 
     QQuickStyle.setStyle("Basic")
     app = QApplication(list(runtime_config.app_arguments))
     app.setApplicationName(APP_DISPLAY_NAME)
     app.setApplicationVersion(APP_VERSION)
-    app.setOrganizationName("CherryQ Studio")
+    app.setOrganizationName("Qonic")
 
-    print(f"[CherryQ QML UI] 当前模式：{capability_gate.modeLabel}")
-    print(f"[CherryQ QML UI] 可用功能：{capability_gate.enabledFeatureSummary}")
+    print(f"[Qonic QML UI] 当前模式：{capability_gate.modeLabel}")
+    print(f"[Qonic QML UI] 可用功能：{capability_gate.enabledFeatureSummary}")
     if runtime_config.legacy_user_trial_requested:
-        print("[CherryQ QML UI] 已兼容 CHERRYQ_QML_USER_TEST=1，并使用默认用户模式。")
+        print("[Qonic QML UI] 已兼容 QONIC_QML_USER_TEST=1，并使用默认用户模式。")
     if runtime_config.legacy_capabilities_requested:
-        print("[CherryQ QML UI] 已兼容 CHERRYQ_QML_CAPS 的受限启动配置。")
-    if requested_theme not in {"dark", "light"}:
+        print("[Qonic QML UI] 已兼容 QONIC_QML_CAPS 的受限启动配置。")
+    if runtime_config.legacy_environment_variables:
+        legacy_names = ", ".join(runtime_config.legacy_environment_variables)
         print(
-            "[CherryQ QML UI] CHERRYQ_QML_THEME 仅支持 dark/light；"
+            f"[Qonic QML UI] 检测到旧环境变量 {legacy_names}；"
+            "请迁移到对应的 QONIC_* 名称。"
+        )
+    if requested_theme not in supported_themes:
+        print(
+            "[Qonic QML UI] QONIC_QML_THEME 仅支持 dark/light/black/purple；"
             "已回退深色主题。"
         )
-    print(f"[CherryQ QML UI] 会话主题：{qml_theme_mode}")
+    elif legacy_theme_environment_used:
+        print(
+            "[Qonic QML UI] 检测到旧环境变量 CHERRYQ_QML_THEME；"
+            "请迁移到 QONIC_QML_THEME。"
+        )
+    print(f"[Qonic QML UI] 会话主题：{qml_theme_mode}")
     if runtime_config.legacy_live_requested:
         print(
-            "[CherryQ QML UI] CHERRYQ_QML_LIVE=1 不再自动开放真实能力；"
+            "[Qonic QML UI] QONIC_QML_LIVE=1 不再自动开放真实能力；"
             "普通启动已使用默认用户模式。"
         )
 

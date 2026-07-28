@@ -80,7 +80,7 @@ def test_real_media_all_drafts_export_and_read_back_without_touching_source(
         EditExportRequest(
             str(source),
             str(output),
-            metadata_changes={"title": "CherryQ 测试"},
+            metadata_changes={"title": "Qonic 测试"},
             lyrics_text="[00:00.00]歌词测试",
             cover_action="replace",
             cover_data=_png_bytes(),
@@ -95,7 +95,7 @@ def test_real_media_all_drafts_export_and_read_back_without_touching_source(
     assert _sha256(source) == source_hash
     metadata = read_audio_metadata(str(output), include_cover=True)
     lyrics = read_embedded_lyrics(str(output))
-    assert metadata["title"] == "CherryQ 测试"
+    assert metadata["title"] == "Qonic 测试"
     assert metadata["cover_data"]
     assert lyrics["lyrics_text"] == "[00:00.00]歌词测试"
 

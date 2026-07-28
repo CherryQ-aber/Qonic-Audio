@@ -382,7 +382,7 @@ class EditExportService:
         except OSError as exc:
             return _fail(result, "lrc_temp_write_failed", f"无法创建 LRC 输出目录：{exc}")
 
-        temp_path = output.parent / f".{output.stem}.cherryq_lyrics_{uuid4().hex}.tmp.lrc"
+        temp_path = output.parent / f".{output.stem}.qonic_lyrics_{uuid4().hex}.tmp.lrc"
         temp_identity: tuple[int, int] | None = None
         try:
             original_identity = _identity(output) if overwrite_existing else None
@@ -438,7 +438,7 @@ class EditExportService:
                     or str(verification.get("lyrics_text") or "") != text
                 ):
                     restore_path = output.parent / (
-                        f".{output.stem}.cherryq_restore_{uuid4().hex}.tmp.lrc"
+                        f".{output.stem}.qonic_restore_{uuid4().hex}.tmp.lrc"
                     )
                     restored = False
                     try:
@@ -693,7 +693,7 @@ def _normalized_lyrics_for_verification(value: object) -> str:
 
 
 def _make_temp_path(output: Path) -> Path:
-    return output.parent / f".{output.stem}.cherryq_edit_{uuid4().hex}.tmp{output.suffix}"
+    return output.parent / f".{output.stem}.qonic_edit_{uuid4().hex}.tmp{output.suffix}"
 
 
 def _identity(path: Path) -> tuple[int, int] | None:

@@ -6,11 +6,19 @@ venv/
 
 # Local runtime state
 config.json
+config.json.bak
 logs/
 Temp/
 Music_input/
 Music_Output/
 *.log
+
+# Internal planning and review artifacts
+Codex_memory/
+Codex执行记录/
+Code_Review_Packages/
+.reasonix/
+v3大版本总结_v4启动引用.md
 
 # Build and release output
 build/
@@ -18,6 +26,21 @@ dist/
 Release/
 gui.spec
 main.spec
+
+# Qonic-maintained FFmpeg self-build workspaces and candidate binaries
+third_party/ffmpeg-build/sources/*
+!third_party/ffmpeg-build/sources/.gitkeep
+third_party/ffmpeg-build/work/*
+!third_party/ffmpeg-build/work/.gitkeep
+third_party/ffmpeg-build/output/*
+!third_party/ffmpeg-build/output/.gitkeep
+
+# Downloaded upstream compliance caches are verified by committed manifests
+# and hashes, but are too large for ordinary Git storage.
+third_party/source-archives/
+third_party/upstream-assets/
+ncmdump-1.5.1-windows-amd64.zip
+third_party/ffmpeg-build/*.bak
 
 # Large local binaries and audio fixtures
 Tools/ffmpeg/bin/*.exe

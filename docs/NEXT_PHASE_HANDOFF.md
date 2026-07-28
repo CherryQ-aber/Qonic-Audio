@@ -15,7 +15,7 @@
 - 安全 smoke：`python -B main_qml.py --qml-smoke-test --qml-open-module=autoConvert`
 - 安全预览：`python -B main_qml.py --preview`
 - Legacy Widgets：`python gui.py`
-- Legacy 安全导入：`CHERRYQ_LEGACY_SAFE_START=1 python -c "import gui"`
+- Legacy 安全导入：`QONIC_LEGACY_SAFE_START=1 python -c "import gui"`
 
 ## 已完成架构
 

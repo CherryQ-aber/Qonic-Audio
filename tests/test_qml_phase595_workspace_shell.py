@@ -309,6 +309,8 @@ class Phase595RealAppShellTests(unittest.TestCase):
         self.assertFalse(refresh_timer.isActive())
         for key in (
             "autoConvertViewModel",
+            "settingsViewModel",
+            "folderBrowserModel",
             "editorFileBrowserViewModel",
             "processingSessionViewModel",
             "editSessionViewModel",

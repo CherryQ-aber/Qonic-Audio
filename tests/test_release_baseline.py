@@ -13,7 +13,15 @@ import formats
 import lyrics
 import metadata
 import watcher
-from app_info import APP_PACKAGE_BASENAME, APP_RELEASE_NOTES_NAME, APP_WINDOW_TITLE
+from app_info import (
+    APP_BRAND_NAME,
+    APP_DESCRIPTION,
+    APP_DISPLAY_NAME,
+    APP_PACKAGE_BASENAME,
+    APP_RELEASE_NOTES_NAME,
+    APP_SPEC_NAME,
+    APP_WINDOW_TITLE,
+)
 from config import APP_VERSION
 
 
@@ -1101,44 +1109,85 @@ class WatcherTaskTests(unittest.TestCase):
 class ReleaseConfigurationTests(unittest.TestCase):
 
     def test_release_version_is_patch_baseline(self):
+        self.assertEqual(APP_BRAND_NAME, "Qonic")
+        self.assertEqual(APP_DISPLAY_NAME, "Qonic Audio")
+        self.assertEqual(APP_DESCRIPTION, "Qonic Audio Converter & Editor")
         self.assertEqual(APP_VERSION, "5.0 Internal Test")
         self.assertEqual(
             APP_WINDOW_TITLE,
-            "CherryQ Audio Converter v5.0 Internal Test",
+            "Qonic Audio v5.0 Internal Test",
         )
 
     def test_release_package_basename_is_versioned(self):
         self.assertEqual(
             APP_PACKAGE_BASENAME,
-            "CherryQ_Audio_Converter_v5.0_internal_test",
+            "Qonic_Audio_v5.0_internal_test",
         )
 
     def test_spec_only_packages_required_external_tools(self):
-        spec_text = Path("CherryQ_Audio_Converter.spec").read_text(
+        self.assertEqual(APP_SPEC_NAME, "Qonic_Audio.spec")
+        spec_text = Path(APP_SPEC_NAME).read_text(
             encoding="utf-8"
         )
 
+        self.assertIn("['main_qml.py']", spec_text)
+        self.assertNotIn("['gui.py']", spec_text)
+        self.assertIn("('ui_next/qml', 'ui_next/qml')", spec_text)
+        self.assertIn("('Assets/icon.ico', 'Assets')", spec_text)
         self.assertIn("Tools/ffmpeg/bin/ffmpeg.exe", spec_text)
+        self.assertIn("Tools/ffmpeg/bin/ffprobe.exe", spec_text)
         self.assertIn("Tools/ncmdump/ncmdump.exe", spec_text)
         self.assertIn("name=APP_PACKAGE_BASENAME", spec_text)
+        self.assertIn("version='windows_version_info.txt'", spec_text)
         self.assertNotIn("('Tools', 'Tools')", spec_text)
+
+        version_info = Path("windows_version_info.txt").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("Qonic Audio Converter & Editor", version_info)
+        self.assertIn("Qonic_Audio_v5.0_internal_test.exe", version_info)
+        self.assertIn("5.0 Internal Test", version_info)
 
     def test_release_build_script_uses_versioned_outputs_and_required_docs(self):
         build_script = Path("build_release.ps1").read_text(encoding="utf-8")
 
         self.assertIn('Join-Path $Root "CHANGELOG.md"', build_script)
         self.assertIn('Join-Path $Root "Known_Issues.md"', build_script)
+        self.assertIn('Join-Path $Root "TEST_CHECKLIST.md"', build_script)
+        self.assertIn('Join-Path $Root "EXTERNAL_TEST_GUIDE.md"', build_script)
         self.assertIn('Join-Path $Root "config.example.json"', build_script)
+        self.assertIn('Join-Path $Root "LICENSE"', build_script)
+        self.assertIn('Join-Path $Root "windows_version_info.txt"', build_script)
         self.assertIn("APP_PACKAGE_BASENAME", build_script)
+        self.assertIn("APP_SPEC_NAME", build_script)
         self.assertIn("APP_RELEASE_NOTES_NAME", build_script)
         self.assertIn("AudioEditor_Output", build_script)
+        self.assertIn(r"Tools\ncmdump\ncmdump.exe", build_script)
+        self.assertNotIn(r"Tools\ncmdump\cmdump.exe", build_script)
+        self.assertIn(r"Tools\ffmpeg\bin\ffprobe.exe", build_script)
+        self.assertIn(r"_internal\ui_next\qml\AppShell.qml", build_script)
+        self.assertIn(r"_internal\Tools\ffmpeg\bin\ffprobe.exe", build_script)
+        self.assertIn("--qml-smoke-test", build_script)
+        self.assertIn("Start-Process", build_script)
+        self.assertIn(r"logs\runtime.log", build_script)
+        self.assertIn("SHA256SUMS.txt", build_script)
+        self.assertIn("[switch]$IncludeSfx", build_script)
+        self.assertIn("if ($IncludeSfx)", build_script)
+        self.assertIn("$SkipArchive -and $IncludeSfx", build_script)
+        self.assertIn("@($ArchivePath, $SfxPath, $ChecksumPath)", build_script)
 
     def test_release_audit_docs_exist(self):
         self.assertTrue(Path("README.md").is_file())
         self.assertTrue(Path("CHANGELOG.md").is_file())
         self.assertTrue(Path(APP_RELEASE_NOTES_NAME).is_file())
         self.assertTrue(Path("Known_Issues.md").is_file())
+        self.assertTrue(Path("EXTERNAL_TEST_GUIDE.md").is_file())
         self.assertTrue(Path("config.example.json").is_file())
+        license_text = Path("LICENSE").read_text(encoding="utf-8")
+        self.assertIn("GNU GENERAL PUBLIC LICENSE", license_text)
+        self.assertIn("Version 3, 29 June 2007", license_text)
+        readme = Path("README.md").read_text(encoding="utf-8")
+        self.assertIn("GPL-3.0-or-later", readme)
 
 
 class ConfigPitchShiftTests(unittest.TestCase):

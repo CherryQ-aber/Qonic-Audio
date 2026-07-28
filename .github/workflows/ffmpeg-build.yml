@@ -1,0 +1,35 @@
+name: FFmpeg self-build candidate
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "third_party/ffmpeg-build/**"
+      - "compliance/report/ffmpeg-self-build/**"
+
+jobs:
+  static-validation:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Validate locks and policy
+        run: python3 -m pytest third_party/ffmpeg-build/tests -q
+
+  candidate:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Build pinned container
+        run: docker build --pull=false -f third_party/ffmpeg-build/config/Dockerfile -t qonic-ffmpeg-build:locked .
+      - name: Build isolated candidate
+        run: docker run --rm --platform linux/amd64 -v "$PWD:/repo" qonic-ffmpeg-build:locked
+      - name: Verify formal runtime was not modified
+        run: git diff --exit-code -- Tools/ffmpeg/bin
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qonic-ffmpeg-candidate
+          path: |
+            third_party/ffmpeg-build/output/candidate/
+            third_party/ffmpeg-build/output/source-bundle/
+          if-no-files-found: error

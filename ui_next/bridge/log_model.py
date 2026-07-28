@@ -175,7 +175,7 @@ def install_log_model_handler(log_model: LogModel) -> QtLogHandler:
     root_logger = logging.getLogger()
 
     for handler in root_logger.handlers:
-        if getattr(handler, "_cherryq_qml_log_handler", False):
+        if getattr(handler, "_qonic_qml_log_handler", False):
             if isinstance(handler, QtLogHandler):
                 try:
                     handler.logEmitted.disconnect()
@@ -186,7 +186,7 @@ def install_log_model_handler(log_model: LogModel) -> QtLogHandler:
 
     handler = QtLogHandler()
     handler.setLevel(logging.DEBUG)
-    handler._cherryq_qml_log_handler = True
+    handler._qonic_qml_log_handler = True
     handler.logEmitted.connect(log_model.appendLog)
     root_logger.addHandler(handler)
     return handler

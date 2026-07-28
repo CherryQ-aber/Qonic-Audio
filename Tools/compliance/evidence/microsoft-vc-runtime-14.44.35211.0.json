@@ -1,0 +1,18 @@
+{
+  "evidence_observed_at": "2026-07-24",
+  "component": "Microsoft Visual C++ v14 Runtime",
+  "detected_version": "14.44.35211.0",
+  "publisher": "Microsoft Corporation",
+  "license_status": "PROPRIETARY-REDISTRIBUTABLE-TERMS-RECORDED",
+  "license_terms": {
+    "url": "https://visualstudio.microsoft.com/license-terms/vs2026-ga-visualcpp-v14-redist-runtime/",
+    "snapshot": "third_party/licenses/microsoft/Microsoft-Visual-Cpp-V14-Redistributable-License-Terms.html",
+    "snapshot_sha256": "F5B1EE76A201DDBD56DBEA08CCC24D4CBAF597897DF27F6AA76B2C7952AA4299"
+  },
+  "redistribution_guidance": {
+    "url": "https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files?view=msvc-170",
+    "snapshot": "third_party/licenses/microsoft/Microsoft-Visual-Cpp-Redistribution-Guidance.html",
+    "snapshot_sha256": "ABB6FAF04C2924E5A15F6568965058BBCDCEAC09F9946FB997526C4734DE48F8"
+  },
+  "owner_confirmation_required": "Confirm that the build/distribution is covered by a valid Visual Studio or Build Tools license and that bundled files are unmodified redistributable runtime files."
+}

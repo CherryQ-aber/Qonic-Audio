@@ -1,16 +1,24 @@
-# CherryQ Audio Converter
+# Qonic Audio
 
-CherryQ Audio Converter 是一个面向 Windows 的本地音频处理工具，包含“自动转码”和“音频编辑”两个工作区。
+**Qonic Audio Converter & Editor** 是一个面向 Windows 的本地音频处理工具，包含“自动转码”和“音频编辑”两个工作区。
 
 当前版本：`v5.0 Internal Test`
 当前阶段：`v5.0 内部测试版`
 
 > 这是 UI 重构后的内部人工测试基线，不是正式对外发行版。QML 主界面与旧 Widgets 界面目前并存；User Trial Mode 只供人工验收，不能视为最终用户流程。
 
+## 开源与分发
+
+- Qonic Audio 项目自有代码采用 `GPL-3.0-or-later`，完整条款见 `LICENSE`。
+- 第三方组件继续遵循各自许可证，来源和审核材料见 `LICENSES/`。
+- 当前主分发工件为便携版 `.7z` 和 SHA-256 校验清单。
+- 安装器、数字签名、自动更新与文件关联留到 RC 之后的独立计划。
+- 当前版本尚未晋级 RC；RC1 门禁和推荐工件见 `docs/RELEASE_STRATEGY.md`。
+
 ## v5.0 内部测试版定位
 
 - 验收 QML 工作台的受控扫描、队列、转换、watcher、设置保存与既有音频编辑链路。
-- 保持 `CapabilityGate`、no-clobber 发布、源文件保护和显式写入确认；`CHERRYQ_QML_LIVE=1` 不能自行授予真实能力。
+- 保持 `CapabilityGate`、no-clobber 发布、源文件保护和显式写入确认；`QONIC_QML_LIVE=1` 不能自行授予真实能力。
 - 冻结 Phase 5.7 的业务范围。下一阶段优先重组普通用户的任务流程，而不是继续增加能力或按钮。
 - 完整范围和当前人工验收结论见 `docs/UI_REFACTOR_CHANGE_SUMMARY.md`、`docs/PHASE_5_7_CLOSEOUT.md` 与 `Known_Issues.md`。
 
@@ -67,6 +75,7 @@ CherryQ Audio Converter 是一个面向 Windows 的本地音频处理工具，�
 程序依赖以下随包携带的工具：
 
 - `Tools/ffmpeg/bin/ffmpeg.exe`
+- `Tools/ffmpeg/bin/ffprobe.exe`
 - `Tools/ncmdump/ncmdump.exe`
 
 开发环境中也需要这两个文件放在上述路径。详细说明见 `Tools/README.md`。
@@ -93,6 +102,7 @@ python -m unittest discover -v
 ```
 
 人工回归清单见 `TEST_CHECKLIST.md`。
+异机便携包的使用和反馈格式见 `EXTERNAL_TEST_GUIDE.md`。
 当前未解决事项见 `Known_Issues.md`。
 
 ## 构建发行版
@@ -101,13 +111,23 @@ python -m unittest discover -v
 powershell -ExecutionPolicy Bypass -File .\build_release.ps1
 ```
 
-当前构建脚本使用 `CherryQ_Audio_Converter.spec`。v5.0 内部测试版构建通过后将生成：
+当前构建脚本使用 `Qonic_Audio.spec`。v5.0 内部测试版构建通过后将生成：
 
-- `Release/CherryQ_Audio_Converter_v5.0_internal_test`
-- `Release/CherryQ_Audio_Converter_v5.0_internal_test.7z`
-- `Release/CherryQ_Audio_Converter_v5.0_internal_test.exe`
+- `Release/Qonic_Audio_v5.0_internal_test`
+- `Release/Qonic_Audio_v5.0_internal_test.7z`
+- `Release/Qonic_Audio_v5.0_internal_test-SHA256SUMS.txt`
 
-发行目录不会携带开发机的 `config.json`，而是附带 `config.example.json` 作为示例配置。
+`.7z` 是当前默认和主分发工件。如需内部验证 7z SFX，可显式执行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\build_release.ps1 -IncludeSfx
+```
+
+SFX `.exe` 不作为当前 GitHub Release 主下载，也不等同于安装器。
+
+发行规范以 `main_qml.py` 为唯一产品入口，旧 `gui.py` 不进入 v5.0 主程序。可执行文件包含 Qonic Audio 产品名、完整说明和内部测试版本属性。构建脚本会检查自有 QML、图标、GPL 项目许可证、FFmpeg 和 ncmdump，运行打包后离屏 smoke，并在生成归档时写出 SHA-256 清单。
+
+发行目录不会携带开发机的 `config.json`，而是附带 `config.example.json` 作为示例配置；顶层 `LICENSE` 和 `LICENSES/` 会一并进入发行包。
 
 ## 常见问题
 

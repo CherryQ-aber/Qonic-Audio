@@ -123,7 +123,7 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
 
     def test_timestamp_precision_is_in_confirmed_config_whitelist(self):
         gate = CapabilityGate.from_environment(
-            {"CHERRYQ_QML_USER_TEST": "1"}
+            {"QONIC_QML_USER_TEST": "1"}
         )
         saved_config = {}
 
@@ -156,7 +156,7 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
         )
 
     def test_save_merges_only_confirmed_changes_onto_latest_config(self):
-        gate = CapabilityGate.from_environment({"CHERRYQ_QML_USER_TEST": "1"})
+        gate = CapabilityGate.from_environment({"QONIC_QML_USER_TEST": "1"})
         latest_config = dict(self.real_config)
         latest_config["theme_mode"] = "dark"
         saved_config = {}
@@ -219,7 +219,7 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
         self.assertNotIn("监听目录", view_model.pendingChangeSummary)
 
     def test_running_conversion_blocks_auto_convert_setting_save(self):
-        gate = CapabilityGate.from_environment({"CHERRYQ_QML_USER_TEST": "1"})
+        gate = CapabilityGate.from_environment({"QONIC_QML_USER_TEST": "1"})
 
         class BusyAutoConvert:
             isConverting = True
@@ -247,7 +247,7 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
     def test_confirm_dialog_lists_current_changes(self):
         from PySide6.QtWidgets import QMessageBox
 
-        gate = CapabilityGate.from_environment({"CHERRYQ_QML_USER_TEST": "1"})
+        gate = CapabilityGate.from_environment({"QONIC_QML_USER_TEST": "1"})
         with (
             patch(
                 "ui_next.bridge.settings_viewmodel.load_config",

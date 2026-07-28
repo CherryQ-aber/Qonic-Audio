@@ -22,6 +22,14 @@ DEFAULT_USER_MODE = "default_user"
 PREVIEW_MODE = "preview"
 TEST_MODE = "test"
 
+QONIC_USER_TEST_ENV = "QONIC_QML_USER_TEST"
+QONIC_CAPABILITIES_ENV = "QONIC_QML_CAPS"
+QONIC_LIVE_ENV = "QONIC_QML_LIVE"
+
+LEGACY_USER_TEST_ENV = "CHERRYQ_QML_USER_TEST"
+LEGACY_CAPABILITIES_ENV = "CHERRYQ_QML_CAPS"
+LEGACY_LIVE_ENV = "CHERRYQ_QML_LIVE"
+
 
 class RuntimeModeParseError(ValueError):
     """Raised before QApplication starts when a QML-specific flag is invalid."""
@@ -40,6 +48,7 @@ class RuntimeModeConfig:
     legacy_user_trial_requested: bool = False
     legacy_capabilities_requested: bool = False
     legacy_live_requested: bool = False
+    legacy_environment_variables: tuple[str, ...] = ()
 
     @property
     def is_preview(self) -> bool:
@@ -98,9 +107,29 @@ def resolve_runtime_mode(
             # Preserve standard Qt arguments such as ``-platform offscreen``.
             app_arguments.append(arg)
 
-    legacy_user_trial_requested = env.get("CHERRYQ_QML_USER_TEST") == "1"
-    legacy_capabilities = str(env.get("CHERRYQ_QML_CAPS") or "").strip()
-    legacy_live_requested = env.get("CHERRYQ_QML_LIVE") == "1"
+    user_trial_value, user_trial_alias = _read_migrated_environment(
+        env,
+        QONIC_USER_TEST_ENV,
+        LEGACY_USER_TEST_ENV,
+    )
+    capabilities_value, capabilities_alias = _read_migrated_environment(
+        env,
+        QONIC_CAPABILITIES_ENV,
+        LEGACY_CAPABILITIES_ENV,
+    )
+    live_value, live_alias = _read_migrated_environment(
+        env,
+        QONIC_LIVE_ENV,
+        LEGACY_LIVE_ENV,
+    )
+    legacy_user_trial_requested = user_trial_value == "1"
+    legacy_capabilities = capabilities_value.strip()
+    legacy_live_requested = live_value == "1"
+    legacy_environment_variables = tuple(
+        alias
+        for alias in (user_trial_alias, capabilities_alias, live_alias)
+        if alias
+    )
 
     if smoke_test:
         mode = TEST_MODE
@@ -110,7 +139,7 @@ def resolve_runtime_mode(
         requested_capabilities = ()
     elif legacy_user_trial_requested:
         # Keep the former trial entry deterministic even if a shell still has
-        # a narrow CHERRYQ_QML_CAPS value from an older development session.
+        # a narrow capability value from an older development session.
         mode = DEFAULT_USER_MODE
         requested_capabilities = DEFAULT_USER_CAPABILITIES
     elif legacy_capabilities:
@@ -133,4 +162,19 @@ def resolve_runtime_mode(
         legacy_user_trial_requested=legacy_user_trial_requested,
         legacy_capabilities_requested=bool(legacy_capabilities),
         legacy_live_requested=legacy_live_requested,
+        legacy_environment_variables=legacy_environment_variables,
     )
+
+
+def _read_migrated_environment(
+    environment: Mapping[str, str],
+    primary_name: str,
+    legacy_name: str,
+) -> tuple[str, str]:
+    """Read the Qonic name first and preserve one release-cycle legacy alias."""
+
+    if primary_name in environment:
+        return str(environment.get(primary_name) or ""), ""
+    if legacy_name in environment:
+        return str(environment.get(legacy_name) or ""), legacy_name
+    return "", ""

@@ -37,7 +37,7 @@ from PySide6.QtWidgets import (
 
 import cache_manager
 import watcher
-from app_info import APP_WINDOW_TITLE
+from app_info import APP_DISPLAY_NAME, APP_WINDOW_TITLE
 from config import (
     APP_NAME,
     find_watch_folder_candidates,
@@ -886,7 +886,7 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(12, 14, 12, 14)
         layout.setSpacing(8)
 
-        title = QLabel("CherryQ Audio")
+        title = QLabel(APP_DISPLAY_NAME)
         title.setObjectName("NavTitle")
         layout.addWidget(title)
         layout.addSpacing(8)

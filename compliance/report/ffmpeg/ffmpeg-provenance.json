@@ -1,0 +1,119 @@
+{
+  "asset_comparison_status": "BYTE_IDENTICAL",
+  "binary_asset_closed": true,
+  "build_provider": "gyan.dev",
+  "build_scripts_status": "NOT_PUBLISHED_IN_PROVIDER_TAG",
+  "byte_identical_to_upstream": true,
+  "classification": "FFmpeg-GPL-CANDIDATE",
+  "compiler": "gcc 15.2.0 (Rev13, Built by MSYS2 project)",
+  "configure_dependency_flag_count": 76,
+  "configure_dependency_flags_with_versions": 63,
+  "configure_dependency_flags_without_versions": [
+    "--enable-fontconfig",
+    "--enable-gnutls",
+    "--enable-libaribb24",
+    "--enable-libass",
+    "--enable-libbluray",
+    "--enable-libcaca",
+    "--enable-libfreetype",
+    "--enable-libfribidi",
+    "--enable-libharfbuzz",
+    "--enable-libmodplug",
+    "--enable-libmysofa",
+    "--enable-libopenjpeg",
+    "--enable-libxml2"
+  ],
+  "dependency_sources_closed": false,
+  "detected_version": "8.1.1-full_build-www.gyan.dev",
+  "evidence_basis": [
+    "ffmpeg -version",
+    "ffmpeg -buildconf",
+    "local SHA-256",
+    "project and distribution scan",
+    "Gyan GitHub Release API metadata",
+    "official Gyan asset byte comparison",
+    "FFmpeg exact commit source archive",
+    "Gyan provider tag tree inspection",
+    "Gyan package README external-library version table",
+    "Gyan public issue statements about build environment and script guidance"
+  ],
+  "exact_source_closed": false,
+  "package_dependency_version_count": 70,
+  "package_dependency_versions_recovered": true,
+  "package_readme_member": "ffmpeg-8.1.1-full_build/README.txt",
+  "package_readme_sha256": "35EF02F329D062A1B49397A2869718264B5F12776517791C02126F0EFD323528",
+  "patch_set_status": "NOT_PUBLISHED",
+  "provider_build_environment": {
+    "statement": "MSYS2 / mingw-64 environment with gcc + GNU toolchain",
+    "url": "https://github.com/GyanD/codexffmpeg/issues/91#issuecomment-1474806731"
+  },
+  "provider_build_scripts_present": false,
+  "provider_dependency_versioning_statement": {
+    "statement": "Most dependencies normally used git HEAD at compilation time, with some versions clamped for API/ABI compatibility.",
+    "url": "https://github.com/GyanD/codexffmpeg/issues/16#issuecomment-793356401"
+  },
+  "provider_evidence_closed": true,
+  "provider_evidence_snapshots": [
+    {
+      "local_path": "third_party/source-information/ffmpeg-provider/gyan-8.1.1-release-api.json",
+      "sha256": "F2B770E1456ADFE20D7D124102294555D7A6DCC8B2BE43326229053CF7AE9A8B",
+      "source_url": "https://api.github.com/repos/GyanD/codexffmpeg/releases/tags/8.1.1",
+      "verified": true
+    },
+    {
+      "local_path": "third_party/source-information/ffmpeg-provider/gyan-codexffmpeg-8.1.1.tar.gz",
+      "sha256": "C71D808292217ADFA502AB2D1F15DC439EF0F76B884878B6B2B1A36B4D26CAED",
+      "source_url": "https://codeload.github.com/GyanD/codexffmpeg/tar.gz/refs/tags/8.1.1",
+      "verified": true
+    },
+    {
+      "local_path": "third_party/source-information/ffmpeg-provider/gyan-builds-page-2026-07-26.html",
+      "sha256": "8F323ECB20FF8E55205DCD73C68CD2E249ED58C8F141BE0E7DC3B011A9A433CB",
+      "source_url": "https://www.gyan.dev/ffmpeg/builds/",
+      "verified": true
+    },
+    {
+      "local_path": "third_party/source-information/ffmpeg-provider/gyan-issue-16-comments.json",
+      "sha256": "00A8843F640EAE74406408785C2D3D4A5C8CE7648D7DAB2CEC3C7B1001690D6A",
+      "source_url": "https://api.github.com/repos/GyanD/codexffmpeg/issues/16/comments",
+      "verified": true
+    },
+    {
+      "local_path": "third_party/source-information/ffmpeg-provider/gyan-issue-25-comments.json",
+      "sha256": "4F2E7A676858B3EB3D1D2754E7CF37E8BB28C4AC64CDD1033E180A3942A88345",
+      "source_url": "https://api.github.com/repos/GyanD/codexffmpeg/issues/25/comments",
+      "verified": true
+    },
+    {
+      "local_path": "third_party/source-information/ffmpeg-provider/gyan-issue-91-comments.json",
+      "sha256": "E122BCC3DE7AA7F1EBC45B7418FDC0ABF403397541BC17AFD31A1C4107C63E6F",
+      "source_url": "https://api.github.com/repos/GyanD/codexffmpeg/issues/91/comments",
+      "verified": true
+    }
+  ],
+  "provider_page": "https://www.gyan.dev/ffmpeg/builds/",
+  "provider_release_commit": "d52813a57578e84b89b9a74926dbd8187b2c97c7",
+  "provider_repository": "https://github.com/GyanD/codexffmpeg",
+  "provider_script_guidance": {
+    "classification": "REPRODUCTION_CANDIDATE_ONLY",
+    "statement": "When asked for build scripts, the provider pointed users to media-autobuild_suite; this does not identify the exact scripts or commit used for the 8.1.1 asset.",
+    "url": "https://github.com/GyanD/codexffmpeg/issues/25#issuecomment-896110133"
+  },
+  "selected_binary": "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/Tools/ffmpeg/bin/ffmpeg.exe",
+  "selected_ffprobe": "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/Tools/ffmpeg/bin/ffprobe.exe",
+  "source_archive_local": "third_party/source-archives/ffmpeg/ffmpeg-239f2c733de417201d7ad3b3b8b0d9b63285b2b1.tar.gz",
+  "source_core_closed": true,
+  "source_package": "https://codeload.github.com/FFmpeg/FFmpeg/tar.gz/239f2c733de417201d7ad3b3b8b0d9b63285b2b1",
+  "source_sha256": "EC0AA20FB9F6FD3692FFC04DC12FFA43CFFFC4A479E388CCD7910EC6CFE188A2",
+  "unresolved_questions": [
+    "Gyan 未公开生成 8.1.1 资产所用的精确脚本 revision、本地修改和补丁集",
+    "包内 README 可恢复部分依赖版本，但未随资产发布全部静态依赖的对应源码归档与源码哈希",
+    "部分依赖使用 rolling git 描述或 latest 标记，无法仅凭 README 固定完整源码身份"
+  ],
+  "upstream_asset": "ffmpeg-8.1.1-full_build.7z",
+  "upstream_asset_sha256": "5DF9759304B5714CC99FF46AF8A73D83217A51726524516FFB25501E754A5873",
+  "upstream_asset_url": "https://github.com/GyanD/codexffmpeg/releases/download/8.1.1/ffmpeg-8.1.1-full_build.7z",
+  "upstream_commit": "239f2c733de417201d7ad3b3b8b0d9b63285b2b1",
+  "upstream_release": "8.1.1",
+  "upstream_repository": "https://github.com/FFmpeg/FFmpeg"
+}

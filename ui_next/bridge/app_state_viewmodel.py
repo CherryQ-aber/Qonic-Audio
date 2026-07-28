@@ -8,7 +8,7 @@ from ui_next.bridge.capabilities import CapabilityGate
 try:
     from app_info import APP_DISPLAY_NAME, APP_STAGE, APP_VERSION
 except ImportError:
-    APP_DISPLAY_NAME = "CherryQ Audio Converter"
+    APP_DISPLAY_NAME = "Qonic Audio"
     APP_STAGE = "QML UI Preview"
     APP_VERSION = "Preview"
 

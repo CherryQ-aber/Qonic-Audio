@@ -47,7 +47,7 @@ class EditSessionLyricsTests(unittest.TestCase):
 
     def test_embedded_and_sibling_are_separate_and_embedded_is_default(self):
         session = EditSessionViewModel(CapabilityGate((LYRICS_READ,)))
-        session.loadLyricsResult(self._result("D:/CherryQ_Test/demo.flac"))
+        session.loadLyricsResult(self._result("D:/Qonic_Test/demo.flac"))
         self.assertEqual("embedded", session.selectedLyricsSource)
         self.assertEqual("[00:01.00]Embedded", session.originalLyrics)
         self.assertTrue(session.hasEmbeddedLyricsSource)
@@ -82,7 +82,7 @@ class EditSessionLyricsTests(unittest.TestCase):
 
     def test_dirty_restore_clear_and_source_switch_protection(self):
         session = EditSessionViewModel(CapabilityGate((LYRICS_READ,)))
-        session.loadLyricsResult(self._result("D:/CherryQ_Test/demo.flac"))
+        session.loadLyricsResult(self._result("D:/Qonic_Test/demo.flac"))
         session.updateLyricsDraft("changed")
         self.assertTrue(session.lyricsDirty)
         self.assertEqual("unsaved_changes", session.selectLyricsSource("sibling_lrc"))
@@ -95,7 +95,7 @@ class EditSessionLyricsTests(unittest.TestCase):
 
     def test_status_label_and_undo_follow_current_lyrics_state(self):
         session = EditSessionViewModel(CapabilityGate((LYRICS_READ,)))
-        path = "D:/CherryQ_Test/demo.flac"
+        path = "D:/Qonic_Test/demo.flac"
         session.loadLyricsResult(self._result(path))
         self.assertEqual("原始歌词", session.lyricsDraftStatusLabel)
         self.assertFalse(session.canUndoLyrics)
@@ -116,7 +116,7 @@ class EditSessionLyricsTests(unittest.TestCase):
                 "ok": True,
                 "audio_path": path,
                 "session_generation": session.sessionGeneration,
-                "path": "D:/CherryQ_Test/imported.lrc",
+                "path": "D:/Qonic_Test/imported.lrc",
                 "lyrics_text": "[00:03.00]Imported",
             }
         )
@@ -179,7 +179,7 @@ class EditSessionLyricsTests(unittest.TestCase):
         session = EditSessionViewModel(CapabilityGate((LYRICS_READ,)))
         session.loadLyricsResult(
             self._result(
-                "D:/CherryQ_Test/demo.flac",
+                "D:/Qonic_Test/demo.flac",
                 embedded=original_text,
                 external="",
             )

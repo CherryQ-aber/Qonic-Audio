@@ -247,7 +247,7 @@ class EditExportServiceTests(unittest.TestCase):
                 self.assertFalse(result["success"])
                 self.assertIn("_write_failed", result["error_code"])
                 self.assertFalse(output.exists())
-                self.assertFalse(list(root.glob(".*.cherryq_edit_*.tmp.flac")))
+                self.assertFalse(list(root.glob(".*.qonic_edit_*.tmp.flac")))
                 self.assertEqual(source_hash, self._sha(source))
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -398,7 +398,7 @@ class EditExportServiceTests(unittest.TestCase):
             self.assertEqual(b"original-audio-bytes", output.read_bytes())
             self.assertEqual(source_hash, self._sha(source))
             self.assertEqual("Confirmed", state["metadata"]["title"])
-            self.assertEqual([], list(root.glob("*.cherryq_rollback_*.bak")))
+            self.assertEqual([], list(root.glob("*.qonic_rollback_*.bak")))
 
     def test_confirmed_source_overwrite_reloads_from_a_verified_replacement(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -427,7 +427,7 @@ class EditExportServiceTests(unittest.TestCase):
             self.assertTrue(result["overwrote_source"])
             self.assertFalse(result["sourceUnchanged"])
             self.assertNotEqual(original, source.read_bytes())
-            self.assertEqual([], list(root.glob("*.cherryq_rollback_*.bak")))
+            self.assertEqual([], list(root.glob("*.qonic_rollback_*.bak")))
 
     def test_post_overwrite_verification_failure_restores_original_target(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -452,7 +452,7 @@ class EditExportServiceTests(unittest.TestCase):
 
             self.assertEqual("verification_failed", result["error_code"])
             self.assertEqual(original, output.read_bytes())
-            self.assertEqual([], list(root.glob("*.cherryq_rollback_*.bak")))
+            self.assertEqual([], list(root.glob("*.qonic_rollback_*.bak")))
 
     def test_confirmed_audio_overwrite_stops_if_target_changes(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -480,7 +480,7 @@ class EditExportServiceTests(unittest.TestCase):
 
             self.assertEqual("overwrite_target_changed", result["error_code"])
             self.assertEqual(b"external-change", output.read_bytes())
-            self.assertEqual([], list(root.glob("*.cherryq_rollback_*.bak")))
+            self.assertEqual([], list(root.glob("*.qonic_rollback_*.bak")))
 
     def test_lrc_overwrite_stops_if_confirmed_target_changes(self):
         with tempfile.TemporaryDirectory() as temp_dir:

@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "target": "x86_64-w64-mingw32",
+  "host_container": {
+    "image": "docker.io/library/debian",
+    "tag_observed": "bookworm-slim",
+    "index_digest": "sha256:7b140f374b289a7c2befc338f42ebe6441b7ea838a042bbd5acbfca6ec875818",
+    "linux_amd64_manifest_digest": "sha256:63a496b5d3b99214b39f5ed70eb71a61e590a77979c79cbee4faf991f8c0783e",
+    "resolved_at": "2026-07-26T00:00:00+08:00"
+  },
+  "apt_snapshot": {
+    "debian": "http://snapshot.debian.org/archive/debian/20260713T000000Z",
+    "debian_security": "http://snapshot.debian.org/archive/debian-security/20260713T000000Z",
+    "check_valid_until": false,
+    "transport_note": "HTTP is used only to bootstrap ca-certificates from the immutable snapshot; APT still verifies Debian InRelease signatures."
+  },
+  "direct_packages": {
+    "autoconf": "2.71-3",
+    "automake": "1:1.16.5-1.3",
+    "binutils-mingw-w64-x86-64": "2.40-2+10.4",
+    "ca-certificates": "20230311+deb12u1",
+    "cmake": "3.25.1-1",
+    "file": "1:5.44-3",
+    "g++-mingw-w64-x86-64-win32": "12.2.0-14+deb12u1+25.2+b1",
+    "gcc-mingw-w64-x86-64-win32": "12.2.0-14+deb12u1+25.2+b1",
+    "git": "1:2.39.5-0+deb12u3",
+    "libtool": "2.4.7-7~deb12u1",
+    "make": "4.3-4.1",
+    "meson": "1.0.1-5",
+    "mingw-w64": "10.0.0-3",
+    "mingw-w64-tools": "10.0.0-3",
+    "nasm": "2.16.01-1",
+    "ninja-build": "1.11.1-2~deb12u1",
+    "patch": "2.7.6-7",
+    "pkg-config": "1.8.1-1",
+    "python3": "3.11.2-1+b1",
+    "xz-utils": "5.4.1-1+deb12u1",
+    "yasm": "1.3.0-4"
+  },
+  "compiler_expectations": {
+    "cc": "x86_64-w64-mingw32-gcc-win32",
+    "cxx": "x86_64-w64-mingw32-g++-win32",
+    "gcc_series": "12.2.0",
+    "thread_model": "win32"
+  },
+  "shell": {
+    "name": "GNU bash",
+    "version": "5.2.15-2+b9"
+  },
+  "path_policy": [
+    "/usr/local/sbin",
+    "/usr/local/bin",
+    "/usr/sbin",
+    "/usr/bin",
+    "/sbin",
+    "/bin"
+  ],
+  "critical_environment": {
+    "QONIC_BUILD_CONTAINER": "1",
+    "PKG_CONFIG_LIBDIR": "<workspace>/third_party/ffmpeg-build/work/prefix/lib/pkgconfig",
+    "SOURCE_DATE_EPOCH": "1777848300",
+    "TZ": "UTC",
+    "LC_ALL": "C.UTF-8"
+  },
+  "reproducibility": {
+    "source_date_epoch": 1777848300,
+    "locale": "C.UTF-8",
+    "timezone": "UTC"
+  },
+  "cpu_architecture": "linux/amd64",
+  "build_date_policy": "SOURCE_DATE_EPOCH from FFmpeg 8.1.1 commit time; wall-clock build time is evidence only"
+}
