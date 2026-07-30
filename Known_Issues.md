@@ -5,9 +5,9 @@
 ## 发行前必须继续跟进
 
 - Phase 5.9.5 已完成两个一级工作区、全局播放器、文件树、统一编辑草稿/导出和任务队列交互整合；自动化与离屏验收通过，但真实媒体、DPI、双屏、窗口控制、托盘和最终视觉仍需人工发行验收。
-- v5.0 已建立以 `main_qml.py` 为入口的 PyInstaller onedir 构建和打包后 QML smoke；仍需在所有发行改动冻结后生成最终候选归档，并在未安装 Python、FFmpeg 的干净 Windows 环境完成异机回归。
+- v5.0 已建立以 `main_qml.py` 为入口的 PyInstaller onedir 构建和打包后 QML smoke。当前 B5 合规基线已通过验证；带内嵌封面音频流修复后，仍需从干净提交重建新的候选归档，并在未安装 Python、FFmpeg 的干净 Windows 环境完成异机回归。
 - 真实 AppShell 测试曾因销毁时遗漏等待设置存储扫描线程而触发 `Qt6Core.dll / 0xc0000409`；测试清理现已与生产退出顺序对齐，完整回归恢复通过。正式候选仍需继续观察退出时后台线程和子进程是否全部收尾。
-- 项目自有代码已确定采用 `GPL-3.0-or-later`，顶层许可证已进入构建；第三方材料仍未完全闭合：`FFmpeg` 需补精确源码/构建来源与版权材料，`ncmdump` 需确认当前二进制对应的官方发行资产，`PySide6 / Qt` 需按最终分发路径补齐许可证、版权与源码获取义务。
+- 项目自有代码已确定采用 `GPL-3.0-or-later`，顶层许可证已进入构建。FFmpeg、ncmdump、PySide6 / Qt 的来源、许可证与对应源码材料已在 B5 归档；正式发布前仍需确认 Microsoft VC Runtime 分发许可，并补齐 NumPy、Pillow、charset-normalizer 的许可证核查。
 - 源码中 QML 与 Legacy Widgets 继续并存，但 v5.0 发行规范只打包 QML 主入口；旧 `gui.py` 仅作为兼容开发入口，不得再作为 v5.0 对外可执行入口。
 
 ## 后续版本计划
