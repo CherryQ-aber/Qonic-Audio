@@ -67,6 +67,23 @@ function Assert-FileExists {
     }
 }
 
+function Get-Sha256Hex {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $stream = [System.IO.File]::OpenRead($Path)
+    $algorithm = [System.Security.Cryptography.SHA256]::Create()
+
+    try {
+        return ([System.BitConverter]::ToString(
+            $algorithm.ComputeHash($stream)
+        )).Replace("-", "")
+    }
+    finally {
+        $algorithm.Dispose()
+        $stream.Dispose()
+    }
+}
+
 function Write-SfxArchive {
     param(
         [Parameter(Mandatory = $true)][string]$SfxModule,
@@ -265,8 +282,7 @@ if (-not $SkipArchive) {
     }
 
     $checksumLines = foreach ($artifactPath in $artifactPaths) {
-        $hash = Get-FileHash -Algorithm SHA256 -LiteralPath $artifactPath
-        "$($hash.Hash)  $(Split-Path -Leaf $artifactPath)"
+        "$(Get-Sha256Hex -Path $artifactPath)  $(Split-Path -Leaf $artifactPath)"
     }
     Set-Content -LiteralPath $ChecksumPath -Value $checksumLines -Encoding ascii
 }

@@ -1327,6 +1327,8 @@ class ReleaseConfigurationTests(unittest.TestCase):
         self.assertIn("Start-Process", build_script)
         self.assertIn(r"logs\runtime.log", build_script)
         self.assertIn("SHA256SUMS.txt", build_script)
+        self.assertIn("function Get-Sha256Hex", build_script)
+        self.assertNotIn("Get-FileHash", build_script)
         self.assertIn("[switch]$IncludeSfx", build_script)
         self.assertIn("if ($IncludeSfx)", build_script)
         self.assertIn("$SkipArchive -and $IncludeSfx", build_script)
