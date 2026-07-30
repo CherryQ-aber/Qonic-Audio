@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "phase": "B5",
+  "recorded_at": "2026-07-28",
+  "approval_status": "APPROVED",
+  "approved_action": "Replace the two formal FFmpeg runtime binaries with the approved B3 Qonic candidate and rebuild the single PyInstaller onedir release.",
+  "approval_boundary": [
+    "The current runtime contract is Qonic Audio Converter Audio Runtime only.",
+    "Future video visualization must use a separately controlled FFmpeg Video Runtime or a newly generated and independently reviewed build.",
+    "The final compliance blocker remains open until the approved replacement and final release verification succeed."
+  ]
+}

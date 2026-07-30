@@ -10,7 +10,9 @@ archive contains:
 - Dockerfile, cross file and all build scripts;
 - all applied patch directories, including empty directories when no patch was
   applied;
-- build and licensing documentation.
+- build and licensing documentation;
+- the verified license texts and license inventory copied from every exact
+  source tree, including the Rubber Band and bundled KissFFT notices.
 
 Generate it only after source verification:
 

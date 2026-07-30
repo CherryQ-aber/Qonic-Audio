@@ -59,8 +59,35 @@ def collect_release_inventory(
 
     release_root = project_root / "Release"
     authority_files = sorted(release_root.rglob("RELEASE_AUTHORITY.json"))
-    authority_file = authority_files[0] if len(authority_files) == 1 else None
-    authority = load_json(authority_file) if authority_file else {}
+    authority_entries = [(path, load_json(path)) for path in authority_files]
+    matching_entries = [
+        (path, payload)
+        for path, payload in authority_entries
+        if dist_archive
+        and (path.parent / str(payload.get("archive", ""))).resolve()
+        == dist_archive.resolve()
+        and (path.parent / str(payload.get("expanded_directory", ""))).resolve()
+        == dist_path.resolve()
+    ]
+    active_entries = [
+        (path, payload)
+        for path, payload in authority_entries
+        if payload.get("authority_status") == "AUTHORITATIVE_RELEASE_BASELINE"
+    ]
+    authority_file, authority = (
+        matching_entries[0]
+        if len(matching_entries) == 1
+        else active_entries[0]
+        if len(active_entries) == 1
+        else (None, {})
+    )
+    archive_authority_status = {
+        (path.parent / str(payload.get("archive", ""))).resolve(): payload.get(
+            "authority_status", "UNCLASSIFIED"
+        )
+        for path, payload in authority_entries
+        if payload.get("archive")
+    }
     authoritative_archive = (
         (authority_file.parent / str(authority.get("archive"))).resolve()
         if authority_file and authority.get("archive")
@@ -103,12 +130,21 @@ def collect_release_inventory(
                         if authoritative_archive
                         and archive.resolve() == authoritative_archive
                         else (
+                            "SUPERSEDED_HISTORICAL"
+                            if archive_authority_status.get(archive.resolve())
+                            == "SUPERSEDED_HISTORICAL_NOT_FOR_RELEASE"
+                            else (
                             "NOT_FOR_RELEASE"
-                            if "non_authoritative"
-                            in {
-                                part.lower() for part in archive.relative_to(release_root).parts
-                            }
+                            if (
+                                (archive.parent / "NOT_FOR_RELEASE.md").is_file()
+                                or "non_authoritative"
+                                in {
+                                    part.lower()
+                                    for part in archive.relative_to(release_root).parts
+                                }
+                            )
                             else "UNCLASSIFIED"
+                            )
                         )
                     ),
                 }
@@ -119,7 +155,7 @@ def collect_release_inventory(
         item
         for item in archives
         if item["name"] == f"{package_basename}.7z"
-        and item["release_status"] != "NOT_FOR_RELEASE"
+        and item["release_status"] not in {"NOT_FOR_RELEASE", "SUPERSEDED_HISTORICAL"}
     ]
     distinct_hashes = {item["sha256"] for item in qonic_archives}
     tool_signatures = {
@@ -167,6 +203,7 @@ def collect_release_inventory(
         }
     authority_validation = {
         "authority_file_count": len(authority_files),
+        "active_authority_count": len(active_entries),
         "authority_file": (
             display_path(authority_file, project_root) if authority_file else None
         ),
@@ -194,7 +231,7 @@ def collect_release_inventory(
     }
     authority_validation["passed"] = all(
         (
-            authority_validation["authority_file_count"] == 1,
+            authority_validation["active_authority_count"] == 1,
             authority_validation["archive_matches_owner_hash"],
             authority_validation["audited_archive_is_authoritative"],
             authority_validation["audited_expanded_is_authoritative"],

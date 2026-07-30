@@ -9,24 +9,21 @@ Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整
 ## FFmpeg
 
 - 组件类别：external-binary
-- 实际版本：8.1.1-full_build-www.gyan.dev
+- 实际版本：63d9c74
 - 上游项目：https://github.com/FFmpeg/FFmpeg
-- 上游发行/资产：8.1.1 / ffmpeg-8.1.1-full_build.7z
-- 上游资产 SHA-256：5DF9759304B5714CC99FF46AF8A73D83217A51726524516FFB25501E754A5873
-- 实际分发文件：`Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/Tools/ffmpeg/bin/ffmpeg.exe`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/Tools/ffmpeg/bin/ffprobe.exe`
+- 上游发行/资产：8.1.1 / UNKNOWN
+- 上游资产 SHA-256：UNKNOWN
+- 实际分发文件：`Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/Tools/ffmpeg/bin/ffmpeg.exe`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/Tools/ffmpeg/bin/ffprobe.exe`
 - 上游声明许可证：GPLv3 candidate
 - 本项目采用路线：GPL-3.0-only
 - 版权所有者/声明：Copyright (c) 2000-2026 the FFmpeg developers; individual component notices remain in the corresponding source.
-- 是否修改：false
+- 是否修改：UNKNOWN
 - 使用方式：subprocess
-- 对应源码获取位置：https://codeload.github.com/FFmpeg/FFmpeg/tar.gz/239f2c733de417201d7ad3b3b8b0d9b63285b2b1
-- 对应源码 SHA-256：EC0AA20FB9F6FD3692FFC04DC12FFA43CFFFC4A479E388CCD7910EC6CFE188A2
+- 对应源码获取位置：third_party/ffmpeg-build/output/source-bundle/qonic-ffmpeg-complete-corresponding-source.tar.gz
+- 对应源码 SHA-256：2B3A9A878B46050CACA71253C1E43F6239DE91C5C5C59DC72F8F2E0306A5C35A
 - 本地 Manifest 路径：`third_party/THIRD_PARTY_MANIFEST.json`
 - 许可证状态：VERIFIED-GPL-3.0-BUILD
 - 尚未解决的问题：
-  - Gyan 未公开生成 8.1.1 资产所用的精确脚本 revision、本地修改和补丁集
-  - 包内 README 可恢复部分依赖版本，但未随资产发布全部静态依赖的对应源码归档与源码哈希
-  - 部分依赖使用 rolling git 描述或 latest 标记，无法仅凭 README 固定完整源码身份
 
 ## ncmdump
 
@@ -35,7 +32,7 @@ Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整
 - 上游项目：https://github.com/taurusxin/ncmdump
 - 上游发行/资产：1.5.1 / ncmdump-1.5.1-windows-amd64.zip
 - 上游资产 SHA-256：BB849221C06B8FDBFF42AEFB86BAEA9C07256568658D80F4BE72A39A2A1632DC
-- 实际分发文件：`Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe`
+- 实际分发文件：`Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe`
 - 上游声明许可证：MIT
 - 本项目采用路线：MIT
 - 版权所有者/声明：Upstream LICENSE.txt retains '[year] [fullname]' placeholders; Qonic Audio does not invent or replace the missing holder text.
@@ -55,7 +52,7 @@ Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整
 - 上游项目：https://github.com/taglib/taglib
 - 上游发行/资产：2.0.2 / taglib-2.0.2.tar.gz
 - 上游资产 SHA-256：0DE288D7FE34BA133199FD8512F19CC1100196826EAFCB67A33B224EC3A59737
-- 实际分发文件：`Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe`
+- 实际分发文件：`Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe`
 - 上游声明许可证：LGPL-2.1-only OR MPL-1.1
 - 本项目采用路线：MPL-1.1
 - 版权所有者/声明：见精确上游源码归档中的许可证与版权声明。
@@ -74,7 +71,7 @@ Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整
 - 上游项目：https://github.com/madler/zlib
 - 上游发行/资产：1.3.1 / zlib-1.3.1.tar.gz
 - 上游资产 SHA-256：17E88863F3600672AB49182F217281B6FC4D3C762BDE361935E436A95214D05C
-- 实际分发文件：`Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe`
+- 实际分发文件：`Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe`
 - 上游声明许可证：Zlib
 - 本项目采用路线：Zlib
 - 版权所有者/声明：见精确上游源码归档中的许可证与版权声明。
@@ -93,7 +90,7 @@ Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整
 - 上游项目：https://github.com/nemtrif/utfcpp
 - 上游发行/资产：4.0.6 / utfcpp-4.0.6.tar.gz
 - 上游资产 SHA-256：6920A6A5D6A04B9A89B2A89AF7132F8ACEFD46E0C2A7B190350539E9213816C0
-- 实际分发文件：`Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe`
+- 实际分发文件：`Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe`
 - 上游声明许可证：BSL-1.0
 - 本项目采用路线：BSL-1.0
 - 版权所有者/声明：见精确上游源码归档中的许可证与版权声明。
@@ -112,7 +109,7 @@ Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整
 - 上游项目：https://code.qt.io/cgit/pyside/pyside-setup.git/
 - 上游发行/资产：6.11.1 / `pyside6-6.11.1-cp310-abi3-win_amd64.whl`, `pyside6_essentials-6.11.1-cp310-abi3-win_amd64.whl`, `pyside6_addons-6.11.1-cp310-abi3-win_amd64.whl`, `shiboken6-6.11.1-cp310-abi3-win_amd64.whl`
 - 上游资产 SHA-256：`pyside6-6.11.1-cp310-abi3-win_amd64.whl`=`0968877AB1FB4EF3587A284DA6FE05E8647ADA56A6A3750B6395188E01F4ABA6`, `pyside6_essentials-6.11.1-cp310-abi3-win_amd64.whl`=`63311BD48E32C584599AB04B9EF7C324082374CD2C9FA533F978FB893BB47E40`, `pyside6_addons-6.11.1-cp310-abi3-win_amd64.whl`=`0D13C4DFD671B050A48E4F8D8DDC724B7248F9C0437E7FC47FDF316278572923`, `shiboken6-6.11.1-cp310-abi3-win_amd64.whl`=`C2C6863AA80EC18C0F82CEA3417837B279CDC60024AC17123461DC9042577DF7`
-- 实际分发文件：`Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/opengl32sw.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/generic/qtuiotouchplugin.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/iconengines/qsvgicon.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/imageformats/qgif.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/imageformats/qicns.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/imageformats/qico.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/imageformats/qjpeg.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/imageformats/qpdf.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/imageformats/qsvg.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/imageformats/qtga.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/imageformats/qtiff.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/imageformats/qwbmp.dll`；另有 2823 项见 Manifest
+- 实际分发文件：`Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/opengl32sw.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/generic/qtuiotouchplugin.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/iconengines/qsvgicon.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/imageformats/qgif.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/imageformats/qicns.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/imageformats/qico.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/imageformats/qjpeg.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/imageformats/qpdf.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/imageformats/qsvg.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/imageformats/qtga.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/imageformats/qtiff.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/plugins/imageformats/qwbmp.dll`；另有 2823 项见 Manifest
 - 上游声明许可证：LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 - 本项目采用路线：GPL-3.0-only
 - 版权所有者/声明：The Qt Company Ltd. and other Qt/PySide contributors; module-specific notices are preserved in the archived source and official third-party-code documents.
@@ -132,7 +129,7 @@ Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整
 - 上游项目：https://github.com/FFmpeg/FFmpeg
 - 上游发行/资产：n7.1.3 / `pyside6_addons-6.11.1-cp310-abi3-win_amd64.whl`
 - 上游资产 SHA-256：`pyside6_addons-6.11.1-cp310-abi3-win_amd64.whl`=`0D13C4DFD671B050A48E4F8D8DDC724B7248F9C0437E7FC47FDF316278572923`
-- 实际分发文件：`Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avcodec-61.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avformat-61.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avutil-59.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/swresample-5.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/swscale-8.dll`
+- 实际分发文件：`Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avcodec-61.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avformat-61.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avutil-59.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/swresample-5.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/swscale-8.dll`
 - 上游声明许可证：LGPL-2.1-or-later AND BSD-3-Clause AND BSD-2-Clause AND BSD-Source-Code AND ISC AND MIT AND MPL-2.0
 - 本项目采用路线：LGPL-2.1-or-later
 - 版权所有者/声明：Copyright (c) 2000-2023 the FFmpeg developers
@@ -152,7 +149,7 @@ Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整
 - 上游项目：https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist
 - 上游发行/资产：v14 / 14.44.35211.0 / UNKNOWN
 - 上游资产 SHA-256：UNKNOWN
-- 实际分发文件：`Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/MSVCP140.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/MSVCP140_1.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/MSVCP140_2.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/VCRUNTIME140.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PySide6/VCRUNTIME140_1.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/shiboken6/MSVCP140.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/shiboken6/VCRUNTIME140.dll`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/shiboken6/VCRUNTIME140_1.dll`
+- 实际分发文件：`Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/MSVCP140.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/MSVCP140_1.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/MSVCP140_2.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/VCRUNTIME140.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PySide6/VCRUNTIME140_1.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/shiboken6/MSVCP140.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/shiboken6/VCRUNTIME140.dll`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/shiboken6/VCRUNTIME140_1.dll`
 - 上游声明许可证：Microsoft Software License Terms
 - 本项目采用路线：Microsoft Visual C++ v14 Redistributable terms
 - 版权所有者/声明：Copyright Microsoft Corporation.
@@ -235,7 +232,7 @@ Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整
 - 上游项目：UNKNOWN
 - 上游发行/资产：UNKNOWN / UNKNOWN
 - 上游资产 SHA-256：UNKNOWN
-- 实际分发文件：`Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/numpy`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/numpy-2.4.6.dist-info`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/numpy.libs`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/numpy-2.4.6.dist-info/licenses/numpy`, `Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/numpy-2.4.6.dist-info/licenses/numpy/_core/include/numpy`
+- 实际分发文件：`Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/numpy`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/numpy-2.4.6.dist-info`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/numpy.libs`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/numpy-2.4.6.dist-info/licenses/numpy`, `Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/numpy-2.4.6.dist-info/licenses/numpy/_core/include/numpy`
 - 上游声明许可证：BSD-3-Clause candidate
 - 本项目采用路线：UNKNOWN
 - 版权所有者/声明：见对应上游许可证与源码包
@@ -256,7 +253,7 @@ Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整
 - 上游项目：UNKNOWN
 - 上游发行/资产：UNKNOWN / UNKNOWN
 - 上游资产 SHA-256：UNKNOWN
-- 实际分发文件：`Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/PIL`
+- 实际分发文件：`Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/PIL`
 - 上游声明许可证：HPND candidate
 - 本项目采用路线：UNKNOWN
 - 版权所有者/声明：见对应上游许可证与源码包
@@ -277,7 +274,7 @@ Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整
 - 上游项目：UNKNOWN
 - 上游发行/资产：UNKNOWN / UNKNOWN
 - 上游资产 SHA-256：UNKNOWN
-- 实际分发文件：`Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/charset_normalizer`
+- 实际分发文件：`Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/charset_normalizer`
 - 上游声明许可证：MIT candidate
 - 本项目采用路线：UNKNOWN
 - 版权所有者/声明：见对应上游许可证与源码包

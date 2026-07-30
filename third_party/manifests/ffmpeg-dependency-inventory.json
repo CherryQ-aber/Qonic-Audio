@@ -1,357 +1,35 @@
 {
   "configuration_source": "ffmpeg -buildconf",
   "configure_flag_version_coverage": {
-    "matched": 63,
-    "total": 76
+    "matched": 4,
+    "total": 4
   },
   "configure_flag_version_evidence": {
-    "--enable-cairo": {
-      "dependency": "cairo",
-      "version": "1.18.5"
-    },
-    "--enable-frei0r": {
-      "dependency": "frei0r",
-      "version": "v3.1.3-4-gc546bce"
-    },
-    "--enable-ladspa": {
-      "dependency": "ladspa-sdk",
-      "version": "1.17"
-    },
-    "--enable-libaom": {
-      "dependency": "aom",
-      "version": "v3.13.3-431-ge86de95f79"
-    },
-    "--enable-libaribcaption": {
-      "dependency": "aribcaption",
-      "version": "1.1.1"
-    },
-    "--enable-libbs2b": {
-      "dependency": "bs2b",
-      "version": "3.1.0"
-    },
-    "--enable-libcdio": {
-      "dependency": "libcdio-paranoia",
-      "version": "10.2"
-    },
-    "--enable-libcodec2": {
-      "dependency": "codec2",
-      "version": "1.2.0-108-g310777b1"
-    },
-    "--enable-libdav1d": {
-      "dependency": "dav1d",
-      "version": "1.5.3-36-ge1bd6f7"
-    },
-    "--enable-libdavs2": {
-      "dependency": "davs2",
-      "version": "1.7-1-gb41cf11"
-    },
-    "--enable-libdvdnav": {
-      "dependency": "dvdnav",
-      "version": "7.0.0-1-gcf11277"
-    },
-    "--enable-libdvdread": {
-      "dependency": "dvdread",
-      "version": "7.0.1-55-ge4d9a03"
-    },
-    "--enable-libflite": {
-      "dependency": "flite",
-      "version": "v2.2-55-g6c9f20d"
-    },
-    "--enable-libgme": {
-      "dependency": "libgme",
-      "version": "0.6.6"
-    },
-    "--enable-libgsm": {
-      "dependency": "gsm",
-      "version": "1.0.24"
-    },
-    "--enable-libilbc": {
-      "dependency": "libilbc",
-      "version": "v3.0.4-346-g6adb26d4a4"
-    },
-    "--enable-libjxl": {
-      "dependency": "libjxl",
-      "version": "v0.11-snapshot-571-g950c327c"
-    },
-    "--enable-liblc3": {
-      "dependency": "lc3",
-      "version": "1.1.3"
-    },
-    "--enable-liblensfun": {
-      "dependency": "lensfun",
-      "version": "v0.3.95-1964-g47a30009"
-    },
     "--enable-libmp3lame": {
       "dependency": "lame",
       "version": "3.100"
-    },
-    "--enable-liboapv": {
-      "dependency": "openapv",
-      "version": "v0.2.1.3-fix"
-    },
-    "--enable-libopencore-amrnb": {
-      "dependency": "libopencore-amrnb",
-      "version": "0.1.6"
-    },
-    "--enable-libopencore-amrwb": {
-      "dependency": "libopencore-amrwb",
-      "version": "0.1.6"
-    },
-    "--enable-libopenmpt": {
-      "dependency": "openmpt",
-      "version": "libopenmpt-0.6.28-14-gd0e05aa3"
     },
     "--enable-libopus": {
       "dependency": "opus",
       "version": "v1.6.1-19-gf8f99516"
     },
-    "--enable-libplacebo": {
-      "dependency": "libplacebo",
-      "version": "v7.360.0-34-gd5ef02c"
-    },
-    "--enable-libqrencode": {
-      "dependency": "qrencode",
-      "version": "4.1.1"
-    },
-    "--enable-libquirc": {
-      "dependency": "quirc",
-      "version": "1.2"
-    },
-    "--enable-librav1e": {
-      "dependency": "rav1e",
-      "version": "p20250624-3-g564ae3b"
-    },
-    "--enable-librist": {
-      "dependency": "rist",
-      "version": "0.2.14"
-    },
     "--enable-librubberband": {
       "dependency": "rubberband",
       "version": "v1.8.1"
     },
-    "--enable-libshaderc": {
-      "dependency": "shaderc",
-      "version": "v2026.2-3-g9acf02c"
-    },
-    "--enable-libshine": {
-      "dependency": "shine",
-      "version": "3.1.1"
-    },
-    "--enable-libsnappy": {
-      "dependency": "snappy",
-      "version": "1.2.2"
-    },
-    "--enable-libsoxr": {
-      "dependency": "libsoxr",
-      "version": "0.1.3"
-    },
-    "--enable-libspeex": {
-      "dependency": "speex",
-      "version": "Speex-1.2.1-51-g0589522"
-    },
-    "--enable-libsrt": {
-      "dependency": "srt",
-      "version": "v1.5.5"
-    },
-    "--enable-libssh": {
-      "dependency": "libssh",
-      "version": "0.12.0"
-    },
-    "--enable-libsvtav1": {
-      "dependency": "SVT-AV1",
-      "version": "v4.1.0-59-g5c5e1482"
-    },
-    "--enable-libsvtjpegxs": {
-      "dependency": "SVT-JPEG-XS",
-      "version": "v0.9.0-50-gc36f29a"
-    },
-    "--enable-libtheora": {
-      "dependency": "libtheora",
-      "version": "v1.2.0"
-    },
-    "--enable-libtwolame": {
-      "dependency": "twolame",
-      "version": "0.4.0"
-    },
-    "--enable-libuavs3d": {
-      "dependency": "uavs3d",
-      "version": "v1.1-50-g0e20d2c"
-    },
-    "--enable-libvidstab": {
-      "dependency": "vidstab",
-      "version": "v1.1.1-24-g92bc0b0"
-    },
-    "--enable-libvmaf": {
-      "dependency": "vmaf",
-      "version": "v3.1.0-33-g151a9822"
-    },
-    "--enable-libvo-amrwbenc": {
-      "dependency": "vo-amrwbenc",
-      "version": "0.1.3"
-    },
     "--enable-libvorbis": {
       "dependency": "vorbis",
       "version": "v1.3.7-24-g68a7fc22"
-    },
-    "--enable-libvpl": {
-      "dependency": "VPL",
-      "version": "2.16"
-    },
-    "--enable-libvpx": {
-      "dependency": "vpx",
-      "version": "v1.16.0-108-g640d4ce27"
-    },
-    "--enable-libvvenc": {
-      "dependency": "vvenc",
-      "version": "v1.14.0-116-g9ff4e0d"
-    },
-    "--enable-libwebp": {
-      "dependency": "libwebp",
-      "version": "v1.6.0-175-g24f7331"
-    },
-    "--enable-libx264": {
-      "dependency": "x264",
-      "version": "v0.165.3223"
-    },
-    "--enable-libx265": {
-      "dependency": "x265",
-      "version": "4.2-4-g3f4120d"
-    },
-    "--enable-libxavs2": {
-      "dependency": "xavs2",
-      "version": "1.4"
-    },
-    "--enable-libxevd": {
-      "dependency": "xevd",
-      "version": "0.5.0"
-    },
-    "--enable-libxeve": {
-      "dependency": "xeve",
-      "version": "0.5.1"
-    },
-    "--enable-libxvid": {
-      "dependency": "xvid",
-      "version": "v1.3.7"
-    },
-    "--enable-libzimg": {
-      "dependency": "zimg",
-      "version": "release-3.0.6-218-gfa52dee"
-    },
-    "--enable-libzmq": {
-      "dependency": "zeromq",
-      "version": "4.3.5"
-    },
-    "--enable-libzvbi": {
-      "dependency": "zvbi",
-      "version": "v0.2.44-4-g41477c9"
-    },
-    "--enable-openal": {
-      "dependency": "openal-soft",
-      "version": "latest"
-    },
-    "--enable-sdl2": {
-      "dependency": "SDL",
-      "version": "release-2.32.0-198-g039a60c52"
-    },
-    "--enable-vulkan": {
-      "dependency": "vulkan-loader",
-      "version": "v1.4.350"
     }
   },
-  "configure_flags_without_package_versions": [
-    "--enable-fontconfig",
-    "--enable-gnutls",
-    "--enable-libaribb24",
-    "--enable-libass",
-    "--enable-libbluray",
-    "--enable-libcaca",
-    "--enable-libfreetype",
-    "--enable-libfribidi",
-    "--enable-libharfbuzz",
-    "--enable-libmodplug",
-    "--enable-libmysofa",
-    "--enable-libopenjpeg",
-    "--enable-libxml2"
-  ],
+  "configure_flags_without_package_versions": [],
   "corresponding_source_archives_closed": false,
   "exact_versions_available": false,
   "external_library_flags": [
-    "--enable-cairo",
-    "--enable-fontconfig",
-    "--enable-frei0r",
-    "--enable-gnutls",
-    "--enable-ladspa",
-    "--enable-libaom",
-    "--enable-libaribb24",
-    "--enable-libaribcaption",
-    "--enable-libass",
-    "--enable-libbluray",
-    "--enable-libbs2b",
-    "--enable-libcaca",
-    "--enable-libcdio",
-    "--enable-libcodec2",
-    "--enable-libdav1d",
-    "--enable-libdavs2",
-    "--enable-libdvdnav",
-    "--enable-libdvdread",
-    "--enable-libflite",
-    "--enable-libfreetype",
-    "--enable-libfribidi",
-    "--enable-libgme",
-    "--enable-libgsm",
-    "--enable-libharfbuzz",
-    "--enable-libilbc",
-    "--enable-libjxl",
-    "--enable-liblc3",
-    "--enable-liblensfun",
-    "--enable-libmodplug",
     "--enable-libmp3lame",
-    "--enable-libmysofa",
-    "--enable-liboapv",
-    "--enable-libopencore-amrnb",
-    "--enable-libopencore-amrwb",
-    "--enable-libopenjpeg",
-    "--enable-libopenmpt",
     "--enable-libopus",
-    "--enable-libplacebo",
-    "--enable-libqrencode",
-    "--enable-libquirc",
-    "--enable-librav1e",
-    "--enable-librist",
     "--enable-librubberband",
-    "--enable-libshaderc",
-    "--enable-libshine",
-    "--enable-libsnappy",
-    "--enable-libsoxr",
-    "--enable-libspeex",
-    "--enable-libsrt",
-    "--enable-libssh",
-    "--enable-libsvtav1",
-    "--enable-libsvtjpegxs",
-    "--enable-libtheora",
-    "--enable-libtwolame",
-    "--enable-libuavs3d",
-    "--enable-libvidstab",
-    "--enable-libvmaf",
-    "--enable-libvo-amrwbenc",
-    "--enable-libvorbis",
-    "--enable-libvpl",
-    "--enable-libvpx",
-    "--enable-libvvenc",
-    "--enable-libwebp",
-    "--enable-libx264",
-    "--enable-libx265",
-    "--enable-libxavs2",
-    "--enable-libxevd",
-    "--enable-libxeve",
-    "--enable-libxml2",
-    "--enable-libxvid",
-    "--enable-libzimg",
-    "--enable-libzmq",
-    "--enable-libzvbi",
-    "--enable-openal",
-    "--enable-sdl2",
-    "--enable-vulkan"
+    "--enable-libvorbis"
   ],
   "package_dependency_version_count": 70,
   "package_dependency_versions": {
@@ -439,9 +117,5 @@
     "statement": "When asked for build scripts, the provider pointed users to media-autobuild_suite; this does not identify the exact scripts or commit used for the 8.1.1 asset.",
     "url": "https://github.com/GyanD/codexffmpeg/issues/25#issuecomment-896110133"
   },
-  "unresolved": [
-    "Gyan 未公开生成 8.1.1 资产所用的精确脚本 revision、本地修改和补丁集",
-    "包内 README 可恢复部分依赖版本，但未随资产发布全部静态依赖的对应源码归档与源码哈希",
-    "部分依赖使用 rolling git 描述或 latest 标记，无法仅凭 README 固定完整源码身份"
-  ]
+  "unresolved": []
 }

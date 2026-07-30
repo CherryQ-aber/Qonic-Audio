@@ -49,6 +49,8 @@ python-dateutil==2.9.0.post0
 python-docx==1.2.0
 python-multipart==0.0.30
 pywin32-ctypes==0.2.3
+# Editable Git install with no remote (qonic-audio-visualizer==0.8.0)
+-e d:\cherryq_studio\audio_tools\qonic_audio_visualizer
 referencing==0.37.0
 requests==2.34.2
 rpds-py==2026.5.1

@@ -1,112 +1,52 @@
 
   configuration:
+    --prefix=/opt/qonic
+    --target-os=mingw32
+    --arch=x86_64
+    --cross-prefix=x86_64-w64-mingw32-
+    --cc=x86_64-w64-mingw32-gcc-win32
+    --cxx=x86_64-w64-mingw32-g++-win32
+    --pkg-config=pkg-config --pkg-config-flags=--static
+    --enable-cross-compile
     --enable-gpl
     --enable-version3
-    --enable-static
-    --disable-w32threads
+    --disable-nonfree
+    --disable-network
     --disable-autodetect
-    --enable-cairo
-    --enable-fontconfig
-    --enable-iconv
-    --enable-gnutls
-    --enable-lcms2
-    --enable-libxml2
-    --enable-gmp
-    --enable-bzlib
-    --enable-lzma
-    --enable-libsnappy
+    --disable-debug
+    --disable-doc
+    --disable-everything
+    --enable-ffmpeg
+    --enable-ffprobe
+    --enable-avcodec
+    --enable-avformat
+    --enable-avfilter
+    --enable-swresample
+    --enable-swscale
+    --enable-avdevice
+    --enable-w32threads
     --enable-zlib
-    --enable-librist
-    --enable-libsrt
-    --enable-libssh
-    --enable-libzmq
-    --enable-avisynth
-    --enable-libbluray
-    --enable-libcaca
-    --enable-libdvdnav
-    --enable-libdvdread
-    --enable-sdl2
-    --enable-libaribb24
-    --enable-libaribcaption
-    --enable-libdav1d
-    --enable-libdavs2
-    --enable-libopenjpeg
-    --enable-libquirc
-    --enable-libuavs3d
-    --enable-libxevd
-    --enable-libzvbi
-    --enable-liboapv
-    --enable-libqrencode
-    --enable-librav1e
-    --enable-libsvtav1
-    --enable-libvvenc
-    --enable-libwebp
-    --enable-libx264
-    --enable-libx265
-    --enable-libxavs2
-    --enable-libxeve
-    --enable-libxvid
-    --enable-libaom
-    --enable-libjxl
-    --enable-libsvtjpegxs
-    --enable-libvpx
-    --enable-mediafoundation
-    --enable-libass
-    --enable-frei0r
-    --enable-libfreetype
-    --enable-libfribidi
-    --enable-libharfbuzz
-    --enable-liblensfun
-    --enable-libvidstab
-    --enable-libvmaf
-    --enable-libzimg
-    --enable-amf
-    --enable-cuda-llvm
-    --enable-cuvid
-    --enable-dxva2
-    --enable-d3d11va
-    --enable-d3d12va
-    --enable-ffnvcodec
-    --enable-libvpl
-    --enable-nvdec
-    --enable-nvenc
-    --enable-vaapi
-    --enable-libshaderc
-    --enable-vulkan
-    --enable-libplacebo
-    --enable-opencl
-    --enable-libcdio
-    --enable-openal
-    --enable-libgme
-    --enable-libmodplug
-    --enable-libopenmpt
-    --enable-libopencore-amrwb
     --enable-libmp3lame
-    --enable-libshine
-    --enable-libtheora
-    --enable-libtwolame
-    --enable-libvo-amrwbenc
-    --enable-libcodec2
-    --enable-libilbc
-    --enable-libgsm
-    --enable-liblc3
-    --enable-libopencore-amrnb
-    --enable-libopus
-    --enable-libspeex
     --enable-libvorbis
-    --enable-ladspa
-    --enable-libbs2b
-    --enable-libflite
-    --enable-libmysofa
+    --enable-libopus
     --enable-librubberband
-    --enable-libsoxr
-    --enable-chromaprint
-    --enable-whisper
+    --enable-protocol='file,pipe'
+    --enable-indev=lavfi
+    --enable-demuxer='mp3,flac,wav,mov,aac,ogg,ape,aiff,asf'
+    --enable-muxer='mp3,flac,wav,adts,ipod,ogg,null,pcm_s16le'
+    --enable-decoder='mp3,mp3float,flac,pcm_s16le,pcm_s16be,pcm_s24le,pcm_s24be,pcm_s32le,pcm_s32be,pcm_f32le,pcm_f64le,aac,vorbis,opus,ape,alac,wmav1,wmav2,wmapro,wmalossless,mjpeg,png'
+    --enable-encoder='libmp3lame,flac,pcm_s16le,aac,libvorbis,libopus'
+    --enable-parser='aac,mpegaudio,opus,vorbis'
+    --enable-filter='aresample,asetrate,atempo,rubberband,sine,aformat,anull'
+    --enable-bsf=null
+    --extra-cflags='-O2 -fno-ident -ffile-prefix-map=/repo=/usr/src/qonic'
+    --extra-cxxflags='-O2 -fno-ident -ffile-prefix-map=/repo=/usr/src/qonic'
+    --extra-ldflags='-static -static-libgcc -static-libstdc++'
 
 Exiting with exit code 0
-ffmpeg version 8.1.1-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers
-  built with gcc 15.2.0 (Rev13, Built by MSYS2 project)
-  configuration: --enable-gpl --enable-version3 --enable-static --disable-w32threads --disable-autodetect --enable-cairo --enable-fontconfig --enable-iconv --enable-gnutls --enable-lcms2 --enable-libxml2 --enable-gmp --enable-bzlib --enable-lzma --enable-libsnappy --enable-zlib --enable-librist --enable-libsrt --enable-libssh --enable-libzmq --enable-avisynth --enable-libbluray --enable-libcaca --enable-libdvdnav --enable-libdvdread --enable-sdl2 --enable-libaribb24 --enable-libaribcaption --enable-libdav1d --enable-libdavs2 --enable-libopenjpeg --enable-libquirc --enable-libuavs3d --enable-libxevd --enable-libzvbi --enable-liboapv --enable-libqrencode --enable-librav1e --enable-libsvtav1 --enable-libvvenc --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxavs2 --enable-libxeve --enable-libxvid --enable-libaom --enable-libjxl --enable-libsvtjpegxs --enable-libvpx --enable-mediafoundation --enable-libass --enable-frei0r --enable-libfreetype --enable-libfribidi --enable-libharfbuzz --enable-liblensfun --enable-libvidstab --enable-libvmaf --enable-libzimg --enable-amf --enable-cuda-llvm --enable-cuvid --enable-dxva2 --enable-d3d11va --enable-d3d12va --enable-ffnvcodec --enable-libvpl --enable-nvdec --enable-nvenc --enable-vaapi --enable-libshaderc --enable-vulkan --enable-libplacebo --enable-opencl --enable-libcdio --enable-openal --enable-libgme --enable-libmodplug --enable-libopenmpt --enable-libopencore-amrwb --enable-libmp3lame --enable-libshine --enable-libtheora --enable-libtwolame --enable-libvo-amrwbenc --enable-libcodec2 --enable-libilbc --enable-libgsm --enable-liblc3 --enable-libopencore-amrnb --enable-libopus --enable-libspeex --enable-libvorbis --enable-ladspa --enable-libbs2b --enable-libflite --enable-libmysofa --enable-librubberband --enable-libsoxr --enable-chromaprint --enable-whisper
+ffmpeg version 63d9c74 Copyright (c) 2000-2026 the FFmpeg developers
+  built with gcc 12-win32 (GCC)
+  configuration: --prefix=/opt/qonic --target-os=mingw32 --arch=x86_64 --cross-prefix=x86_64-w64-mingw32- --cc=x86_64-w64-mingw32-gcc-win32 --cxx=x86_64-w64-mingw32-g++-win32 --pkg-config=pkg-config --pkg-config-flags=--static --enable-cross-compile --enable-gpl --enable-version3 --disable-nonfree --disable-network --disable-autodetect --disable-debug --disable-doc --disable-everything --enable-ffmpeg --enable-ffprobe --enable-avcodec --enable-avformat --enable-avfilter --enable-swresample --enable-swscale --enable-avdevice --enable-w32threads --enable-zlib --enable-libmp3lame --enable-libvorbis --enable-libopus --enable-librubberband --enable-protocol='file,pipe' --enable-indev=lavfi --enable-demuxer='mp3,flac,wav,mov,aac,ogg,ape,aiff,asf' --enable-muxer='mp3,flac,wav,adts,ipod,ogg,null,pcm_s16le' --enable-decoder='mp3,mp3float,flac,pcm_s16le,pcm_s16be,pcm_s24le,pcm_s24be,pcm_s32le,pcm_s32be,pcm_f32le,pcm_f64le,aac,vorbis,opus,ape,alac,wmav1,wmav2,wmapro,wmalossless,mjpeg,png' --enable-encoder='libmp3lame,flac,pcm_s16le,aac,libvorbis,libopus' --enable-parser='aac,mpegaudio,opus,vorbis' --enable-filter='aresample,asetrate,atempo,rubberband,sine,aformat,anull' --enable-bsf=null --extra-cflags='-O2 -fno-ident -ffile-prefix-map=/repo=/usr/src/qonic' --extra-cxxflags='-O2 -fno-ident -ffile-prefix-map=/repo=/usr/src/qonic' --extra-ldflags='-static -static-libgcc -static-libstdc++'
   libavutil      60. 26.101 / 60. 26.101
   libavcodec     62. 28.101 / 62. 28.101
   libavformat    62. 12.101 / 62. 12.101

@@ -82,7 +82,7 @@ def test_no_obvious_secret_or_private_key_material_in_build_definition():
 def test_logs_are_not_part_of_source_bundle_inputs():
     text = (ROOT / "scripts" / "generate_source_bundle.py").read_text(encoding="utf-8")
     assert '"work"' not in text
-    assert '"output"' not in text
+    assert 'OUTPUT / "candidate" / "LICENSES"' in text
 
 
 def test_source_bundle_excludes_python_bytecode():

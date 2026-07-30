@@ -8,6 +8,7 @@ from common import BUILD_ROOT, OUTPUT, SOURCES, sha256, write_json
 
 
 INCLUDE_DIRS = ("lock", "config", "scripts", "patches", "tests")
+LICENSE_MATERIALS = OUTPUT / "candidate" / "LICENSES"
 
 
 def source_bundle_filter(info: tarfile.TarInfo) -> tarfile.TarInfo | None:
@@ -26,6 +27,11 @@ def main() -> int:
     )
     args = parser.parse_args()
     args.output.parent.mkdir(parents=True, exist_ok=True)
+    if not LICENSE_MATERIALS.is_dir():
+        raise FileNotFoundError(
+            "candidate license materials must be collected before source bundling: "
+            f"{LICENSE_MATERIALS}"
+        )
     with tarfile.open(args.output, "w:gz", format=tarfile.PAX_FORMAT) as archive:
         for directory in INCLUDE_DIRS:
             archive.add(
@@ -33,6 +39,11 @@ def main() -> int:
                 arcname=f"ffmpeg-build/{directory}",
                 filter=source_bundle_filter,
             )
+        archive.add(
+            LICENSE_MATERIALS,
+            arcname="ffmpeg-build/license-texts",
+            filter=source_bundle_filter,
+        )
         for source in sorted(SOURCES.iterdir()):
             if source.is_file() and source.name != ".gitkeep":
                 archive.add(source, arcname=f"ffmpeg-build/sources/{source.name}")

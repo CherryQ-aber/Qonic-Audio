@@ -38,6 +38,10 @@ class ConversionCancelled(RuntimeError):
     """Raised only after the FFmpeg child for the current task is reaped."""
 
 
+class AudioValidationError(ValueError):
+    """Raised when FFmpeg cannot validate the selected audio stream."""
+
+
 def _ensure_output_created(output_path):
     if not os.path.exists(output_path):
         raise FileNotFoundError(
@@ -151,6 +155,9 @@ def _run_cancellable_ffmpeg_command(command, cancel_event: threading.Event):
 
 
 def _validate_audio_file(input_path):
+    if not os.path.isfile(input_path):
+        raise FileNotFoundError(f"输入音频文件不存在: {input_path}")
+
     if not os.path.isfile(FFMPEG_PATH):
         raise FileNotFoundError(
             f"FFmpeg不存在: {FFMPEG_PATH}"
@@ -159,10 +166,18 @@ def _validate_audio_file(input_path):
     result = _run_ffmpeg_command(
         [
             FFMPEG_PATH,
+            "-hide_banner",
             "-v",
             "error",
             "-i",
             input_path,
+            # Do not let attached pictures, video, subtitles or data streams
+            # become null-muxer outputs during an audio-only validation pass.
+            "-map",
+            "0:a:0",
+            "-vn",
+            "-sn",
+            "-dn",
             "-f",
             "null",
             "-"
@@ -176,12 +191,29 @@ def _validate_audio_file(input_path):
     ).strip()
 
     if result.returncode != 0:
-        logger.error(f"音频文件无效或已损坏: {input_path}")
-
         if command_output:
             logger.error(f"音频校验失败输出: {command_output}")
 
-        return False
+        normalized_output = command_output.lower()
+        if "matches no streams" in normalized_output or "does not contain any stream" in normalized_output:
+            error_message = "未检测到可用音频流"
+        elif any(
+            marker in normalized_output
+            for marker in (
+                "encoder not found",
+                "unknown encoder",
+                "unrecognized option",
+                "automatic encoder selection failed",
+                "error selecting an encoder",
+                "wrapped_avframe",
+            )
+        ):
+            error_message = "FFmpeg 校验命令执行失败或当前构建能力不足"
+        else:
+            error_message = "音频流校验失败，文件可能损坏或当前 FFmpeg 不支持该编码"
+
+        logger.error(f"{error_message}: {input_path}")
+        raise AudioValidationError(error_message)
 
     return True
 
@@ -242,12 +274,7 @@ def convert_audio(
         if cancel_event is not None and cancel_event.is_set():
             raise ConversionCancelled("用户已取消当前转换任务")
 
-        if not _validate_audio_file(input_path):
-            return {
-                "success": False,
-                "output_path": None,
-                "error": "音频文件无效或已损坏",
-            }
+        _validate_audio_file(input_path)
 
         output_root = output_root_override or get_output_folder()
 
@@ -307,6 +334,11 @@ def convert_audio(
                 "-n",
                 "-i",
                 input_path,
+                "-map",
+                "0:a:0",
+                "-vn",
+                "-sn",
+                "-dn",
                 *ffmpeg_args,
                 temp_output_path,
             ]

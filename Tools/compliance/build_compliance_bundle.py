@@ -8,7 +8,7 @@ import shutil
 import zipfile
 from pathlib import Path
 
-from common import load_json, sha256_file, write_text
+from common import iter_files, load_json, sha256_file, write_text
 
 
 FORBIDDEN_PATTERNS = (
@@ -24,11 +24,13 @@ def _iter_bundle_files(project_root: Path) -> list[Path]:
         project_root / "third_party",
         project_root / "compliance",
     ]
-    files = []
-    for root in roots:
-        if root.is_dir():
-            files.extend(path for path in root.rglob("*") if path.is_file())
-    return sorted(files, key=lambda item: str(item).lower())
+    self_build_materials = [
+        project_root / "third_party" / "ffmpeg-build" / "output" / "source-bundle",
+        project_root / "third_party" / "ffmpeg-build" / "output" / "candidate" / "LICENSES",
+    ]
+    files = list(iter_files(root for root in roots if root.is_dir()))
+    files.extend(iter_files(root for root in self_build_materials if root.is_dir()))
+    return sorted(set(files), key=lambda item: str(item).lower())
 
 
 def _contains_forbidden_content(path: Path) -> bool:

@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "phase": "B5",
+  "status": "PASS",
+  "verified_at": "2026-07-28T07:14:45.267873+00:00",
+  "release_set": "Release/External_Test/2026-07-28_b5_final",
+  "archive": {
+    "path": "Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test.7z",
+    "sha256": "B84F40516DEA7CE7EA1FA07BDF34A337DA68982585D4670F3745EF46A66305DF",
+    "size_bytes": 128044435
+  },
+  "checks": {
+    "formal_ffmpeg.exe": {
+      "actual": "CA2BCCBF1A2A5A379AE484AD127D120CC3E394833B69767694A1E738F2D6BE55",
+      "expected": "CA2BCCBF1A2A5A379AE484AD127D120CC3E394833B69767694A1E738F2D6BE55"
+    },
+    "packaged_ffmpeg.exe": {
+      "actual": "CA2BCCBF1A2A5A379AE484AD127D120CC3E394833B69767694A1E738F2D6BE55",
+      "expected": "CA2BCCBF1A2A5A379AE484AD127D120CC3E394833B69767694A1E738F2D6BE55"
+    },
+    "formal_ffprobe.exe": {
+      "actual": "4EC2AC9385AACBAF927B7E8D031291059CEA2E02EE6BFAE0D708F78E1C528251",
+      "expected": "4EC2AC9385AACBAF927B7E8D031291059CEA2E02EE6BFAE0D708F78E1C528251"
+    },
+    "packaged_ffprobe.exe": {
+      "actual": "4EC2AC9385AACBAF927B7E8D031291059CEA2E02EE6BFAE0D708F78E1C528251",
+      "expected": "4EC2AC9385AACBAF927B7E8D031291059CEA2E02EE6BFAE0D708F78E1C528251"
+    },
+    "corresponding_source": {
+      "actual": "2B3A9A878B46050CACA71253C1E43F6239DE91C5C5C59DC72F8F2E0306A5C35A",
+      "expected": "2B3A9A878B46050CACA71253C1E43F6239DE91C5C5C59DC72F8F2E0306A5C35A",
+      "materials_complete": true
+    },
+    "clean_package": {
+      "config_json_absent": true,
+      "cache_absent": true,
+      "temp_absent": true,
+      "runtime_log_absent": true
+    },
+    "archive_integrity": {
+      "exit_code": 0
+    },
+    "archive_contents": {
+      "exit_code": 0,
+      "contains_ffmpeg": true,
+      "contains_ffprobe": true,
+      "contains_config_json": false,
+      "contains_cache": false,
+      "contains_temp": false,
+      "contains_runtime_log": false
+    },
+    "packaged_qml_smoke": {
+      "audioEditor": 0,
+      "autoConvert": 0,
+      "settings": 0
+    },
+    "full_regression": {
+      "exit_code": 0,
+      "summary": "613 passed, 2 warnings, 76 subtests passed in 45.21s",
+      "attempt_count": 1,
+      "first_attempt_exit_code": 0
+    }
+  },
+  "runtime_scope": {
+    "current_contract": "Qonic Audio Converter Audio Runtime",
+    "future_video_rule": "Use a separate controlled FFmpeg Video Runtime or generate a new independently reviewed build at formal integration.",
+    "not_a_universal_runtime": true
+  },
+  "final_replacement_status": "FORMAL_REPLACEMENT_VERIFIED"
+}

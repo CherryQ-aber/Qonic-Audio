@@ -187,6 +187,25 @@ def generate_manifest(
         load_json(candidate_attempt_path) if candidate_attempt_path.is_file() else {}
     )
     ffmpeg_b3_passed = candidate_attempt.get("result") == "PASS"
+    b4_regression_path = report_root / "ffmpeg-self-build" / "b4-regression-report.json"
+    b4_regression = (
+        load_json(b4_regression_path) if b4_regression_path.is_file() else {}
+    )
+    ffmpeg_b4_passed = b4_regression.get("overall_status") == "pass"
+    b5_readiness_path = (
+        report_root / "ffmpeg-self-build" / "b5-replacement-readiness.json"
+    )
+    b5_readiness = (
+        load_json(b5_readiness_path) if b5_readiness_path.is_file() else {}
+    )
+    ffmpeg_b5_proposal_prepared = (
+        b5_readiness.get("proposal_status")
+        == "PREPARED_PENDING_OWNER_REPLACEMENT_APPROVAL"
+        and b5_readiness.get("replacement_authorized") is False
+    )
+    b5_final_path = report_root / "ffmpeg-self-build" / "b5-final-release-verification.json"
+    b5_final = load_json(b5_final_path) if b5_final_path.is_file() else {}
+    ffmpeg_b5_final_verified = b5_final.get("status") == "PASS"
 
     all_ffmpeg_records = _bundled_records(ffmpeg_files)
     ffmpeg_records = [
@@ -628,7 +647,14 @@ def generate_manifest(
             {
                 "code": "FFMPEG_BUILD_CHAIN_INCOMPLETE",
                 "message": (
-                    "Qonic 自构建 B3 候选、精确源码、构建链、许可证与 Corresponding Source 已闭合；"
+                    "Qonic 自构建 B1-B4 已闭合：候选、精确源码、构建链、许可证、"
+                    "Corresponding Source 与 B4 隔离 onedir/真实媒体回归均已通过；"
+                    "B5 替换提案已就绪，仍待所有者明确批准，且获批后必须完成正式替换、"
+                    "onedir 重建、最终回归、哈希和合规材料更新。"
+                    if ffmpeg_b3_passed
+                    and ffmpeg_b4_passed
+                    and ffmpeg_b5_proposal_prepared
+                    else "Qonic 自构建 B3 候选、精确源码、构建链、许可证与 Corresponding Source 已闭合；"
                     "B4 隔离 onedir/真实媒体回归和 B5 所有者替换审批尚未完成。"
                     if ffmpeg_b3_passed
                     else "FFmpeg 官方 Gyan 资产、核心源码、构建配置和包内 70 条依赖版本记录已闭合；"
@@ -647,12 +673,23 @@ def generate_manifest(
         warnings.append(
             {
                 "code": (
-                    "FFMPEG_SELF_BUILD_B3_COMPLETED"
+                    "FFMPEG_SELF_BUILD_B5_VERIFIED"
+                    if ffmpeg_b5_final_verified
+                    else "FFMPEG_SELF_BUILD_B3_COMPLETED"
                     if ffmpeg_b3_passed
                     else "FFMPEG_GPL_ROUTE_SELECTED"
                 ),
                 "message": (
-                    "正式发行仍保留逐字节验证通过的 Gyan GPLv3 full build；"
+                    "正式发行已采用获批并验证的 Qonic Audio Runtime 自构建；"
+                    "B5 onedir、归档、Corresponding Source、打包 smoke 与完整回归均已通过。"
+                    if ffmpeg_b5_final_verified
+                    else "正式发行仍保留逐字节验证通过的 Gyan GPLv3 full build；"
+                    "Qonic 自构建 B1-B4 已完成，B5 替换提案待所有者明确批准；"
+                    "批准前不得替换。"
+                    if ffmpeg_b3_passed
+                    and ffmpeg_b4_passed
+                    and ffmpeg_b5_proposal_prepared
+                    else "正式发行仍保留逐字节验证通过的 Gyan GPLv3 full build；"
                     "Qonic 自构建 B3 候选已完成，B4/B5 前不得替换。"
                     if ffmpeg_b3_passed
                     else "项目所有者已选择保留逐字节验证通过的 Gyan GPLv3 full build。"
@@ -751,7 +788,15 @@ def generate_manifest(
     )
     manual_decisions = [
         (
-            "FFmpeg：完成 B4 隔离 onedir/真实媒体回归后生成 B5 替换提案，"
+            "FFmpeg：当前自构建仅限 Qonic Audio Converter Audio Runtime；"
+            "未来视频功能必须使用独立受控运行时或新的独立审核构建。"
+            if ffmpeg_b5_final_verified
+            else "FFmpeg：B5 替换提案已就绪；仅在项目所有者明确批准后替换正式二进制，"
+            "并完成 onedir 重建、最终回归、哈希和合规材料更新。"
+            if ffmpeg_b3_passed
+            and ffmpeg_b4_passed
+            and ffmpeg_b5_proposal_prepared
+            else "FFmpeg：完成 B4 隔离 onedir/真实媒体回归后生成 B5 替换提案，"
             "仅在项目所有者明确批准后替换正式二进制。"
             if ffmpeg_b3_passed
             else "FFmpeg：Gyan 未公开构建脚本、补丁集和静态依赖锁定材料；"

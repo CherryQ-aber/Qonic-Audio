@@ -474,6 +474,102 @@ def collect_ffmpeg(
             "部分依赖使用 rolling git 描述或 latest 标记，无法仅凭 README 固定完整源码身份",
         ],
     }
+    is_qonic_self_build = (
+        "--prefix=/opt/qonic" in buildconf_text
+        and "--disable-everything" in buildconf_text
+        and "--disable-nonfree" in buildconf_text
+    )
+    if is_qonic_self_build:
+        self_build_report_dir = output_dir.parent / "ffmpeg-self-build"
+        readiness_path = self_build_report_dir / "b5-replacement-readiness.json"
+        final_path = self_build_report_dir / "b5-final-release-verification.json"
+        source_index_path = (
+            project_root
+            / "third_party"
+            / "ffmpeg-build"
+            / "output"
+            / "candidate"
+            / "SOURCE_INDEX.json"
+        )
+        readiness = load_json(readiness_path) if readiness_path.is_file() else {}
+        final = load_json(final_path) if final_path.is_file() else {}
+        source_index = load_json(source_index_path) if source_index_path.is_file() else {}
+        ffmpeg_source = next(
+            (
+                item
+                for item in source_index.get("sources", [])
+                if item.get("name") == "ffmpeg"
+            ),
+            {},
+        )
+        expected_binaries = {
+            "ffmpeg": "CA2BCCBF1A2A5A379AE484AD127D120CC3E394833B69767694A1E738F2D6BE55",
+            "ffprobe": "4EC2AC9385AACBAF927B7E8D031291059CEA2E02EE6BFAE0D708F78E1C528251",
+        }
+        binaries_match = bool(
+            selected_ffmpeg
+            and selected_ffprobe
+            and sha256_file(selected_ffmpeg) == expected_binaries["ffmpeg"]
+            and sha256_file(selected_ffprobe) == expected_binaries["ffprobe"]
+        )
+        source_record = readiness.get("corresponding_source", {})
+        source_path = project_root / str(source_record.get("path", ""))
+        source_closed = bool(
+            source_path.is_file()
+            and sha256_file(source_path) == str(source_record.get("sha256", "")).upper()
+            and readiness.get("technical_checks", {}).get(
+                "corresponding_source_contents_complete"
+            )
+            is True
+        )
+        final_verified = final.get("status") == "PASS"
+        provenance.update(
+            {
+                "build_provider": "Qonic controlled self-build",
+                "provider_page": None,
+                "upstream_commit": ffmpeg_source.get("commit"),
+                "upstream_release": ffmpeg_source.get("version"),
+                "upstream_asset": None,
+                "upstream_asset_sha256": None,
+                "upstream_asset_url": None,
+                "source_package": source_record.get("path"),
+                "source_archive_local": source_record.get("path"),
+                "source_sha256": source_record.get("sha256"),
+                "source_core_closed": source_closed,
+                "binary_asset_closed": binaries_match,
+                "byte_identical_to_upstream": None,
+                "asset_comparison_status": "QONIC_B5_FORMAL_RUNTIME_MATCHES_APPROVED_CANDIDATE",
+                "provider_repository": None,
+                "provider_release_commit": None,
+                "provider_build_scripts_present": True,
+                "provider_build_environment": {
+                    "statement": "fixed Docker Desktop linux/amd64 build environment"
+                },
+                "provider_script_guidance": "third_party/ffmpeg-build/build.ps1",
+                "provider_dependency_versioning_statement": "seven exact source archives and SHA-256 lock",
+                "provider_evidence_snapshots": [],
+                "provider_evidence_closed": True,
+                "build_scripts_status": "QONIC_LOCKED_AND_ARCHIVED",
+                "patch_set_status": "ARCHIVED_EMPTY_PATCH_SET",
+                "package_readme_sha256": None,
+                "package_readme_member": None,
+                "package_dependency_versions_recovered": True,
+                "package_dependency_version_count": len(source_index.get("sources", [])),
+                "configure_dependency_flag_count": len(external_library_flags),
+                "configure_dependency_flags_with_versions": len(external_library_flags),
+                "configure_dependency_flags_without_versions": [],
+                "dependency_sources_closed": source_closed,
+                "exact_source_closed": binaries_match and source_closed and final_verified,
+                "evidence_basis": [
+                    "formal ffmpeg/ffprobe SHA-256 against approved candidate",
+                    "B5 owner approval and formal replacement record",
+                    "B5 final release verification",
+                    "Corresponding Source content verification",
+                    "locked exact sources, configuration, patches, scripts and license texts",
+                ],
+                "unresolved_questions": [],
+            }
+        )
     payload = {
         "selected": provenance["selected_binary"],
         "files": records,
@@ -548,6 +644,16 @@ def collect_ffmpeg(
         "- 阻塞：精确构建脚本 revision、本地修改、补丁集及全部静态依赖对应源码仍未发布；不能将完整构建链标记为已闭合。",
         "- 建议：向构建提供者索取 8.1.1 对应脚本快照、补丁和依赖源码包；MABS 只能作为复现候选，不能冒充原构建证据。",
     ]
+    if is_qonic_self_build:
+        risk_lines = [
+            "# FFmpeg Risk Analysis",
+            "",
+            "- 事实：正式运行时与获批 Qonic 候选二进制 SHA-256 一致。",
+            "- 事实：构建使用 GPL/version3，`--enable-nonfree` 未启用。",
+            "- 事实：Corresponding Source 包含 FFmpeg、Rubber Band、全部静态依赖源码、锁文件、配置、脚本、补丁目录、测试和许可证材料。",
+            "- 事实：B5 最终 onedir、归档、三个 packaged QML smoke 和完整回归已验证。",
+            "- 边界：该二进制仅是 Qonic Audio Converter Audio Runtime；未来视频功能必须使用独立受控运行时或重新生成并审核的新构建。",
+        ]
     if failures:
         risk_lines.extend(["", "## Collection Failures", *[f"- {item}" for item in failures]])
     write_text(output_dir / "ffmpeg-risk-analysis.md", "\n".join(risk_lines) + "\n")

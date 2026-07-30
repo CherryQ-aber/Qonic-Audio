@@ -1,4 +1,6 @@
 import os
+import base64
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -25,7 +27,154 @@ from app_info import (
 from config import APP_VERSION
 
 
+_ONE_PIXEL_PNG = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9JmK4AAAAASUVORK5CYII="
+)
+
+
+def _create_test_tone(path: Path, codec: str) -> None:
+    subprocess.run(
+        [
+            converter.FFMPEG_PATH,
+            "-hide_banner",
+            "-v",
+            "error",
+            "-f",
+            "lavfi",
+            "-i",
+            "sine=frequency=440:duration=0.2",
+            "-c:a",
+            codec,
+            str(path),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+
+def _add_mp3_cover(path: Path) -> None:
+    from mutagen.id3 import APIC, ID3
+
+    tags = ID3()
+    tags.add(APIC(mime="image/png", type=3, desc="cover", data=_ONE_PIXEL_PNG))
+    tags.save(path)
+
+
+def _add_flac_cover(path: Path) -> None:
+    from mutagen.flac import FLAC, Picture
+
+    media = FLAC(path)
+    picture = Picture()
+    picture.type = 3
+    picture.mime = "image/png"
+    picture.data = _ONE_PIXEL_PNG
+    picture.width = picture.height = 1
+    picture.depth = 24
+    media.add_picture(picture)
+    media.save()
+
+
 class ConverterSafetyTests(unittest.TestCase):
+
+    def test_audio_validation_command_selects_only_first_audio_stream(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            source = Path(temp_dir) / "cover.mp3"
+            source.write_bytes(b"audio")
+
+            with patch(
+                "converter._run_ffmpeg_command",
+                return_value=SimpleNamespace(returncode=0, stdout="", stderr=""),
+            ) as mock_run:
+                self.assertTrue(converter._validate_audio_file(str(source)))
+
+            command = mock_run.call_args.args[0]
+            self.assertEqual(command[command.index("-map") + 1], "0:a:0")
+            self.assertIn("-vn", command)
+            self.assertIn("-sn", command)
+            self.assertIn("-dn", command)
+            self.assertEqual(command[-2:], ["null", "-"])
+
+    def test_audio_validation_accepts_mp3_with_attached_picture(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            source = Path(temp_dir) / "cover.mp3"
+            _create_test_tone(source, "libmp3lame")
+            _add_mp3_cover(source)
+
+            self.assertTrue(converter._validate_audio_file(str(source)))
+
+    def test_audio_validation_accepts_plain_mp3(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            source = Path(temp_dir) / "plain.mp3"
+            _create_test_tone(source, "libmp3lame")
+
+            self.assertTrue(converter._validate_audio_file(str(source)))
+
+    def test_audio_validation_accepts_flac_with_embedded_picture(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            source = Path(temp_dir) / "cover.flac"
+            _create_test_tone(source, "flac")
+            _add_flac_cover(source)
+
+            self.assertTrue(converter._validate_audio_file(str(source)))
+
+    def test_audio_validation_rejects_damaged_media_with_decode_error(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            source = Path(temp_dir) / "damaged.mp3"
+            source.write_bytes(b"not an audio file")
+
+            with self.assertRaisesRegex(
+                converter.AudioValidationError,
+                "音频流校验失败",
+            ):
+                converter._validate_audio_file(str(source))
+
+    def test_audio_validation_rejects_picture_without_audio_stream(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            source = Path(temp_dir) / "video_only.mov"
+            source.write_bytes(b"media container fixture")
+
+            with patch(
+                "converter._run_ffmpeg_command",
+                return_value=SimpleNamespace(
+                    returncode=1,
+                    stdout="",
+                    stderr="Stream map '0:a:0' matches no streams.",
+                ),
+            ):
+                with self.assertRaisesRegex(
+                    converter.AudioValidationError,
+                    "未检测到可用音频流",
+                ):
+                    converter._validate_audio_file(str(source))
+
+    def test_decoded_ncm_mp3_with_cover_reaches_conversion(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            original_ncm = root / "song.ncm"
+            decoded_mp3 = root / "Temp" / "song.mp3"
+            output_root = root / "output"
+            original_ncm.write_bytes(b"source ncm remains unchanged")
+            decoded_mp3.parent.mkdir()
+            _create_test_tone(decoded_mp3, "libmp3lame")
+            _add_mp3_cover(decoded_mp3)
+
+            with patch(
+                "converter.process_lyrics_for_output",
+                return_value={"found": False},
+            ):
+                result = converter.convert_audio(
+                    str(decoded_mp3),
+                    "flac",
+                    output_root_override=str(output_root),
+                    create_format_subfolder=False,
+                    original_source_path=str(original_ncm),
+                )
+
+            self.assertTrue(result["success"], result)
+            self.assertTrue(Path(result["output_path"]).is_file())
+            self.assertTrue(decoded_mp3.is_file())
+            self.assertEqual(original_ncm.read_bytes(), b"source ncm remains unchanged")
 
     def test_same_format_conversion_preserves_source(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -178,6 +327,13 @@ class ConverterSafetyTests(unittest.TestCase):
             convert_command = mock_run.call_args_list[-1].args[0]
             self.assertIn("-c:a", convert_command)
             self.assertIn("aac", convert_command)
+            self.assertEqual(
+                convert_command[convert_command.index("-map") + 1],
+                "0:a:0",
+            )
+            self.assertIn("-vn", convert_command)
+            self.assertIn("-sn", convert_command)
+            self.assertIn("-dn", convert_command)
             self.assertLess(
                 convert_command.index("aac"),
                 convert_command.index(str(output_root / "source.m4a")),

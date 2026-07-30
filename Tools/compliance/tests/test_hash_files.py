@@ -10,7 +10,7 @@ TOOL_ROOT = Path(__file__).resolve().parents[1]
 if str(TOOL_ROOT) not in sys.path:
     sys.path.insert(0, str(TOOL_ROOT))
 
-from common import duplicate_groups, sha256_file
+from common import duplicate_groups, iter_files, sha256_file
 from hash_files import hash_paths
 
 
@@ -46,6 +46,20 @@ class HashFilesTests(unittest.TestCase):
             duplicate_groups(records),
             [{"sha256": "A" * 64, "paths": ["a.bin", "b.bin"]}],
         )
+
+    def test_self_build_work_and_output_are_excluded_from_inventory_scan(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            evidence = root / "evidence.bin"
+            evidence.write_bytes(b"evidence")
+            (root / "work").mkdir()
+            (root / "work" / "candidate.bin").write_bytes(b"work")
+            (root / "output").mkdir()
+            (root / "output" / "candidate.bin").write_bytes(b"output")
+
+            found = list(iter_files([root]))
+
+            self.assertEqual(found, [evidence])
 
 
 if __name__ == "__main__":

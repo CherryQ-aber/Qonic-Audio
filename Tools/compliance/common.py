@@ -38,6 +38,10 @@ IGNORED_SCAN_PARTS = {
     "compliance",
     "Code_Review_Packages",
     "Codex_memory",
+    # Self-build work and output trees are candidate/evidence material, not
+    # part of the frozen formal distribution inventory.
+    "output",
+    "work",
 }
 
 
@@ -211,7 +215,11 @@ def iter_files(roots: Iterable[Path]) -> Iterable[Path]:
     """Yield regular files while skipping internal/report/cache directories."""
 
     for root in roots:
-        if root.is_file():
+        try:
+            is_file = root.is_file()
+        except OSError:
+            continue
+        if is_file:
             yield root
             continue
         for current, dirnames, filenames in os.walk(root):
@@ -223,7 +231,13 @@ def iter_files(roots: Iterable[Path]) -> Iterable[Path]:
             current_path = Path(current)
             for filename in sorted(filenames):
                 candidate = current_path / filename
-                if candidate.is_file():
+                try:
+                    is_file = candidate.is_file()
+                except OSError:
+                    # Docker/WSL work directories can contain inaccessible
+                    # Windows reparse points. They are not local evidence files.
+                    continue
+                if is_file:
                     yield candidate
 
 

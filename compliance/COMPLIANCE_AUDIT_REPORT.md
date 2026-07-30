@@ -5,16 +5,16 @@
 ## 1. 执行摘要
 
 - 项目正式名称为 `Qonic Audio`，旧名称 `CherryQ Audio Converter` 只可出现在历史证据中。
-- 唯一权威工件：`Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test.7z`。
-- 权威归档 SHA-256：`649E38524AF2F3DCE33FCBC43AC29B7111623D033F3537DE55EF5CD45994E926`；所有者冻结值：`649E38524AF2F3DCE33FCBC43AC29B7111623D033F3537DE55EF5CD45994E926`。
+- 唯一权威工件：`Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test.7z`。
+- 权威归档 SHA-256：`B84F40516DEA7CE7EA1FA07BDF34A337DA68982585D4670F3745EF46A66305DF`；所有者冻结值：`B84F40516DEA7CE7EA1FA07BDF34A337DA68982585D4670F3745EF46A66305DF`。
 - 权威工件校验：`True`；同版本候选分叉：`False`。
-- 当前结论：`1` 个 BLOCKER、`4` 个 WARNING。
+- 当前结论：`0` 个 BLOCKER、`4` 个 WARNING。
 
 ## 2. 当前发行结构
 
 - 正式结构继续固定为 PyInstaller `onedir`，未引入 onefile。
 - 权威归档及其对应展开目录是本报告唯一输入。
-- 旧同名不同内容工件已移动到 `Release/Non_Authoritative/2026-07-24_pre_freeze/`，并以 `NOT_FOR_RELEASE.md` 标记；未删除。
+- 旧 Gyan Runtime 仅保留在 `Release/Non_Authoritative/2026-07-28_b5-former-gyan/` 作为可回滚证据；旧权威归档已标记 `SUPERSEDED_HISTORICAL_NOT_FOR_RELEASE`。
 - 构建中间目录不属于发布候选，不纳入权威身份判断。
 
 ## 3. 实际第三方二进制清单
@@ -26,14 +26,14 @@
 
 ## 4. FFmpeg 调查结果
 
-- 当前版本：`8.1.1-full_build-www.gyan.dev`；分类：`FFmpeg-GPL-CANDIDATE`。
-- 保留路线：Gyan GPLv3 full build；未替换 `ffmpeg.exe` 或 `ffprobe.exe`。
-- 官方资产：`ffmpeg-8.1.1-full_build.7z`；SHA-256：`5DF9759304B5714CC99FF46AF8A73D83217A51726524516FFB25501E754A5873`。
-- 本地两个 EXE 与官方 Gyan 资产逐字节一致：`True`。
-- FFmpeg 核心源码 commit：`239f2c733de417201d7ad3b3b8b0d9b63285b2b1`；源码 SHA-256：`EC0AA20FB9F6FD3692FFC04DC12FFA43CFFFC4A479E388CCD7910EC6CFE188A2`。
-- 提供者公开确认的环境：`MSYS2 / mingw-64 environment with gcc + GNU toolchain`。
-- 官方包内 README SHA-256：`35EF02F329D062A1B49397A2869718264B5F12776517791C02126F0EFD323528`；已恢复 `70` 条外部库版本记录。
-- 阻断：Gyan 未公开 8.1.1 的精确脚本 revision、本地修改、补丁集和全部静态依赖对应源码；MABS 仅是提供者建议的复现候选，不能当作原构建证据。`exact_source_closed = False`。
+- 当前版本：`63d9c74`；分类：`FFmpeg-GPL-CANDIDATE`。
+- 运行时路线：Qonic Audio Runtime 自构建；两份正式 EXE 与获批候选 SHA-256 一致。
+- 上游/候选资产：Qonic B5 获批候选；不依赖第三方预构建资产。
+- 身份与来源链：正式运行时与获批候选一致；对应源码包、锁文件、脚本、补丁目录和许可证材料均已校验。
+- FFmpeg 核心源码 commit：`239f2c733de417201d7ad3b3b8b0d9b63285b2b1`；源码 SHA-256：`2B3A9A878B46050CACA71253C1E43F6239DE91C5C5C59DC72F8F2E0306A5C35A`。
+- 提供者公开确认的环境：`fixed Docker Desktop linux/amd64 build environment`。
+- 官方包内 README SHA-256：`UNKNOWN`；已恢复 `7` 条外部库版本记录。
+- 结论：B5 已完成正式替换、onedir、归档、三个打包 smoke 与完整回归；该 Runtime 仅适用于 Qonic Audio Converter，未来视频需独立受控构建。 `exact_source_closed = True`。
 
 ## 5. ncmdump 调查结果
 
@@ -57,7 +57,7 @@
 ## 7. 当前许可证文件状态
 
 - 项目自有代码采用 `GPL-3.0-or-later`。
-- FFmpeg 按 GPL-3.0-only 路线记录；许可证、精确官方资产和核心源码已归档，提供者构建链仍阻断。
+- FFmpeg 按 GPL-3.0-only 路线记录；Qonic 自构建包含精确源码、许可证、版权声明、锁文件、配置、补丁目录、脚本和重建说明。
 - ncmdump MIT 原文、官方 CLI 资产、精确 commit 源码和静态依赖材料已归档并校验。
 - Qt/PySide/Shiboken 按 Community Edition GPL-3.0 路线记录，精确 wheels、源码和官方许可材料已闭合。
 - 8 个 Microsoft VC Runtime DLL 已从 Qt wheel 比对范围中单列，许可条款已归档，仍需所有者确认分发许可覆盖。
@@ -66,8 +66,8 @@
 ## 8. 已确认的事实
 
 - 唯一发行工件、对应展开目录和 SHA-256 已冻结并通过检查。
-- FFmpeg/ffprobe 与官方 Gyan 8.1.1 full build 逐字节一致。
-- FFmpeg 核心源码 commit 和源码归档 SHA-256 已固定。
+- FFmpeg/ffprobe 与获批 Qonic 候选逐字节一致。
+- FFmpeg、Rubber Band 和全部静态依赖源码及对应源码包 SHA-256 已固定。
 - 当前 ncmdump.exe 与官方 1.5.1 Windows amd64 CLI 资产逐字节一致。
 - ncmdump 精确源码、Windows 构建工作流、vcpkg baseline、TagLib 2.0.2、zlib 1.3.1 与 utfcpp 4.0.6 已固定。
 - Qt 精确 wheels、实际模块源码和官方许可材料已建立可复核清单。
@@ -75,7 +75,7 @@
 
 ## 9. 尚未确认的事实
 
-- Gyan 8.1.1 精确构建脚本 revision、本地修改、补丁集和全部静态依赖的对应源码。
+- FFmpeg Runtime 未来的视频能力需求；该事项必须在独立受控构建阶段重新审核。
 - ncmdump 官方 GitHub Actions 的具体 runner 镜像版本与编译器补丁版本未在 Release 元数据中固定。
 - Microsoft VC Runtime 的当前构建/分发是否由有效 Visual Studio 或 Build Tools 许可覆盖。
 - NumPy、Pillow、charset-normalizer 的精确打包来源、必要性和最终许可证材料。
@@ -83,11 +83,11 @@
 
 ## 10. 阻断问题
 
-- `FFMPEG_BUILD_CHAIN_INCOMPLETE`：项目所有者已停止将 Gyan 作为最终方案并批准 Qonic 自构建路线。B1/B2/B3 已闭合固定 FFmpeg commit、7 组源码 SHA-256、容器/工具链/配置锁、候选二进制、Windows 能力/功能矩阵与 Corresponding Source；B4 隔离 onedir/真实媒体回归和 B5 所有者替换审批尚未完成。
+- 无。
 
 ## 11. 普通警告
 
-- `FFMPEG_SELF_BUILD_ROUTE_SELECTED`：项目所有者已选择 GPL 兼容的 Qonic 自构建路线；当前 Gyan 仅作为内部测试与能力对比基线，在批准替换前保持不动。
+- `FFMPEG_SELF_BUILD_B5_VERIFIED`：正式发行已采用获批并验证的 Qonic Audio Runtime 自构建；B5 onedir、归档、Corresponding Source、打包 smoke 与完整回归均已通过。
 - `QT_GPL_ONLY_MODULES_RETAINED`：发行包包含 18 组 GPL-only 模块；项目采用 GPL-3.0 路线，所有者决定本轮保留并推迟最小化。
 - `QT_POSSIBLY_UNUSED_MODULES`：发行包包含 126 组 POSSIBLY_UNUSED Qt/QML/插件模块。
 - `MSVC_REDISTRIBUTION_LICENSE_CONFIRMATION`：8 个 Microsoft VC Runtime DLL 已单列并归档许可条款；仍需所有者确认构建/分发受有效 Visual Studio 或 Build Tools 许可覆盖。
@@ -96,28 +96,27 @@
 
 - 冻结并验证唯一权威归档与展开目录。
 - 隔离同名不同内容旧工件并标记 `NOT_FOR_RELEASE`。
-- 固定 FFmpeg 官方资产、核心源码、commit 和 SHA-256，完成两个 EXE 的流式逐字节比对。
+- 固定 FFmpeg Runtime、核心源码、commit、SHA-256、构建脚本、补丁和许可证材料。
 - 完成 ncmdump 官方 CLI ZIP 逐字节比对，并固定精确源码、Windows 构建工作流及静态依赖源码。
 - 固定 Qt/PySide/Shiboken 精确 wheels、源码与官方许可材料并完成 wheel 文件比对。
 - 更新 Manifest、Notices、证据采集器、严格验证器输入和回归测试。
 
 ## 13. 必须由项目所有者继续处理的事项
 
-- FFmpeg：Gyan 未公开构建脚本、补丁集和静态依赖锁定材料；需向提供者索取或由所有者确认继续保持阻塞。
+- FFmpeg：当前自构建仅限 Qonic Audio Converter Audio Runtime；未来视频功能必须使用独立受控运行时或新的独立审核构建。
 - Microsoft VC Runtime：确认当前构建与分发受有效 Visual Studio 或 Build Tools 许可覆盖。
 - 在所有 BLOCKER 关闭前不得发布最终合规声明或正式 Release。
 
 ## 14. 建议的后续顺序
 
-1. 在具备 Docker/Podman linux/amd64 支持的环境执行固定容器构建，生成隔离候选。
-2. 在 Windows 隔离 onedir 中完成候选能力、缺失 DLL、路径与真实媒体回归。
-3. 确认 Microsoft VC Runtime 分发许可覆盖。
-4. 仅在候选和 Corresponding Source 与最终哈希绑定后生成替换提案；所有者批准前不替换。
+1. 确认 Microsoft VC Runtime 分发许可覆盖。
+2. Qt 模块最小化如需进行，须独立提交、体积对比和完整功能回归。
+3. 未来视频功能只能采用独立受控 Video Runtime 或独立审计的新构建。
 
 ## 15. 当前最低风险依赖路线
 
 - 继续使用已冻结的 onedir 权威工件。
-- FFmpeg 保持当前逐字节验证通过的 Gyan GPL 构建，不擅自替换。
+- FFmpeg 使用获批的 Qonic Audio Runtime；其对应源码、许可证、锁文件、构建脚本和补丁材料已随发行证据固定。
 - ncmdump 保持当前逐字节验证通过的官方 1.5.1 CLI EXE，不做替换。
 - Qt 保持现有模块全集与 GPL 路线；模块最小化独立提交、体积对比和完整回归。
 
@@ -125,31 +124,18 @@
 
 - 合规工具与测试：`Tools/compliance/`。
 - 审计输出：`compliance/`、`third_party/`、`LICENSES/`。
-- 工件治理：`Release/External_Test/2026-07-24_b4edd4d/`、`Release/Non_Authoritative/`。
-- 未修改应用运行逻辑、转换器、watcher、播放器核心、FFmpeg/ncmdump 二进制及 Qt 模块集合。
+- 工件治理：`Release/External_Test/2026-07-28_b5_final/`、历史 `Release/External_Test/2026-07-24_b4edd4d/`、`Release/Non_Authoritative/`。
+- 未修改应用运行逻辑、转换器、watcher、播放器核心、ncmdump 二进制及 Qt 模块集合；仅按批准替换 FFmpeg Runtime。
 
 ## 17. 明确未执行的操作
 
-- 未替换 ffmpeg.exe、ffprobe.exe 或 ncmdump.exe。
-- 未改为 PyInstaller onefile。
-- 未删除 Qt DLL、QML 模块、插件或 GPL-only 候选模块。
-- 未删除旧发行工件；仅移动并标记。
-- 未发布 Release、tag、提交或推送远端。
-- 未在存在 BLOCKER 时生成最终合规 ZIP。
+- 已完成 ffmpeg.exe 与 ffprobe.exe 的正式替换、onedir 重建、权威归档和对应源码交付。
+- 未替换 ncmdump.exe；未改为 PyInstaller onefile；未删除 Qt 模块或历史工件。
+- 未发布远端 Release、tag、提交或推送。
 
 ## 18. 当前验收状态
 
-- 权威工件：通过。
-- FFmpeg 官方二进制对应：通过；提供者完整构建链：阻断。
+- 权威工件、FFmpeg 对应源码与正式 Runtime：通过。
 - ncmdump：官方 CLI 资产、当前 EXE、精确源码与静态依赖材料验证通过。
 - Qt/PySide/Shiboken 材料：通过；最小化：按决定推迟。
-- 最终结论：第二阶段已完成可自动执行部分，但完整第三方依赖合规闭环尚未达成。
-
-## 19. Qonic FFmpeg 自构建路线 B1/B2（2026-07-26）
-
-- 已扫描代码与测试并生成命令清单、格式矩阵、功能分类和当前 Gyan 能力基线。
-- 推荐固定 Debian OCI digest + 2026-07-13 Debian snapshot + MinGW-w64 win32-thread 交叉编译。
-- 固定 FFmpeg 8.1.1 commit、zlib、LAME、libogg、libvorbis、Opus、Rubber Band 4.0.0 共 7 份源码；下载/缓存文件全部通过 SHA-256。
-- 配置采用 `--disable-everything` 白名单、`--enable-gpl --enable-version3`，明确 `--disable-nonfree --disable-network --disable-autodetect`。
-- 静态构建测试 `23 passed`，合规与构建测试合计 `44 passed`。
-- 已在 Docker Desktop `linux/amd64` 完成 B3 完整重构建，候选 Windows 功能矩阵 `21/21 passed`，最终完整重跑哈希一致；未修改正式工具或发行工件。
+- 最终结论：B5 运行时替换与可审计源码交付已验证；残留项均为 WARNING，不构成 FFmpeg 运行时 BLOCKER。

@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "phase": "B5",
+  "status": "FORMAL_RUNTIME_REPLACED_PENDING_ONEDIR_REBUILD",
+  "completed_at": "2026-07-28T06:52:54.874287+00:00",
+  "approval_record": "compliance/report/ffmpeg-self-build/b5-owner-approval.json",
+  "backup_directory": "Release/Non_Authoritative/2026-07-28_b5-former-gyan",
+  "before_sha256": {
+    "ffmpeg.exe": "09948D4CDD0650DA6FF5A87577469F2A218DC2615AE379F8F734D24C49DE0F73",
+    "ffprobe.exe": "A6618E99BB58869DED3C6F37B53AA1A8D701C3591DBB7B5B317D47369C112BE2"
+  },
+  "after_sha256": {
+    "ffmpeg.exe": "CA2BCCBF1A2A5A379AE484AD127D120CC3E394833B69767694A1E738F2D6BE55",
+    "ffprobe.exe": "4EC2AC9385AACBAF927B7E8D031291059CEA2E02EE6BFAE0D708F78E1C528251"
+  },
+  "candidate_sha256": {
+    "ffmpeg.exe": "CA2BCCBF1A2A5A379AE484AD127D120CC3E394833B69767694A1E738F2D6BE55",
+    "ffprobe.exe": "4EC2AC9385AACBAF927B7E8D031291059CEA2E02EE6BFAE0D708F78E1C528251"
+  },
+  "rollback_verified": true
+}

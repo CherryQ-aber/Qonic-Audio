@@ -4,7 +4,11 @@
       "paths": [
         "Release/CherryQ_Audio_Converter_v4.0/_internal/Tools/ncmdump/ncmdump.exe",
         "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe",
+        "Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe",
+        "Release/External_Test/2026-07-28_b5_formal/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe",
+        "Release/External_Test/2026-07-28_b5_selfbuild/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe",
         "Release/Non_Authoritative/2026-07-24_pre_freeze/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe",
+        "Release/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe",
         "Tools/ncmdump/ncmdump.exe",
         "build/release/dist/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe"
       ],
@@ -61,9 +65,30 @@
         "config.py",
         "watcher.py"
       ],
-      "in_distribution": true,
+      "in_distribution": false,
       "name": "ncmdump.exe",
       "path": "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe",
+      "pe": {
+        "imports": [
+          "KERNEL32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "A1F6F6CE87500B7B1F2A89DBF85B13E81D327EEA4641DAF8AFE0AB840F2C518C",
+      "size": 850432,
+      "taglib_string_occurrences": 94
+    },
+    {
+      "actually_called": true,
+      "call_evidence": [
+        "config.py",
+        "watcher.py"
+      ],
+      "in_distribution": true,
+      "name": "ncmdump.exe",
+      "path": "Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe",
       "pe": {
         "imports": [
           "KERNEL32.dll"
@@ -84,7 +109,70 @@
       ],
       "in_distribution": false,
       "name": "ncmdump.exe",
+      "path": "Release/External_Test/2026-07-28_b5_formal/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe",
+      "pe": {
+        "imports": [
+          "KERNEL32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "A1F6F6CE87500B7B1F2A89DBF85B13E81D327EEA4641DAF8AFE0AB840F2C518C",
+      "size": 850432,
+      "taglib_string_occurrences": 94
+    },
+    {
+      "actually_called": true,
+      "call_evidence": [
+        "config.py",
+        "watcher.py"
+      ],
+      "in_distribution": false,
+      "name": "ncmdump.exe",
+      "path": "Release/External_Test/2026-07-28_b5_selfbuild/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe",
+      "pe": {
+        "imports": [
+          "KERNEL32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "A1F6F6CE87500B7B1F2A89DBF85B13E81D327EEA4641DAF8AFE0AB840F2C518C",
+      "size": 850432,
+      "taglib_string_occurrences": 94
+    },
+    {
+      "actually_called": true,
+      "call_evidence": [
+        "config.py",
+        "watcher.py"
+      ],
+      "in_distribution": false,
+      "name": "ncmdump.exe",
       "path": "Release/Non_Authoritative/2026-07-24_pre_freeze/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe",
+      "pe": {
+        "imports": [
+          "KERNEL32.dll"
+        ],
+        "is_pe": true,
+        "machine": "x86_64"
+      },
+      "replaceable": false,
+      "sha256": "A1F6F6CE87500B7B1F2A89DBF85B13E81D327EEA4641DAF8AFE0AB840F2C518C",
+      "size": 850432,
+      "taglib_string_occurrences": 94
+    },
+    {
+      "actually_called": true,
+      "call_evidence": [
+        "config.py",
+        "watcher.py"
+      ],
+      "in_distribution": false,
+      "name": "ncmdump.exe",
+      "path": "Release/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe",
       "pe": {
         "imports": [
           "KERNEL32.dll"
@@ -124,5 +212,5 @@
     "watcher.py"
   ],
   "invocation_mode": "subprocess",
-  "selected": "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe"
+  "selected": "Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe"
 }

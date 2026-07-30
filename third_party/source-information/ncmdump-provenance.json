@@ -59,7 +59,7 @@
     }
   ],
   "provided_asset_sha256": "BB849221C06B8FDBFF42AEFB86BAEA9C07256568658D80F4BE72A39A2A1632DC",
-  "selected_binary": "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe",
+  "selected_binary": "Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test/_internal/Tools/ncmdump/ncmdump.exe",
   "source_archive_local": "third_party/source-archives/ncmdump/ncmdump-76a55d862f767ee20ae417ecd128fde442eea77f.tar.gz",
   "source_archive_verified": true,
   "source_package": "https://codeload.github.com/taurusxin/ncmdump/tar.gz/76a55d862f767ee20ae417ecd128fde442eea77f",
