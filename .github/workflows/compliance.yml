@@ -35,7 +35,7 @@ jobs:
         id: authority
         shell: pwsh
         run: |
-          $base = "Release/External_Test/2026-07-28_b5_final"
+          $base = "Release/External_Test/2026-07-30_audio-validation-fix"
           $dist = "$base/Qonic_Audio_v5.0_internal_test"
           $archive = "$base/Qonic_Audio_v5.0_internal_test.7z"
           if ((Test-Path -LiteralPath $dist) -and (Test-Path -LiteralPath $archive)) {

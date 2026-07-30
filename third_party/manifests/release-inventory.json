@@ -1,11 +1,11 @@
 {
   "artifact_divergence": false,
   "audited_archive": {
-    "path": "Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test.7z",
-    "sha256": "B84F40516DEA7CE7EA1FA07BDF34A337DA68982585D4670F3745EF46A66305DF",
-    "size": 128044435
+    "path": "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test.7z",
+    "sha256": "BB0967E85AF2857C23587F3CEF37C37D14ED4E4106B7261F21E2F247B47F42F4",
+    "size": 128068040
   },
-  "audited_distribution": "Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test.7z",
+  "audited_distribution": "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test.7z",
   "audited_extracted_tools": {
     "ffmpeg": true,
     "ffplay": false,
@@ -17,8 +17,8 @@
     "archive_matches_owner_hash": true,
     "audited_archive_is_authoritative": true,
     "audited_expanded_is_authoritative": true,
-    "authority_file": "Release/External_Test/2026-07-28_b5_final/RELEASE_AUTHORITY.json",
-    "authority_file_count": 2,
+    "authority_file": "Release/External_Test/2026-07-30_audio-validation-fix/RELEASE_AUTHORITY.json",
+    "authority_file_count": 3,
     "non_authoritative_marker_present": true,
     "passed": true
   },
@@ -60,7 +60,7 @@
       "file_count": 3232,
       "name": "Qonic_Audio_v5.0_internal_test.7z",
       "path": "Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test.7z",
-      "release_status": "AUTHORITATIVE",
+      "release_status": "SUPERSEDED_HISTORICAL",
       "sha256": "B84F40516DEA7CE7EA1FA07BDF34A337DA68982585D4670F3745EF46A66305DF",
       "size": 128044435
     },
@@ -79,6 +79,18 @@
     {
       "contains_ffmpeg": true,
       "contains_ffplay": false,
+      "contains_ffprobe": true,
+      "contains_ncmdump": true,
+      "file_count": 3232,
+      "name": "Qonic_Audio_v5.0_internal_test.7z",
+      "path": "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test.7z",
+      "release_status": "AUTHORITATIVE",
+      "sha256": "BB0967E85AF2857C23587F3CEF37C37D14ED4E4106B7261F21E2F247B47F42F4",
+      "size": 128068040
+    },
+    {
+      "contains_ffmpeg": true,
+      "contains_ffplay": false,
       "contains_ffprobe": false,
       "contains_ncmdump": true,
       "file_count": 3230,
@@ -91,8 +103,8 @@
   ],
   "release_authority": {
     "archive": "Qonic_Audio_v5.0_internal_test.7z",
-    "archive_sha256": "B84F40516DEA7CE7EA1FA07BDF34A337DA68982585D4670F3745EF46A66305DF",
-    "archive_size": 128044435,
+    "archive_sha256": "BB0967E85AF2857C23587F3CEF37C37D14ED4E4106B7261F21E2F247B47F42F4",
+    "archive_size": 128068040,
     "authority_status": "AUTHORITATIVE_RELEASE_BASELINE",
     "corresponding_source": {
       "path": "Corresponding_Source/qonic-ffmpeg-complete-corresponding-source.tar.gz",
@@ -100,25 +112,25 @@
     },
     "expanded_directory": "Qonic_Audio_v5.0_internal_test",
     "expanded_file_count": 3006,
-    "expanded_total_bytes": 501150708,
+    "expanded_total_bytes": 501164788,
     "ffmpeg_runtime": {
       "contract": "Qonic Audio Converter Audio Runtime",
       "ffmpeg_sha256": "CA2BCCBF1A2A5A379AE484AD127D120CC3E394833B69767694A1E738F2D6BE55",
       "ffprobe_sha256": "4EC2AC9385AACBAF927B7E8D031291059CEA2E02EE6BFAE0D708F78E1C528251"
     },
-    "frozen_by_owner_on": "2026-07-28",
+    "frozen_by_owner_on": "2026-07-30",
     "product_description": "Qonic Audio Converter & Editor",
     "product_name": "Qonic Audio",
     "release_structure": "onedir",
     "rules": [
-      "All manifests, hashes, notices and source materials for the accepted B5 release use this archive and its corresponding expanded directory.",
+      "All manifests, hashes, notices and source materials for the accepted 2026-07-30 release use this archive and its corresponding expanded directory.",
       "The FFmpeg candidate is only the Qonic Audio Converter Audio Runtime; future video work requires a separately controlled runtime or an independently reviewed new build.",
-      "The former Gyan runtime is retained only in Release/Non_Authoritative for rollback and is not a release candidate."
+      "The former Gyan runtime remains only in Release/Non_Authoritative for rollback and is not a release candidate."
     ],
     "third_party_compliance_bundle": {
       "path": "Qonic_Audio_v5.0_internal_test-third-party-compliance.zip",
       "purpose": "Review-only bundle containing notices, source materials, build evidence and compliance records.",
-      "sha256": "7CFD4CDFC6AD99CE2B4AE3E68C4CE6050366AD6F0D044EED960940BB14218683"
+      "sha256": "9B50850D0BD1E6B0864904048AAB09431C10D6CDDBB94E13DCE1B49851D34A03"
     },
     "version": "5.0 Internal Test"
   }

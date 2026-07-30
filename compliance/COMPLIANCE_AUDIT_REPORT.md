@@ -5,8 +5,8 @@
 ## 1. 执行摘要
 
 - 项目正式名称为 `Qonic Audio`，旧名称 `CherryQ Audio Converter` 只可出现在历史证据中。
-- 唯一权威工件：`Release/External_Test/2026-07-28_b5_final/Qonic_Audio_v5.0_internal_test.7z`。
-- 权威归档 SHA-256：`B84F40516DEA7CE7EA1FA07BDF34A337DA68982585D4670F3745EF46A66305DF`；所有者冻结值：`B84F40516DEA7CE7EA1FA07BDF34A337DA68982585D4670F3745EF46A66305DF`。
+- 唯一权威工件：`Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test.7z`。
+- 权威归档 SHA-256：`BB0967E85AF2857C23587F3CEF37C37D14ED4E4106B7261F21E2F247B47F42F4`；所有者冻结值：`BB0967E85AF2857C23587F3CEF37C37D14ED4E4106B7261F21E2F247B47F42F4`。
 - 权威工件校验：`True`；同版本候选分叉：`False`。
 - 当前结论：`0` 个 BLOCKER、`4` 个 WARNING。
 
