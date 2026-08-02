@@ -42,6 +42,15 @@ def generate_audit_report(
         if item.get("license_status") == "GPL-ONLY-RISK"
     ]
     product = manifest["product"]
+    msvc = next(
+        (
+            component
+            for component in manifest.get("components", [])
+            if component.get("name") == "Microsoft Visual C++ v14 Runtime"
+        ),
+        {},
+    )
+    msvc_runtime_count = len(msvc.get("bundled_files", []))
     authority = release.get("release_authority", {})
     authority_check = release.get("authority_validation", {})
     qonic_self_build = ffmpeg.get("build_provider") == "Qonic controlled self-build"
@@ -152,7 +161,7 @@ def generate_audit_report(
 - FFmpeg 按 GPL-3.0-only 路线记录；Qonic 自构建包含精确源码、许可证、版权声明、锁文件、配置、补丁目录、脚本和重建说明。
 - ncmdump MIT 原文、官方 CLI 资产、精确 commit 源码和静态依赖材料已归档并校验。
 - Qt/PySide/Shiboken 按 Community Edition GPL-3.0 路线记录，精确 wheels、源码和官方许可材料已闭合。
-- 8 个 Microsoft VC Runtime DLL 已从 Qt wheel 比对范围中单列，许可条款已归档，仍需所有者确认分发许可覆盖。
+- `{msvc_runtime_count}` 个 Microsoft VC Runtime 文件已按完整 onedir 范围单列，许可条款与本机/包内审计证据见 `docs/compliance/MICROSOFT_VC_RUNTIME_LICENSE_CONFIRMATION.md`；仍需所有者确认分发许可覆盖。
 - 补充扫描发现的 NumPy、Pillow 与 charset-normalizer 不属于本轮三组核心闭环；其许可证状态仍待独立验证，严格校验会保留 WARNING。
 
 ## 8. 已确认的事实

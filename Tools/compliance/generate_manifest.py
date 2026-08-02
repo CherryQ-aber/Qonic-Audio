@@ -50,6 +50,32 @@ def _runtime_identity(path: str) -> str:
     return normalized[index:] if index >= 0 else normalized
 
 
+def _is_msvc_runtime_file(path: Path) -> bool:
+    """Return whether *path* is an application-local VC runtime candidate."""
+
+    name = path.name.lower()
+    return (
+        name.endswith(".dll")
+        and name.startswith(("vcruntime", "msvcp", "concrt"))
+    ) or (name.endswith(".exe") and name.startswith("vc_redist"))
+
+
+def _collect_msvc_runtime_records(
+    project_root: Path,
+    dist_path: Path,
+) -> list[dict[str, str]]:
+    """Inventory every VC runtime candidate in the frozen onedir, not only Qt files."""
+
+    return [
+        {
+            "path": display_path(path, project_root, dist_path),
+            "sha256": sha256_file(path),
+        }
+        for path in sorted(dist_path.rglob("*"))
+        if path.is_file() and _is_msvc_runtime_file(path)
+    ]
+
+
 def _repository_license(project_root: Path) -> str:
     readme = project_root / "README.md"
     text = readme.read_text(encoding="utf-8", errors="replace") if readme.is_file() else ""
@@ -565,19 +591,7 @@ def generate_manifest(
     msvc_evidence = (
         load_json(msvc_evidence_path) if msvc_evidence_path.is_file() else {}
     )
-    qt_files_by_identity = {
-        _runtime_identity(item["path"]): item for item in qt_files
-    }
-    msvc_records = [
-        {
-            **item,
-            "path": qt_files_by_identity.get(
-                _runtime_identity(item["path"]),
-                item,
-            )["path"],
-        }
-        for item in qt_wheel_verification.get("external_runtime_files", [])
-    ]
+    msvc_records = _collect_msvc_runtime_records(project_root, dist_path)
     msvc = _empty_component(
         "Microsoft Visual C++ v14 Runtime",
         "system-runtime",
@@ -617,6 +631,9 @@ def generate_manifest(
                 "qt/qt-wheel-verification.json",
                 "licenses/microsoft/Microsoft-Visual-Cpp-V14-Redistributable-License-Terms.html",
                 "licenses/microsoft/Microsoft-Visual-Cpp-Redistribution-Guidance.html",
+                "docs/compliance/MICROSOFT_VC_RUNTIME_LICENSE_CONFIRMATION.md",
+                "docs/compliance/MICROSOFT_VC_RUNTIME_TOOLCHAIN_INVENTORY.json",
+                "docs/compliance/MICROSOFT_VC_RUNTIME_PACKAGE_INVENTORY.json",
             ],
             "unresolved_questions": [
                 msvc_evidence.get("owner_confirmation_required")
@@ -783,7 +800,7 @@ def generate_manifest(
     warnings.append(
         {
             "code": "MSVC_REDISTRIBUTION_LICENSE_CONFIRMATION",
-            "message": "8 个 Microsoft VC Runtime DLL 已单列并归档许可条款；仍需所有者确认构建/分发受有效 Visual Studio 或 Build Tools 许可覆盖。",
+            "message": f"{len(msvc_records)} 个 Microsoft VC Runtime 文件已单列并归档许可条款；仍需所有者确认构建/分发受有效 Visual Studio 或 Build Tools 许可覆盖。",
         }
     )
     manual_decisions = [

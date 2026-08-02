@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "generated_on": "2026-08-02",
+  "scope": "Local Windows host inspection only; no claim about any licence holder or entitlement is made.",
+  "detection_methods": [
+    "vswhere.exe in the standard Visual Studio Installer locations",
+    "Visual Studio Setup Instances registry hives (native and WOW6432Node)",
+    "Windows uninstall registry entries",
+    "standard Visual Studio 2022 installation paths",
+    "PATH command discovery for cl.exe, link.exe, msbuild.exe and vswhere.exe"
+  ],
+  "visual_studio_or_build_tools": {
+    "status": "NOT_DETECTED",
+    "product_name": null,
+    "product_version": null,
+    "edition": null,
+    "msvc_toolset_version": null,
+    "evidence": {
+      "vswhere": "not found",
+      "setup_instances_registry": "no instances found",
+      "standard_vs2022_paths": "all checked paths absent",
+      "development_commands": {
+        "cl.exe": "not found",
+        "link.exe": "not found",
+        "msbuild.exe": "not found"
+      }
+    }
+  },
+  "installed_runtime_packages": [
+    {
+      "display_name": "Microsoft Visual C++ 2015-2022 Redistributable (x64) - 14.44.35211",
+      "display_version": "14.44.35211.0",
+      "publisher": "Microsoft Corporation"
+    },
+    {
+      "display_name": "Microsoft Visual C++ 2015-2022 Redistributable (x86) - 14.44.35211",
+      "display_version": "14.44.35211.0",
+      "publisher": "Microsoft Corporation"
+    }
+  ],
+  "interpretation": "Installed VC++ runtime packages prove only that the runtime is installed on this host. They do not prove that the project owner is a validly licensed Visual Studio user or otherwise has redistribution rights."
+}

@@ -17,7 +17,7 @@ from collect_ffmpeg_info import (
 from collect_qt_inventory import qt_license_status, qt_source_module
 from collect_qt_upstream_info import parse_mirrorlist
 from common import required_component_fields
-from generate_manifest import _runtime_identity
+from generate_manifest import _is_msvc_runtime_file, _runtime_identity
 from validate_compliance import validate_manifest_data
 
 
@@ -160,6 +160,16 @@ openal-soft latest
             ),
             _runtime_identity("DIST/_internal/PySide6/MSVCP140.dll"),
         )
+
+    def test_msvc_runtime_name_detection_covers_full_onedir_scope(self):
+        self.assertTrue(_is_msvc_runtime_file(Path("MSVCP140.dll")))
+        self.assertTrue(
+            _is_msvc_runtime_file(Path("msvcp140-a4c2229bdc2a2a630acdc095b4d86008.dll"))
+        )
+        self.assertTrue(_is_msvc_runtime_file(Path("VCRUNTIME140_1.dll")))
+        self.assertTrue(_is_msvc_runtime_file(Path("vc_redist.x64.exe")))
+        self.assertFalse(_is_msvc_runtime_file(Path("Qt6Core.dll")))
+        self.assertFalse(_is_msvc_runtime_file(Path("cl.exe")))
 
 
 if __name__ == "__main__":

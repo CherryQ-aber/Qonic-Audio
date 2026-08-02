@@ -3734,6 +3734,9 @@
         "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/PySide6/MSVCP140_2.dll": "1B806B427FFB573DEFF8478CF6FE336465FE2C67E0919BB95F452B6F31D25736",
         "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/PySide6/VCRUNTIME140.dll": "C6E841078CD352299A58925991E2552F7251B046253BA895B3AD50CD5CD32EC6",
         "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/PySide6/VCRUNTIME140_1.dll": "B322E382EA249B50009F14A9A71AD16729EB6E4B58A8D3B3BE6AC66EA6342A22",
+        "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/VCRUNTIME140.dll": "4D292623516F65C80482081E62D5DADB759DC16E851DE5DB24C3CBB57B87DB83",
+        "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/VCRUNTIME140_1.dll": "A113F192195F245F17389E6ECBED8005990BCB2476DDAD33F7C4C6C86327AFE5",
+        "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/numpy.libs/msvcp140-a4c2229bdc2a2a630acdc095b4d86008.dll": "A4C2229BDC2A2A630ACDC095B4D86008E5C3E3BC7773174354F3DA4F5BEB9CDE",
         "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/shiboken6/MSVCP140.dll": "005F2324C7FF79BBE9A44992B0708ABB4C871BD24BCC7A34ACA5EAB4439C1F4A",
         "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/shiboken6/VCRUNTIME140.dll": "8D9C679C825C5FFF298D66C41AF30F35C289FC101868DFC9635547BADA0DABA6",
         "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/shiboken6/VCRUNTIME140_1.dll": "E4D7EA5F4F4FF6D0C208E693853617CDEF0AD71CFE5DD5C3AE16C8A6B64C18EA"
@@ -3741,6 +3744,7 @@
       "build_configuration": null,
       "build_provider": "Microsoft Corporation",
       "bundled_files": [
+        "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/numpy.libs/msvcp140-a4c2229bdc2a2a630acdc095b4d86008.dll",
         "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/PySide6/MSVCP140.dll",
         "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/PySide6/MSVCP140_1.dll",
         "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/PySide6/MSVCP140_2.dll",
@@ -3748,7 +3752,9 @@
         "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/PySide6/VCRUNTIME140_1.dll",
         "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/shiboken6/MSVCP140.dll",
         "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/shiboken6/VCRUNTIME140.dll",
-        "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/shiboken6/VCRUNTIME140_1.dll"
+        "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/shiboken6/VCRUNTIME140_1.dll",
+        "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/VCRUNTIME140.dll",
+        "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/VCRUNTIME140_1.dll"
       ],
       "byte_identical_to_upstream": null,
       "category": "system-runtime",
@@ -3759,7 +3765,10 @@
       "evidence_files": [
         "qt/qt-wheel-verification.json",
         "licenses/microsoft/Microsoft-Visual-Cpp-V14-Redistributable-License-Terms.html",
-        "licenses/microsoft/Microsoft-Visual-Cpp-Redistribution-Guidance.html"
+        "licenses/microsoft/Microsoft-Visual-Cpp-Redistribution-Guidance.html",
+        "docs/compliance/MICROSOFT_VC_RUNTIME_LICENSE_CONFIRMATION.md",
+        "docs/compliance/MICROSOFT_VC_RUNTIME_TOOLCHAIN_INVENTORY.json",
+        "docs/compliance/MICROSOFT_VC_RUNTIME_PACKAGE_INVENTORY.json"
       ],
       "license_status": "PROPRIETARY-REDISTRIBUTABLE-TERMS-RECORDED",
       "local_modifications": null,
@@ -4001,10 +4010,10 @@
     },
     {
       "code": "MSVC_REDISTRIBUTION_LICENSE_CONFIRMATION",
-      "message": "8 个 Microsoft VC Runtime DLL 已单列并归档许可条款；仍需所有者确认构建/分发受有效 Visual Studio 或 Build Tools 许可覆盖。"
+      "message": "11 个 Microsoft VC Runtime 文件已单列并归档许可条款；仍需所有者确认构建/分发受有效 Visual Studio 或 Build Tools 许可覆盖。"
     }
   ],
-  "generated_at": "2026-07-30T03:31:02+00:00",
+  "generated_at": "2026-08-02T12:58:26+00:00",
   "identity_algorithm": "SHA-256",
   "manual_decisions_required": [
     "FFmpeg：当前自构建仅限 Qonic Audio Converter Audio Runtime；未来视频功能必须使用独立受控运行时或新的独立审核构建。",
@@ -4067,7 +4076,7 @@
     },
     {
       "code": "MSVC_REDISTRIBUTION_LICENSE_CONFIRMATION",
-      "message": "8 个 Microsoft VC Runtime DLL 已单列并归档许可条款；仍需所有者确认构建/分发受有效 Visual Studio 或 Build Tools 许可覆盖。"
+      "message": "11 个 Microsoft VC Runtime 文件已单列并归档许可条款；仍需所有者确认构建/分发受有效 Visual Studio 或 Build Tools 许可覆盖。"
     }
   ]
 }

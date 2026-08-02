@@ -60,7 +60,7 @@
 - FFmpeg 按 GPL-3.0-only 路线记录；Qonic 自构建包含精确源码、许可证、版权声明、锁文件、配置、补丁目录、脚本和重建说明。
 - ncmdump MIT 原文、官方 CLI 资产、精确 commit 源码和静态依赖材料已归档并校验。
 - Qt/PySide/Shiboken 按 Community Edition GPL-3.0 路线记录，精确 wheels、源码和官方许可材料已闭合。
-- 8 个 Microsoft VC Runtime DLL 已从 Qt wheel 比对范围中单列，许可条款已归档，仍需所有者确认分发许可覆盖。
+- `11` 个 Microsoft VC Runtime 文件已按完整 onedir 范围单列，许可条款与本机/包内审计证据见 `docs/compliance/MICROSOFT_VC_RUNTIME_LICENSE_CONFIRMATION.md`；仍需所有者确认分发许可覆盖。
 - 补充扫描发现的 NumPy、Pillow 与 charset-normalizer 不属于本轮三组核心闭环；其许可证状态仍待独立验证，严格校验会保留 WARNING。
 
 ## 8. 已确认的事实
@@ -90,7 +90,7 @@
 - `FFMPEG_SELF_BUILD_B5_VERIFIED`：正式发行已采用获批并验证的 Qonic Audio Runtime 自构建；B5 onedir、归档、Corresponding Source、打包 smoke 与完整回归均已通过。
 - `QT_GPL_ONLY_MODULES_RETAINED`：发行包包含 18 组 GPL-only 模块；项目采用 GPL-3.0 路线，所有者决定本轮保留并推迟最小化。
 - `QT_POSSIBLY_UNUSED_MODULES`：发行包包含 126 组 POSSIBLY_UNUSED Qt/QML/插件模块。
-- `MSVC_REDISTRIBUTION_LICENSE_CONFIRMATION`：8 个 Microsoft VC Runtime DLL 已单列并归档许可条款；仍需所有者确认构建/分发受有效 Visual Studio 或 Build Tools 许可覆盖。
+- `MSVC_REDISTRIBUTION_LICENSE_CONFIRMATION`：11 个 Microsoft VC Runtime 文件已单列并归档许可条款；仍需所有者确认构建/分发受有效 Visual Studio 或 Build Tools 许可覆盖。
 
 ## 12. 本阶段已自动完成的整改
 
