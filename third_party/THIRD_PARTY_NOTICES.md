@@ -146,12 +146,12 @@ Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整
 
 - 组件类别：system-runtime
 - 实际版本：14.44.35211.0
-- 上游项目：https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist
-- 上游发行/资产：v14 / 14.44.35211.0 / UNKNOWN
+- 上游项目：https://learn.microsoft.com/en-us/visualstudio/releases/2026/redistribution
+- 上游发行/资产：Visual Studio 2026 REDIST list / v14 runtime files / UNKNOWN
 - 上游资产 SHA-256：UNKNOWN
 - 实际分发文件：`Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/numpy.libs/msvcp140-a4c2229bdc2a2a630acdc095b4d86008.dll`, `Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/PySide6/MSVCP140.dll`, `Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/PySide6/MSVCP140_1.dll`, `Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/PySide6/MSVCP140_2.dll`, `Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/PySide6/VCRUNTIME140.dll`, `Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/PySide6/VCRUNTIME140_1.dll`, `Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/shiboken6/MSVCP140.dll`, `Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/shiboken6/VCRUNTIME140.dll`, `Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/shiboken6/VCRUNTIME140_1.dll`, `Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/VCRUNTIME140.dll`, `Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/VCRUNTIME140_1.dll`
-- 上游声明许可证：Microsoft Software License Terms
-- 本项目采用路线：Microsoft Visual C++ v14 Redistributable terms
+- 上游声明许可证：Microsoft Visual Studio Community 2026 License Terms
+- 本项目采用路线：Microsoft Visual Studio Community 2026 + Visual Studio 2026 REDIST list
 - 版权所有者/声明：Copyright Microsoft Corporation.
 - 是否修改：UNKNOWN
 - 使用方式：application-local dynamic runtime
@@ -160,7 +160,7 @@ Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整
 - 本地 Manifest 路径：`third_party/THIRD_PARTY_MANIFEST.json`
 - 许可证状态：PROPRIETARY-REDISTRIBUTABLE-TERMS-RECORDED
 - 尚未解决的问题：
-  - Confirm that the build/distribution is covered by a valid Visual Studio or Build Tools license and that bundled files are unmodified redistributable runtime files.
+  - The project owner must personally confirm that they are a validly licensed Microsoft Visual Studio Community 2026 user, or otherwise hold the applicable Microsoft redistribution rights, and approve distribution of the unmodified enumerated VC Runtime files.
 
 ## mutagen
 

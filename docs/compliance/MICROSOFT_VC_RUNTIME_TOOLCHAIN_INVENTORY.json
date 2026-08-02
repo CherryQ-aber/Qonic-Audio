@@ -6,23 +6,43 @@
     "vswhere.exe in the standard Visual Studio Installer locations",
     "Visual Studio Setup Instances registry hives (native and WOW6432Node)",
     "Windows uninstall registry entries",
-    "standard Visual Studio 2022 installation paths",
+    "Visual Studio 2026 installation path and ProgramData instance state.json",
     "PATH command discovery for cl.exe, link.exe, msbuild.exe and vswhere.exe"
   ],
   "visual_studio_or_build_tools": {
-    "status": "NOT_DETECTED",
-    "product_name": null,
-    "product_version": null,
-    "edition": null,
-    "msvc_toolset_version": null,
+    "status": "DETECTED",
+    "product_name": "Microsoft Visual Studio Community 2026",
+    "product_version": "18.8.2",
+    "installation_version": "18.8.12023.21",
+    "edition": "Community",
+    "installation_path": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community",
+    "installation_id": "8754e93d",
+    "msvc_toolset_version": "14.51.36231",
+    "msvc_toolset_path": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231",
+    "msvc_toolset_binaries": {
+      "cl.exe": {
+        "path": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe",
+        "file_version": "19.51.36252.0",
+        "product_version": "14.51.36252.0"
+      },
+      "link.exe": {
+        "path": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe",
+        "file_version": "14.51.36252.0",
+        "product_version": "14.51.36252.0"
+      }
+    },
     "evidence": {
-      "vswhere": "not found",
-      "setup_instances_registry": "no instances found",
-      "standard_vs2022_paths": "all checked paths absent",
+      "vswhere": "not found; installation was confirmed through the uninstall registry and ProgramData instance state.json",
+      "setup_instances_registry": "no instances found; not treated as a negative result because ProgramData instance state.json is present",
+      "uninstall_registry": "Visual Studio Community 2026, version 18.8.2, publisher Microsoft Corporation, installation ID 8754e93d",
+      "instance_state_file": "C:\\ProgramData\\Microsoft\\VisualStudio\\Packages\\_Instances\\8754e93d\\state.json",
+      "instance_state_product_id": "Microsoft.VisualStudio.Product.Community",
+      "instance_state_installation_name": "VisualStudio/18.8.2+12023.21",
+      "devenv_file_version": "18.8.12023.21 built by: stable",
       "development_commands": {
-        "cl.exe": "not found",
-        "link.exe": "not found",
-        "msbuild.exe": "not found"
+        "cl.exe": "not evaluated through PATH; MSVC toolset directory is present",
+        "link.exe": "not evaluated through PATH; MSVC toolset directory is present",
+        "msbuild.exe": "not evaluated through PATH"
       }
     }
   },
@@ -38,5 +58,5 @@
       "publisher": "Microsoft Corporation"
     }
   ],
-  "interpretation": "Installed VC++ runtime packages prove only that the runtime is installed on this host. They do not prove that the project owner is a validly licensed Visual Studio user or otherwise has redistribution rights."
+  "interpretation": "The installed Microsoft Visual Studio Community 2026 product establishes the applicable product and REDIST-list evidence for this host. It does not automatically record the project owner's affirmative owner confirmation or authorise Codex to sign it on the owner's behalf. Installed VC++ runtime packages likewise prove only host installation."
 }

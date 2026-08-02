@@ -5,9 +5,9 @@
 **PENDING OWNER CONFIRMATION**
 
 This record is a technical audit of the current host and the sole authoritative
-Qonic Audio v5.0 Internal Test package. It does not state or infer that the
-project owner holds any Microsoft licence, Visual Studio subscription, or other
-redistribution entitlement.
+Qonic Audio v5.0 Internal Test package. It records a local installation of
+Microsoft Visual Studio Community 2026, but does not sign, state, or infer the
+project owner's affirmative licence confirmation or redistribution approval.
 
 ## Audited release
 
@@ -21,23 +21,27 @@ redistribution entitlement.
 
 ## Local Visual Studio and Build Tools detection
 
-No Visual Studio 2022 product or Visual Studio Build Tools installation was
-detected on this host. `vswhere.exe` was absent, neither native nor WOW6432Node
-Visual Studio Setup Instances registry hive had an instance, the standard VS
-2022 edition paths were absent, and `cl.exe`, `link.exe`, and `msbuild.exe`
-were not on `PATH`.
+Microsoft Visual Studio Community 2026 is installed on this host. `vswhere.exe`
+and the Setup Instances registry hives were not available, but the uninstall
+registry and the instance state file independently identify the same Community
+2026 instance. The MSVC toolset directory is present, so its version is
+recorded rather than treated as optional absence.
 
 | Item | Result |
 | --- | --- |
-| Product name | Not detected |
-| Product version | Not detected |
-| Edition | Not detected |
-| MSVC toolset version | Not detected |
+| Product name | Microsoft Visual Studio Community 2026 |
+| Edition | Community |
+| Product version | 18.8.2 |
+| Installation version | 18.8.12023.21 |
+| Installation path | `C:\Program Files\Microsoft Visual Studio\18\Community` |
+| Installation ID | `8754e93d` |
+| MSVC toolset version | 14.51.36231 |
+| MSVC toolset path | `C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.51.36231` |
 | Installed VC++ 2015-2022 runtime packages | x64 14.44.35211.0; x86 14.44.35211.0 |
 
-The installed runtime packages are operating-system inventory only. They are
-not evidence of the project owner's Visual Studio licence or redistribution
-right. The complete machine evidence is in
+The local Community 2026 installation establishes the applicable product,
+licence-terms and REDIST-list evidence for this host. It does not replace the
+owner's affirmative confirmation. The complete machine evidence is in
 [`MICROSOFT_VC_RUNTIME_TOOLCHAIN_INVENTORY.json`](MICROSOFT_VC_RUNTIME_TOOLCHAIN_INVENTORY.json).
 
 ## Authoritative package inventory and classification
@@ -47,7 +51,7 @@ The package contains 11 files matching `vcruntime*.dll`, `msvcp*.dll`,
 
 | Classification | Count | Result |
 | --- | ---: | --- |
-| `permitted_redistributable_pending_owner_license` | 11 | `MSVCP140*` and `VCRUNTIME140*` files with Microsoft product metadata; all have a valid Authenticode status. They are consistent with the VC++ runtime material in the VS 2022 REDIST scope, provided the owner has the applicable redistribution right and distributes them unmodified. |
+| `permitted_redistributable` | 11 | `MSVCP140*` and `VCRUNTIME140*` files with Microsoft product metadata; all have a valid Authenticode status. They are consistent with the VC++ runtime material in the VS 2026 REDIST scope and are classified as permitted redistributables, subject to the pending owner confirmation and unmodified distribution condition. |
 | `debug_nonredist` | 0 | No `debug_nonredist`, DebugCRT, DebugCXXAMP, DebugMFC, DebugOpenMP or onecore debug indicator found. |
 | `unknown_or_needs_review` | 0 | No matching runtime file outside the reviewed set. |
 | `vc_redist*.exe` | 0 | No redistributable installer is embedded. |
@@ -61,9 +65,10 @@ modified during this audit.
 
 ## Microsoft rule applied
 
-Microsoft's VS 2022 redistribution page states that a validly licensed copy of
-the relevant Visual Studio software is a condition for copying and distributing
-the listed files, and identifies the files under `VC\\Redist` as distributable
+Microsoft's VS 2026 redistribution page identifies its Visual Studio 2026
+REDIST list as applying to Visual Studio Community, among other editions. It
+states that a validly licensed copy is a condition for copying and distributing
+the listed files and identifies files under `VC\\Redist` as distributable
 subject to the licence terms. It expressly excludes
 `VC\\Redist\\MSVC\\[version]\\debug_nonredist` and
 `onecore\\debug_nonredist` from distribution. Microsoft also states that
@@ -74,18 +79,18 @@ to their licence terms.
 Official sources consulted on 2026-08-02:
 
 - [Visual Studio License Directory](https://visualstudio.microsoft.com/license-terms/)
-- [Visual Studio 2022 Redistribution / REDIST list](https://learn.microsoft.com/en-us/visualstudio/releases/2022/redistribution)
+- [Microsoft Visual Studio Community 2026 License Terms](https://visualstudio.microsoft.com/license-terms/vs2026-ga-community/)
+- [Visual Studio 2026 Redistribution / REDIST list](https://learn.microsoft.com/en-us/visualstudio/releases/2026/redistribution)
 - [Redistribute Visual C++ Files](https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files?view=msvc-170)
-- [Determine which DLLs to redistribute](https://learn.microsoft.com/en-us/cpp/windows/determining-which-dlls-to-redistribute?view=msvc-170)
 
 ## Required owner statement
 
 To close this item, the project owner must record this exact confirmation (or a
 legally equivalent statement approved by their counsel):
 
-> I confirm that I am a validly licensed Visual Studio user, or otherwise hold
-> the applicable Microsoft redistribution rights, and approve distribution of
-> the unmodified VC Runtime files enumerated in
+> I confirm that I am a validly licensed Microsoft Visual Studio Community 2026
+> user, or otherwise hold the applicable Microsoft redistribution rights, and
+> approve distribution of the unmodified VC Runtime files enumerated in
 > `docs/compliance/MICROSOFT_VC_RUNTIME_PACKAGE_INVENTORY.json` with the Qonic
 > Audio v5.0 Internal Test authoritative release.
 

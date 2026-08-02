@@ -6,16 +6,17 @@
     "archive_sha256": "BB0967E85AF2857C23587F3CEF37C37D14ED4E4106B7261F21E2F247B47F42F4",
     "expanded_directory": "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test"
   },
-  "classification_basis": "Compared by name, product metadata and path indicators against the Visual Studio 2022 REDIST list. This is a technical classification only; it does not confirm the project owner's licence status.",
+  "classification_basis": "Compared by name, product metadata and path indicators against the Visual Studio 2026 REDIST list under Microsoft Visual Studio Community 2026 License Terms. This is a technical classification only; it does not record the project owner's affirmative confirmation.",
   "summary": {
     "runtime_files_found": 11,
-    "permitted_redistributable_pending_owner_license": 11,
+    "permitted_redistributable": 11,
     "debug_nonredist": 0,
     "unknown_or_needs_review": 0,
     "vc_redist_executables": 0,
-    "compiler_build_tools_or_other_development_tools": 0
+    "compiler_build_tools_or_other_development_tools": 0,
+    "owner_confirmation_status": "PENDING_OWNER_CONFIRMATION"
   },
-  "permitted_redistributable_pending_owner_license": [
+  "permitted_redistributable": [
     {"path":"_internal/numpy.libs/msvcp140-a4c2229bdc2a2a630acdc095b4d86008.dll","original_filename":"msvcp140.dll","file_version":"14.40.33810.0","sha256":"A4C2229BDC2A2A630ACDC095B4D86008E5C3E3BC7773174354F3DA4F5BEB9CDE","signature_status":"Valid"},
     {"path":"_internal/PySide6/MSVCP140.dll","original_filename":"msvcp140.dll","file_version":"14.44.35211.0","sha256":"708DD7BBC7BD23BCE9E93F7837A70C2DD7AD55CFF43801E92C0F7FCD7DDA47CD","signature_status":"Valid"},
     {"path":"_internal/PySide6/MSVCP140_1.dll","original_filename":"msvcp140_1.dll","file_version":"14.44.35211.0","sha256":"B2113956AA3FCB9DECFE65BE1EE7829F8E3AE0899633AE89FE04888ADA201594","signature_status":"Valid"},

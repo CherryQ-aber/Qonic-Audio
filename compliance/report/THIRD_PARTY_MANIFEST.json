@@ -3759,7 +3759,7 @@
       "byte_identical_to_upstream": null,
       "category": "system-runtime",
       "copyright_notice": "Copyright Microsoft Corporation.",
-      "declared_license": "Microsoft Software License Terms",
+      "declared_license": "Microsoft Visual Studio Community 2026 License Terms",
       "detected_version": "14.44.35211.0",
       "dynamically_linked": true,
       "evidence_files": [
@@ -3774,17 +3774,17 @@
       "local_modifications": null,
       "name": "Microsoft Visual C++ v14 Runtime",
       "replaceable": true,
-      "selected_license": "Microsoft Visual C++ v14 Redistributable terms",
+      "selected_license": "Microsoft Visual Studio Community 2026 + Visual Studio 2026 REDIST list",
       "source_package": null,
       "source_sha256": null,
       "unresolved_questions": [
-        "Confirm that the build/distribution is covered by a valid Visual Studio or Build Tools license and that bundled files are unmodified redistributable runtime files."
+        "The project owner must personally confirm that they are a validly licensed Microsoft Visual Studio Community 2026 user, or otherwise hold the applicable Microsoft redistribution rights, and approve distribution of the unmodified enumerated VC Runtime files."
       ],
       "upstream_asset": null,
       "upstream_asset_sha256": null,
       "upstream_commit": null,
-      "upstream_release": "v14 / 14.44.35211.0",
-      "upstream_repository": "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
+      "upstream_release": "Visual Studio 2026 REDIST list / v14 runtime files",
+      "upstream_repository": "https://learn.microsoft.com/en-us/visualstudio/releases/2026/redistribution",
       "usage_mode": "application-local dynamic runtime"
     },
     {
@@ -4010,10 +4010,10 @@
     },
     {
       "code": "MSVC_REDISTRIBUTION_LICENSE_CONFIRMATION",
-      "message": "11 个 Microsoft VC Runtime 文件已单列并归档许可条款；仍需所有者确认构建/分发受有效 Visual Studio 或 Build Tools 许可覆盖。"
+      "message": "11 个 Microsoft VC Runtime 文件已按 Visual Studio 2026 REDIST 清单单列；仍需项目所有者确认 Microsoft Visual Studio Community 2026 许可或其它适用再分发权利。"
     }
   ],
-  "generated_at": "2026-08-02T12:58:26+00:00",
+  "generated_at": "2026-08-02T14:25:48+00:00",
   "identity_algorithm": "SHA-256",
   "manual_decisions_required": [
     "FFmpeg：当前自构建仅限 Qonic Audio Converter Audio Runtime；未来视频功能必须使用独立受控运行时或新的独立审核构建。",
@@ -4076,7 +4076,7 @@
     },
     {
       "code": "MSVC_REDISTRIBUTION_LICENSE_CONFIRMATION",
-      "message": "11 个 Microsoft VC Runtime 文件已单列并归档许可条款；仍需所有者确认构建/分发受有效 Visual Studio 或 Build Tools 许可覆盖。"
+      "message": "11 个 Microsoft VC Runtime 文件已按 Visual Studio 2026 REDIST 清单单列；仍需项目所有者确认 Microsoft Visual Studio Community 2026 许可或其它适用再分发权利。"
     }
   ]
 }

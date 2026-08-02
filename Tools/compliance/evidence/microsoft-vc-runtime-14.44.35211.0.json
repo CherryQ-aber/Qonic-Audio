@@ -1,18 +1,32 @@
 {
-  "evidence_observed_at": "2026-07-24",
+  "evidence_observed_at": "2026-08-02",
   "component": "Microsoft Visual C++ v14 Runtime",
   "detected_version": "14.44.35211.0",
   "publisher": "Microsoft Corporation",
   "license_status": "PROPRIETARY-REDISTRIBUTABLE-TERMS-RECORDED",
+  "license_basis": {
+    "product": "Microsoft Visual Studio Community 2026",
+    "community_license_terms_url": "https://visualstudio.microsoft.com/license-terms/vs2026-ga-community/",
+    "redistribution_list_url": "https://learn.microsoft.com/en-us/visualstudio/releases/2026/redistribution",
+    "license_directory_url": "https://visualstudio.microsoft.com/license-terms/"
+  },
   "license_terms": {
+    "url": "https://visualstudio.microsoft.com/license-terms/vs2026-ga-community/",
+    "snapshot": null,
+    "snapshot_sha256": null,
+    "verification": "Official live page consulted on 2026-08-02; no local snapshot is asserted for this Community 2026 licence page."
+  },
+  "redistribution_guidance": {
+    "url": "https://learn.microsoft.com/en-us/visualstudio/releases/2026/redistribution",
+    "snapshot": null,
+    "snapshot_sha256": null,
+    "verification": "Official live REDIST list consulted on 2026-08-02; no local snapshot is asserted for this Visual Studio 2026 page."
+  },
+  "historical_runtime_terms_snapshot": {
     "url": "https://visualstudio.microsoft.com/license-terms/vs2026-ga-visualcpp-v14-redist-runtime/",
     "snapshot": "third_party/licenses/microsoft/Microsoft-Visual-Cpp-V14-Redistributable-License-Terms.html",
     "snapshot_sha256": "F5B1EE76A201DDBD56DBEA08CCC24D4CBAF597897DF27F6AA76B2C7952AA4299"
   },
-  "redistribution_guidance": {
-    "url": "https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files?view=msvc-170",
-    "snapshot": "third_party/licenses/microsoft/Microsoft-Visual-Cpp-Redistribution-Guidance.html",
-    "snapshot_sha256": "ABB6FAF04C2924E5A15F6568965058BBCDCEAC09F9946FB997526C4734DE48F8"
-  },
-  "owner_confirmation_required": "Confirm that the build/distribution is covered by a valid Visual Studio or Build Tools license and that bundled files are unmodified redistributable runtime files."
+  "owner_confirmation_status": "PENDING_OWNER_CONFIRMATION",
+  "owner_confirmation_required": "The project owner must personally confirm that they are a validly licensed Microsoft Visual Studio Community 2026 user, or otherwise hold the applicable Microsoft redistribution rights, and approve distribution of the unmodified enumerated VC Runtime files."
 }

@@ -90,7 +90,7 @@
 - `FFMPEG_SELF_BUILD_B5_VERIFIED`：正式发行已采用获批并验证的 Qonic Audio Runtime 自构建；B5 onedir、归档、Corresponding Source、打包 smoke 与完整回归均已通过。
 - `QT_GPL_ONLY_MODULES_RETAINED`：发行包包含 18 组 GPL-only 模块；项目采用 GPL-3.0 路线，所有者决定本轮保留并推迟最小化。
 - `QT_POSSIBLY_UNUSED_MODULES`：发行包包含 126 组 POSSIBLY_UNUSED Qt/QML/插件模块。
-- `MSVC_REDISTRIBUTION_LICENSE_CONFIRMATION`：11 个 Microsoft VC Runtime 文件已单列并归档许可条款；仍需所有者确认构建/分发受有效 Visual Studio 或 Build Tools 许可覆盖。
+- `MSVC_REDISTRIBUTION_LICENSE_CONFIRMATION`：11 个 Microsoft VC Runtime 文件已按 Visual Studio 2026 REDIST 清单单列；仍需项目所有者确认 Microsoft Visual Studio Community 2026 许可或其它适用再分发权利。
 
 ## 12. 本阶段已自动完成的整改
 

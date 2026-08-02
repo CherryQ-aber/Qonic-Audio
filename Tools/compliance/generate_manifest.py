@@ -604,10 +604,10 @@ def generate_manifest(
             },
             "detected_version": msvc_evidence.get("detected_version"),
             "upstream_repository": (
-                "https://learn.microsoft.com/en-us/cpp/windows/"
-                "latest-supported-vc-redist"
+                "https://learn.microsoft.com/en-us/visualstudio/"
+                "releases/2026/redistribution"
             ),
-            "upstream_release": "v14 / 14.44.35211.0",
+            "upstream_release": "Visual Studio 2026 REDIST list / v14 runtime files",
             "upstream_commit": None,
             "upstream_asset": None,
             "upstream_asset_sha256": None,
@@ -616,8 +616,8 @@ def generate_manifest(
             "build_provider": "Microsoft Corporation",
             "source_package": None,
             "source_sha256": None,
-            "declared_license": "Microsoft Software License Terms",
-            "selected_license": "Microsoft Visual C++ v14 Redistributable terms",
+            "declared_license": "Microsoft Visual Studio Community 2026 License Terms",
+            "selected_license": "Microsoft Visual Studio Community 2026 + Visual Studio 2026 REDIST list",
             "copyright_notice": "Copyright Microsoft Corporation.",
             "license_status": msvc_evidence.get(
                 "license_status",
@@ -800,7 +800,7 @@ def generate_manifest(
     warnings.append(
         {
             "code": "MSVC_REDISTRIBUTION_LICENSE_CONFIRMATION",
-            "message": f"{len(msvc_records)} 个 Microsoft VC Runtime 文件已单列并归档许可条款；仍需所有者确认构建/分发受有效 Visual Studio 或 Build Tools 许可覆盖。",
+            "message": f"{len(msvc_records)} 个 Microsoft VC Runtime 文件已按 Visual Studio 2026 REDIST 清单单列；仍需项目所有者确认 Microsoft Visual Studio Community 2026 许可或其它适用再分发权利。",
         }
     )
     manual_decisions = [
