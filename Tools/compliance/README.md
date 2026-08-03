@@ -6,7 +6,7 @@
 
 - 默认入口只做本地扫描、版本查询、SHA-256 和报告生成；任何下载脚本都要求显式网络开关。
 - 不修改 `converter.py`、`watcher.py`、QML、requirements、PyInstaller spec 或二进制。
-- 当前唯一审计基线是 `Release/External_Test/2026-07-24_b4edd4d/` 下的冻结归档及对应展开目录。
+- 当前唯一审计基线是 `Release/External_Test/2026-07-30_audio-validation-fix/` 下的冻结归档及对应展开目录，权威归档 SHA-256 为 `BB0967E85AF2857C23587F3CEF37C37D14ED4E4106B7261F21E2F247B47F42F4`。
 - FFmpeg、ffprobe 与 ncmdump 未获授权时不得替换；Qt 模块最小化不属于本轮。
 - 报告中的候选许可证和风险分类不是法律意见。
 - 输出会脱敏项目根目录和 Windows 用户目录。
@@ -20,8 +20,8 @@
 ```powershell
 python Tools/compliance/collect_all.py `
   --project-root . `
-  --dist-path "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test" `
-  --dist-archive "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test.7z" `
+  --dist-path "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test" `
+  --dist-archive "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test.7z" `
   --output "compliance/report"
 ```
 
@@ -30,8 +30,8 @@ python Tools/compliance/collect_all.py `
 ```powershell
 python Tools/compliance/collect_all.py `
   --project-root . `
-  --dist-path "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test" `
-  --dist-archive "Release/External_Test/2026-07-24_b4edd4d/Qonic_Audio_v5.0_internal_test.7z" `
+  --dist-path "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test" `
+  --dist-archive "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test.7z" `
   --output "compliance/report"
 ```
 
@@ -47,7 +47,15 @@ python Tools/compliance/collect_all.py `
 ```powershell
 python Tools/compliance/validate_compliance.py `
   --manifest "compliance/report/THIRD_PARTY_MANIFEST.json" `
+  --final-inventory "docs/compliance/THIRD_PARTY_DEPENDENCY_INVENTORY.json" `
+  --project-root . `
   --strict
+```
+
+最终闭环材料由下列命令生成。它只读取冻结归档、对应展开目录、现有精确 wheel/source 与 PyInstaller 发行可执行文件；不会重建或改写发行包：
+
+```powershell
+python Tools/compliance/finalize_third_party_compliance.py --project-root .
 ```
 
 ## ncmdump 官方资产比对

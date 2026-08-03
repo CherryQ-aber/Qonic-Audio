@@ -92,21 +92,20 @@
       "detected_version": "1.5.1",
       "dynamically_linked": false,
       "evidence_files": [
-        "ncmdump/ncmdump-version.txt",
+        "docs/compliance/THIRD_PARTY_DEPENDENCY_INVENTORY.json",
+        "ncmdump/ncmdump-asset-comparison.md",
         "ncmdump/ncmdump-files.json",
         "ncmdump/ncmdump-provenance.json",
-        "ncmdump/ncmdump-asset-comparison.md"
+        "ncmdump/ncmdump-version.txt"
       ],
-      "license_status": "VERIFIED-UPSTREAM-ASSET-SOURCE-AND-LICENSE",
+      "license_status": "VERIFIED-FINAL-STAGING",
       "local_modifications": false,
       "name": "ncmdump",
       "replaceable": true,
       "selected_license": "MIT",
       "source_package": "https://codeload.github.com/taurusxin/ncmdump/tar.gz/76a55d862f767ee20ae417ecd128fde442eea77f",
       "source_sha256": "70D1C692130B0C0C53276417FD6246C02C4C39D057005F0435FF4942C7CFF11E",
-      "unresolved_questions": [
-        "官方 GitHub Actions 的具体 runner 镜像版本与编译器补丁版本未在 Release 元数据中固定"
-      ],
+      "unresolved_questions": [],
       "upstream_asset": "ncmdump-1.5.1-windows-amd64.zip",
       "upstream_asset_sha256": "BB849221C06B8FDBFF42AEFB86BAEA9C07256568658D80F4BE72A39A2A1632DC",
       "upstream_commit": "76a55d862f767ee20ae417ecd128fde442eea77f",
@@ -3702,20 +3701,19 @@
       "detected_version": "7.1.3",
       "dynamically_linked": true,
       "evidence_files": [
-        "qt/qt-wheel-verification.json",
+        "docs/compliance/THIRD_PARTY_DEPENDENCY_INVENTORY.json",
         "qt/qt-source-requirements.json",
+        "qt/qt-wheel-verification.json",
         "third_party/source-archives/qt/ffmpeg-f46e514491172d15bd74b4abb1814cd2f05a763e.tar.gz"
       ],
-      "license_status": "VERIFIED-QT-ATTRIBUTION-LGPL-ROUTE",
+      "license_status": "VERIFIED-FINAL-STAGING",
       "local_modifications": false,
       "name": "Qt Multimedia FFmpeg",
       "replaceable": true,
-      "selected_license": "LGPL-2.1-or-later",
+      "selected_license": "LGPL-2.1-or-later AND BSD-3-Clause AND BSD-2-Clause AND BSD-Source-Code AND ISC AND MIT AND MPL-2.0",
       "source_package": "https://codeload.github.com/FFmpeg/FFmpeg/tar.gz/f46e514491172d15bd74b4abb1814cd2f05a763e",
       "source_sha256": "1FA39B5A6AE9AC02C2CF280EC5CC8321A0DD0B9AB34B6C73133CAFCCAF5DFA79",
-      "unresolved_questions": [
-        "Qt attribution 指向的预构建 FFmpeg 构建脚本仓库尚未固定到独立 commit；本轮已闭合精确 wheel、attribution、许可证和 FFmpeg 7.1.3 源码。"
-      ],
+      "unresolved_questions": [],
       "upstream_asset": [
         "pyside6_addons-6.11.1-cp310-abi3-win_amd64.whl"
       ],
@@ -3777,9 +3775,7 @@
       "selected_license": "Microsoft Visual Studio Community 2026 + Visual Studio 2026 REDIST list",
       "source_package": null,
       "source_sha256": null,
-      "unresolved_questions": [
-        "The project owner must personally confirm that they are a validly licensed Microsoft Visual Studio Community 2026 user, or otherwise hold the applicable Microsoft redistribution rights, and approve distribution of the unmodified enumerated VC Runtime files."
-      ],
+      "unresolved_questions": [],
       "upstream_asset": null,
       "upstream_asset_sha256": null,
       "upstream_commit": null,
@@ -3869,21 +3865,18 @@
       "detected_version": "6.0.0",
       "dynamically_linked": null,
       "evidence_files": [
+        "docs/compliance/THIRD_PARTY_DEPENDENCY_INVENTORY.json",
         "qt/python-packages.json",
-        "requirements.txt",
         "requirements.txt"
       ],
-      "license_status": "DECLARED-PENDING-FILE-CHECK",
+      "license_status": "VERIFIED-FINAL-STAGING",
       "local_modifications": false,
       "name": "watchdog",
       "replaceable": true,
-      "selected_license": null,
+      "selected_license": "Apache-2.0",
       "source_package": null,
       "source_sha256": null,
-      "unresolved_questions": [
-        "确认发行包内实际打包版本与本机构建环境版本一致",
-        "确认许可证全文和版权声明已纳入最终合规包"
-      ],
+      "unresolved_questions": [],
       "upstream_asset": null,
       "upstream_asset_sha256": null,
       "upstream_commit": null,
@@ -3908,19 +3901,17 @@
       "detected_version": "2.4.6",
       "dynamically_linked": null,
       "evidence_files": [
+        "docs/compliance/THIRD_PARTY_DEPENDENCY_INVENTORY.json",
         "qt/python-packages.json"
       ],
-      "license_status": "License status pending verification",
+      "license_status": "VERIFIED-FINAL-STAGING",
       "local_modifications": false,
       "name": "NumPy",
       "replaceable": true,
-      "selected_license": null,
+      "selected_license": "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0",
       "source_package": null,
       "source_sha256": null,
-      "unresolved_questions": [
-        "确认该组件是否为当前功能直接依赖或 PyInstaller 环境污染带入",
-        "确认完整许可证与第三方声明"
-      ],
+      "unresolved_questions": [],
       "upstream_asset": null,
       "upstream_asset_sha256": null,
       "upstream_commit": null,
@@ -3941,19 +3932,17 @@
       "detected_version": "12.2.0",
       "dynamically_linked": null,
       "evidence_files": [
+        "docs/compliance/THIRD_PARTY_DEPENDENCY_INVENTORY.json",
         "qt/python-packages.json"
       ],
-      "license_status": "License status pending verification",
+      "license_status": "VERIFIED-FINAL-STAGING",
       "local_modifications": false,
       "name": "Pillow",
       "replaceable": true,
-      "selected_license": null,
+      "selected_license": "MIT-CMU",
       "source_package": null,
       "source_sha256": null,
-      "unresolved_questions": [
-        "确认该组件是否为当前功能直接依赖或 PyInstaller 环境污染带入",
-        "确认完整许可证与第三方声明"
-      ],
+      "unresolved_questions": [],
       "upstream_asset": null,
       "upstream_asset_sha256": null,
       "upstream_commit": null,
@@ -3974,19 +3963,17 @@
       "detected_version": "3.4.7",
       "dynamically_linked": null,
       "evidence_files": [
+        "docs/compliance/THIRD_PARTY_DEPENDENCY_INVENTORY.json",
         "qt/python-packages.json"
       ],
-      "license_status": "License status pending verification",
+      "license_status": "VERIFIED-FINAL-STAGING",
       "local_modifications": false,
       "name": "charset-normalizer",
       "replaceable": true,
-      "selected_license": null,
+      "selected_license": "MIT",
       "source_package": null,
       "source_sha256": null,
-      "unresolved_questions": [
-        "确认该组件是否为当前功能直接依赖或 PyInstaller 环境污染带入",
-        "确认完整许可证与第三方声明"
-      ],
+      "unresolved_questions": [],
       "upstream_asset": null,
       "upstream_asset_sha256": null,
       "upstream_commit": null,
@@ -4007,18 +3994,13 @@
     {
       "code": "QT_POSSIBLY_UNUSED_MODULES",
       "message": "发行包包含 126 组 POSSIBLY_UNUSED Qt/QML/插件模块。"
-    },
-    {
-      "code": "MSVC_REDISTRIBUTION_LICENSE_CONFIRMATION",
-      "message": "11 个 Microsoft VC Runtime 文件已按 Visual Studio 2026 REDIST 清单单列；仍需项目所有者确认 Microsoft Visual Studio Community 2026 许可或其它适用再分发权利。"
     }
   ],
-  "generated_at": "2026-08-02T14:25:48+00:00",
+  "generated_at": "2026-08-03T14:26:04+00:00",
   "identity_algorithm": "SHA-256",
   "manual_decisions_required": [
     "FFmpeg：当前自构建仅限 Qonic Audio Converter Audio Runtime；未来视频功能必须使用独立受控运行时或新的独立审核构建。",
-    "Microsoft VC Runtime：确认当前构建与分发受有效 Visual Studio 或 Build Tools 许可覆盖。",
-    "在所有 BLOCKER 关闭前不得发布最终合规声明或正式 Release。"
+    "Qt：项目所有者须在正式公开发行前记录 GPL/LGPL/commercial 的最终适用路线；技术材料见 docs/compliance/THIRD_PARTY_DEPENDENCY_INVENTORY.json。"
   ],
   "product": {
     "description": "Qonic Audio Converter & Editor",
@@ -4073,10 +4055,6 @@
     {
       "code": "QT_POSSIBLY_UNUSED_MODULES",
       "message": "发行包包含 126 组 POSSIBLY_UNUSED Qt/QML/插件模块。"
-    },
-    {
-      "code": "MSVC_REDISTRIBUTION_LICENSE_CONFIRMATION",
-      "message": "11 个 Microsoft VC Runtime 文件已按 Visual Studio 2026 REDIST 清单单列；仍需项目所有者确认 Microsoft Visual Studio Community 2026 许可或其它适用再分发权利。"
     }
   ]
 }

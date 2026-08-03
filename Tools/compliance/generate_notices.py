@@ -42,7 +42,11 @@ def generate_notices(manifest: dict[str, Any], output_path: Path) -> str:
         f"Version: `{product['version']}`",
         "",
         "本文件由本地合规工具依据所有者冻结的唯一权威发行工件生成。",
-        "Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整合规”声明。",
+        (
+            "Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整合规”声明。"
+            if manifest.get("blockers")
+            else "当前 Manifest 未报告 BLOCKER；仍应随每次发行重新执行校验。"
+        ),
         "",
     ]
     for component in manifest["components"]:

@@ -180,6 +180,39 @@ def _direct_python_components(
     return components
 
 
+def _apply_final_closure_evidence(
+    components: list[dict[str, Any]],
+    project_root: Path,
+    dist_path: Path,
+) -> None:
+    """Synchronize legacy Python rows with the current release-scoped inventory."""
+
+    path = project_root / "docs" / "compliance" / "THIRD_PARTY_DEPENDENCY_INVENTORY.json"
+    if not path.is_file():
+        return
+    try:
+        payload = load_json(path)
+    except (OSError, ValueError):
+        return
+    authority = payload.get("authoritative_release", {})
+    expanded = str(authority.get("expanded_directory", "")).replace("\\", "/")
+    if not expanded or not str(dist_path).replace("\\", "/").endswith(expanded):
+        return
+    evidence = {item.get("component"): item for item in payload.get("components", [])}
+    aliases = {"PyInstaller": "PyInstaller bootloader"}
+    for component in components:
+        final = evidence.get(aliases.get(component["name"], component["name"]))
+        if not final or final.get("compliance_status") != "CLOSED":
+            continue
+        component["license_status"] = "VERIFIED-FINAL-STAGING"
+        component["selected_license"] = final.get("license")
+        component["unresolved_questions"] = []
+        component["evidence_files"] = sorted(
+            set(component.get("evidence_files", []))
+            | {"docs/compliance/THIRD_PARTY_DEPENDENCY_INVENTORY.json"}
+        )
+
+
 def generate_manifest(
     project_root: Path,
     dist_path: Path,
@@ -635,9 +668,12 @@ def generate_manifest(
                 "docs/compliance/MICROSOFT_VC_RUNTIME_TOOLCHAIN_INVENTORY.json",
                 "docs/compliance/MICROSOFT_VC_RUNTIME_PACKAGE_INVENTORY.json",
             ],
-            "unresolved_questions": [
-                msvc_evidence.get("owner_confirmation_required")
-            ],
+            "unresolved_questions": (
+                [msvc_evidence.get("owner_confirmation_required")]
+                if msvc_evidence.get("owner_confirmation_status") != "CLOSED"
+                and msvc_evidence.get("owner_confirmation_required")
+                else []
+            ),
         }
     )
 
@@ -650,6 +686,7 @@ def generate_manifest(
         msvc,
         *_direct_python_components(python_payload, project_root, dist_path),
     ]
+    _apply_final_closure_evidence(components, project_root, dist_path)
     blockers: list[dict[str, str]] = []
     warnings: list[dict[str, str]] = []
     if not ffmpeg_records:
@@ -797,12 +834,13 @@ def generate_manifest(
         )
     app_info = parse_app_info(project_root)
     repository_license = _repository_license(project_root)
-    warnings.append(
-        {
-            "code": "MSVC_REDISTRIBUTION_LICENSE_CONFIRMATION",
-            "message": f"{len(msvc_records)} 个 Microsoft VC Runtime 文件已按 Visual Studio 2026 REDIST 清单单列；仍需项目所有者确认 Microsoft Visual Studio Community 2026 许可或其它适用再分发权利。",
-        }
-    )
+    if msvc_evidence.get("owner_confirmation_status") != "CLOSED":
+        warnings.append(
+            {
+                "code": "MSVC_REDISTRIBUTION_LICENSE_CONFIRMATION",
+                "message": f"{len(msvc_records)} 个 Microsoft VC Runtime 文件已按 Visual Studio 2026 REDIST 清单单列；仍需项目所有者确认 Microsoft Visual Studio Community 2026 许可或其它适用再分发权利。",
+            }
+        )
     manual_decisions = [
         (
             "FFmpeg：当前自构建仅限 Qonic Audio Converter Audio Runtime；"
@@ -819,9 +857,14 @@ def generate_manifest(
             else "FFmpeg：Gyan 未公开构建脚本、补丁集和静态依赖锁定材料；"
             "需向提供者索取或由所有者确认继续保持阻塞。"
         ),
-        "Microsoft VC Runtime：确认当前构建与分发受有效 Visual Studio 或 Build Tools 许可覆盖。",
-        "在所有 BLOCKER 关闭前不得发布最终合规声明或正式 Release。",
     ]
+    if msvc_evidence.get("owner_confirmation_status") != "CLOSED":
+        manual_decisions.append(
+            "Microsoft VC Runtime：确认当前构建与分发受有效 Visual Studio 或 Build Tools 许可覆盖。"
+        )
+    manual_decisions.append(
+        "Qt：项目所有者须在正式公开发行前记录 GPL/LGPL/commercial 的最终适用路线；技术材料见 docs/compliance/THIRD_PARTY_DEPENDENCY_INVENTORY.json。"
+    )
     manifest = {
         "schema_version": "1.0.0",
         "product": {

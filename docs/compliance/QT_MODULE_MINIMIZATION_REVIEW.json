@@ -1,0 +1,2837 @@
+{
+  "release_sha256": "BB0967E85AF2857C23587F3CEF37C37D14ED4E4106B7261F21E2F247B47F42F4",
+  "qt_version": "6.11.1",
+  "module_count": 257,
+  "classification_counts": {
+    "NEEDS_TESTING": 112,
+    "POSSIBLY_REMOVABLE": 126,
+    "REQUIRED": 19
+  },
+  "modules": [
+    {
+      "module": "PySide6",
+      "files": 164,
+      "bytes": 49554475,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "PySide6.QtCore",
+      "files": 1,
+      "bytes": 3330360,
+      "source_modules": [
+        "pyside-setup/qtbase-bindings"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "PySide6.QtGui",
+      "files": 1,
+      "bytes": 3896632,
+      "source_modules": [
+        "pyside-setup/qtbase-bindings"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "PySide6.QtMultimedia",
+      "files": 1,
+      "bytes": 571704,
+      "source_modules": [
+        "pyside-setup/qtmultimedia-bindings"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "PySide6.QtMultimediaWidgets",
+      "files": 1,
+      "bytes": 141624,
+      "source_modules": [
+        "pyside-setup/qtmultimedia-bindings"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "PySide6.QtNetwork",
+      "files": 1,
+      "bytes": 1007416,
+      "source_modules": [
+        "pyside-setup/qtbase-bindings"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "PySide6.QtOpenGL",
+      "files": 1,
+      "bytes": 8713016,
+      "source_modules": [],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "PySide6.QtQml",
+      "files": 1,
+      "bytes": 474936,
+      "source_modules": [
+        "pyside-setup/qtdeclarative-bindings"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "PySide6.QtQuick",
+      "files": 1,
+      "bytes": 774456,
+      "source_modules": [
+        "pyside-setup/qtdeclarative-bindings"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "PySide6.QtQuickControls2",
+      "files": 1,
+      "bytes": 92472,
+      "source_modules": [
+        "pyside-setup/qtdeclarative-bindings"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "PySide6.QtWidgets",
+      "files": 1,
+      "bytes": 4856120,
+      "source_modules": [
+        "pyside-setup/qtbase-bindings"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt63DAnimation",
+      "files": 1,
+      "bytes": 522552,
+      "source_modules": [
+        "qt3d"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt63DCore",
+      "files": 1,
+      "bytes": 549176,
+      "source_modules": [
+        "qt3d"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt63DExtras",
+      "files": 1,
+      "bytes": 764728,
+      "source_modules": [
+        "qt3d"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt63DInput",
+      "files": 1,
+      "bytes": 408888,
+      "source_modules": [
+        "qt3d"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt63DLogic",
+      "files": 1,
+      "bytes": 73016,
+      "source_modules": [
+        "qt3d"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt63DQuick",
+      "files": 1,
+      "bytes": 325432,
+      "source_modules": [
+        "qt3d"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt63DQuickAnimation",
+      "files": 1,
+      "bytes": 145208,
+      "source_modules": [
+        "qt3d"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt63DQuickExtras",
+      "files": 1,
+      "bytes": 248632,
+      "source_modules": [
+        "qt3d"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt63DQuickInput",
+      "files": 1,
+      "bytes": 66872,
+      "source_modules": [
+        "qt3d"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt63DQuickLogic",
+      "files": 1,
+      "bytes": 31032,
+      "source_modules": [
+        "qt3d"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt63DQuickRender",
+      "files": 1,
+      "bytes": 553272,
+      "source_modules": [
+        "qt3d"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt63DQuickScene2D",
+      "files": 1,
+      "bytes": 115000,
+      "source_modules": [
+        "qt3d"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt63DQuickScene3D",
+      "files": 1,
+      "bytes": 102712,
+      "source_modules": [
+        "qt3d"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt63DRender",
+      "files": 1,
+      "bytes": 2599736,
+      "source_modules": [
+        "qt3d"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Charts",
+      "files": 1,
+      "bytes": 1758520,
+      "source_modules": [
+        "qtcharts"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6ChartsQml",
+      "files": 1,
+      "bytes": 579896,
+      "source_modules": [
+        "qtcharts"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Concurrent",
+      "files": 1,
+      "bytes": 35128,
+      "source_modules": [
+        "qtbase"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Core",
+      "files": 1,
+      "bytes": 10480440,
+      "source_modules": [
+        "qtbase"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "REQUIRED",
+      "basis": "direct Python/QML import or mandatory platform/multimedia plugin",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6DataVisualization",
+      "files": 1,
+      "bytes": 1217848,
+      "source_modules": [
+        "qtdatavis3d"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6DataVisualizationQml",
+      "files": 1,
+      "bytes": 442680,
+      "source_modules": [
+        "qtdatavis3d"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Graphs",
+      "files": 1,
+      "bytes": 2559800,
+      "source_modules": [
+        "qtgraphs"
+      ],
+      "license_status": "GPL-ONLY-RISK",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Gui",
+      "files": 1,
+      "bytes": 9589560,
+      "source_modules": [
+        "qtbase"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "REQUIRED",
+      "basis": "direct Python/QML import or mandatory platform/multimedia plugin",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6LabsAnimation",
+      "files": 1,
+      "bytes": 55096,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6LabsFolderListModel",
+      "files": 1,
+      "bytes": 122168,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6LabsPlatform",
+      "files": 1,
+      "bytes": 284472,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6LabsQmlModels",
+      "files": 1,
+      "bytes": 197432,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6LabsSettings",
+      "files": 1,
+      "bytes": 61752,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6LabsSharedImage",
+      "files": 1,
+      "bytes": 56632,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6LabsStyleKit",
+      "files": 1,
+      "bytes": 1464632,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6LabsStyleKitImpl",
+      "files": 1,
+      "bytes": 280376,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6LabsSynchronizer",
+      "files": 1,
+      "bytes": 68408,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6LabsWavefrontMesh",
+      "files": 1,
+      "bytes": 60728,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Location",
+      "files": 1,
+      "bytes": 1690424,
+      "source_modules": [
+        "qtlocation"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Multimedia",
+      "files": 1,
+      "bytes": 1283896,
+      "source_modules": [
+        "qtmultimedia"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "REQUIRED",
+      "basis": "direct Python/QML import or mandatory platform/multimedia plugin",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6MultimediaQuick",
+      "files": 1,
+      "bytes": 293688,
+      "source_modules": [
+        "qtmultimedia"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6MultimediaWidgets",
+      "files": 1,
+      "bytes": 62264,
+      "source_modules": [
+        "qtmultimedia"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Network",
+      "files": 1,
+      "bytes": 1771320,
+      "source_modules": [
+        "qtbase"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "REQUIRED",
+      "basis": "direct Python/QML import or mandatory platform/multimedia plugin",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6OpenGL",
+      "files": 1,
+      "bytes": 1977656,
+      "source_modules": [
+        "qtbase"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6OpenGLWidgets",
+      "files": 1,
+      "bytes": 64824,
+      "source_modules": [
+        "qtbase"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Pdf",
+      "files": 1,
+      "bytes": 4611384,
+      "source_modules": [
+        "qtwebengine"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6PdfQuick",
+      "files": 1,
+      "bytes": 575800,
+      "source_modules": [
+        "qtwebengine"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Positioning",
+      "files": 1,
+      "bytes": 523064,
+      "source_modules": [
+        "qtpositioning"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6PositioningQuick",
+      "files": 1,
+      "bytes": 345912,
+      "source_modules": [
+        "qtpositioning"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Qml",
+      "files": 1,
+      "bytes": 5380920,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "REQUIRED",
+      "basis": "direct Python/QML import or mandatory platform/multimedia plugin",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QmlCore",
+      "files": 1,
+      "bytes": 134456,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QmlLocalStorage",
+      "files": 1,
+      "bytes": 62264,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QmlMeta",
+      "files": 1,
+      "bytes": 160056,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QmlModels",
+      "files": 1,
+      "bytes": 997176,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QmlNetwork",
+      "files": 1,
+      "bytes": 128312,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QmlWorkerScript",
+      "files": 1,
+      "bytes": 80696,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QmlXmlListModel",
+      "files": 1,
+      "bytes": 133432,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Quick",
+      "files": 1,
+      "bytes": 6593336,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "REQUIRED",
+      "basis": "direct Python/QML import or mandatory platform/multimedia plugin",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Quick3D",
+      "files": 1,
+      "bytes": 1470776,
+      "source_modules": [
+        "qtquick3d"
+      ],
+      "license_status": "GPL-ONLY-RISK",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Quick3DAssetImport",
+      "files": 1,
+      "bytes": 70456,
+      "source_modules": [
+        "qtquick3d"
+      ],
+      "license_status": "GPL-ONLY-RISK",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Quick3DAssetUtils",
+      "files": 1,
+      "bytes": 317240,
+      "source_modules": [
+        "qtquick3d"
+      ],
+      "license_status": "GPL-ONLY-RISK",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Quick3DEffects",
+      "files": 1,
+      "bytes": 419128,
+      "source_modules": [
+        "qtquick3d"
+      ],
+      "license_status": "GPL-ONLY-RISK",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Quick3DHelpers",
+      "files": 1,
+      "bytes": 717112,
+      "source_modules": [
+        "qtquick3d"
+      ],
+      "license_status": "GPL-ONLY-RISK",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Quick3DHelpersImpl",
+      "files": 1,
+      "bytes": 536888,
+      "source_modules": [
+        "qtquick3d"
+      ],
+      "license_status": "GPL-ONLY-RISK",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Quick3DParticleEffects",
+      "files": 1,
+      "bytes": 24376,
+      "source_modules": [
+        "qtquick3d"
+      ],
+      "license_status": "GPL-ONLY-RISK",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Quick3DParticles",
+      "files": 1,
+      "bytes": 2082104,
+      "source_modules": [
+        "qtquick3d"
+      ],
+      "license_status": "GPL-ONLY-RISK",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Quick3DRuntimeRender",
+      "files": 1,
+      "bytes": 4415288,
+      "source_modules": [
+        "qtquick3d"
+      ],
+      "license_status": "GPL-ONLY-RISK",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Quick3DSpatialAudio",
+      "files": 1,
+      "bytes": 85816,
+      "source_modules": [
+        "qtquick3d"
+      ],
+      "license_status": "GPL-ONLY-RISK",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Quick3DUtils",
+      "files": 1,
+      "bytes": 482104,
+      "source_modules": [
+        "qtquick3d"
+      ],
+      "license_status": "GPL-ONLY-RISK",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Quick3DXr",
+      "files": 1,
+      "bytes": 914232,
+      "source_modules": [
+        "qtquick3d"
+      ],
+      "license_status": "GPL-ONLY-RISK",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickControls2",
+      "files": 1,
+      "bytes": 103224,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "REQUIRED",
+      "basis": "direct Python/QML import or mandatory platform/multimedia plugin",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickControls2Basic",
+      "files": 1,
+      "bytes": 1848632,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickControls2BasicStyleImpl",
+      "files": 1,
+      "bytes": 90936,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickControls2FluentWinUI3StyleImpl",
+      "files": 1,
+      "bytes": 221496,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickControls2Fusion",
+      "files": 1,
+      "bytes": 1511736,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickControls2FusionStyleImpl",
+      "files": 1,
+      "bytes": 185656,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickControls2Imagine",
+      "files": 1,
+      "bytes": 3088184,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickControls2ImagineStyleImpl",
+      "files": 1,
+      "bytes": 70456,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickControls2Impl",
+      "files": 1,
+      "bytes": 331064,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickControls2Material",
+      "files": 1,
+      "bytes": 1922360,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickControls2MaterialStyleImpl",
+      "files": 1,
+      "bytes": 312120,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickControls2Universal",
+      "files": 1,
+      "bytes": 1592632,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickControls2UniversalStyleImpl",
+      "files": 1,
+      "bytes": 142136,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickControls2WindowsStyleImpl",
+      "files": 1,
+      "bytes": 66872,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickDialogs2",
+      "files": 1,
+      "bytes": 159544,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickDialogs2QuickImpl",
+      "files": 1,
+      "bytes": 2857272,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickDialogs2Utils",
+      "files": 1,
+      "bytes": 47416,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickEffects",
+      "files": 1,
+      "bytes": 433976,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickLayouts",
+      "files": 1,
+      "bytes": 308536,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickParticles",
+      "files": 1,
+      "bytes": 641336,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickShapes",
+      "files": 1,
+      "bytes": 348472,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickTemplates2",
+      "files": 1,
+      "bytes": 2061112,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickTest",
+      "files": 1,
+      "bytes": 314168,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickTimeline",
+      "files": 1,
+      "bytes": 98104,
+      "source_modules": [
+        "qtquicktimeline"
+      ],
+      "license_status": "GPL-ONLY-RISK",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickTimelineBlendTrees",
+      "files": 1,
+      "bytes": 82744,
+      "source_modules": [
+        "qtquicktimeline"
+      ],
+      "license_status": "GPL-ONLY-RISK",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickVectorImage",
+      "files": 1,
+      "bytes": 70968,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickVectorImageGenerator",
+      "files": 1,
+      "bytes": 287032,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6QuickVectorImageHelpers",
+      "files": 1,
+      "bytes": 191800,
+      "source_modules": [
+        "qtdeclarative"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6RemoteObjects",
+      "files": 1,
+      "bytes": 872760,
+      "source_modules": [
+        "qtremoteobjects"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6RemoteObjectsQml",
+      "files": 1,
+      "bytes": 67896,
+      "source_modules": [
+        "qtremoteobjects"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Scxml",
+      "files": 1,
+      "bytes": 539448,
+      "source_modules": [
+        "qtscxml"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6ScxmlQml",
+      "files": 1,
+      "bytes": 121656,
+      "source_modules": [
+        "qtscxml"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Sensors",
+      "files": 1,
+      "bytes": 225080,
+      "source_modules": [
+        "qtsensors"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6SensorsQuick",
+      "files": 1,
+      "bytes": 277304,
+      "source_modules": [
+        "qtsensors"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6ShaderTools",
+      "files": 1,
+      "bytes": 4336952,
+      "source_modules": [
+        "qtshadertools"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6SpatialAudio",
+      "files": 1,
+      "bytes": 740152,
+      "source_modules": [
+        "qtmultimedia"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Sql",
+      "files": 1,
+      "bytes": 311608,
+      "source_modules": [
+        "qtbase"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6StateMachine",
+      "files": 1,
+      "bytes": 341816,
+      "source_modules": [
+        "qtscxml"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6StateMachineQml",
+      "files": 1,
+      "bytes": 117048,
+      "source_modules": [
+        "qtscxml"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Svg",
+      "files": 1,
+      "bytes": 642360,
+      "source_modules": [
+        "qtsvg"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Test",
+      "files": 1,
+      "bytes": 382776,
+      "source_modules": [
+        "qtbase"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6TextToSpeech",
+      "files": 1,
+      "bytes": 133432,
+      "source_modules": [
+        "qtspeech"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6VirtualKeyboard",
+      "files": 1,
+      "bytes": 443192,
+      "source_modules": [
+        "qtvirtualkeyboard"
+      ],
+      "license_status": "GPL-ONLY-RISK",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6VirtualKeyboardQml",
+      "files": 1,
+      "bytes": 101176,
+      "source_modules": [
+        "qtvirtualkeyboard"
+      ],
+      "license_status": "GPL-ONLY-RISK",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6VirtualKeyboardSettings",
+      "files": 1,
+      "bytes": 72504,
+      "source_modules": [
+        "qtvirtualkeyboard"
+      ],
+      "license_status": "GPL-ONLY-RISK",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6WebChannel",
+      "files": 1,
+      "bytes": 255800,
+      "source_modules": [
+        "qtwebchannel"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6WebChannelQuick",
+      "files": 1,
+      "bytes": 63288,
+      "source_modules": [
+        "qtwebchannel"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6WebEngineCore",
+      "files": 1,
+      "bytes": 204828984,
+      "source_modules": [
+        "qtwebengine"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6WebEngineQuick",
+      "files": 1,
+      "bytes": 693560,
+      "source_modules": [
+        "qtwebengine"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6WebEngineQuickDelegatesQml",
+      "files": 1,
+      "bytes": 165688,
+      "source_modules": [
+        "qtwebengine"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6WebSockets",
+      "files": 1,
+      "bytes": 219960,
+      "source_modules": [
+        "qtwebsockets"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6WebView",
+      "files": 1,
+      "bytes": 60216,
+      "source_modules": [
+        "qtwebview"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6WebViewQuick",
+      "files": 1,
+      "bytes": 84280,
+      "source_modules": [
+        "qtwebview"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "Qt6Widgets",
+      "files": 1,
+      "bytes": 6594360,
+      "source_modules": [
+        "qtbase"
+      ],
+      "license_status": "LGPL-OR-GPL-CANDIDATE",
+      "classification": "REQUIRED",
+      "basis": "direct Python/QML import or mandatory platform/multimedia plugin",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "plugin:Hangul",
+      "files": 3,
+      "bytes": 63328,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "plugin:OpenWNN",
+      "files": 3,
+      "bytes": 1577328,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "plugin:Pinyin",
+      "files": 3,
+      "bytes": 1194336,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "plugin:TCIme",
+      "files": 3,
+      "bytes": 313968,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "plugin:Thai",
+      "files": 3,
+      "bytes": 45382,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "plugin:generic",
+      "files": 1,
+      "bytes": 101176,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "plugin:iconengines",
+      "files": 1,
+      "bytes": 72504,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "plugin:imageformats",
+      "files": 10,
+      "bytes": 1887792,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "plugin:multimedia",
+      "files": 2,
+      "bytes": 942704,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "REQUIRED",
+      "basis": "direct Python/QML import or mandatory platform/multimedia plugin",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "plugin:networkinformation",
+      "files": 1,
+      "bytes": 70968,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "plugin:platforminputcontexts",
+      "files": 1,
+      "bytes": 33592,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "plugin:platforms",
+      "files": 4,
+      "bytes": 2271456,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "REQUIRED",
+      "basis": "direct Python/QML import or mandatory platform/multimedia plugin",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "plugin:qmldir",
+      "files": 1,
+      "bytes": 525,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "plugin:qmltooling",
+      "files": 13,
+      "bytes": 1106904,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "plugin:qtvkbpluginsplugin.dll",
+      "files": 1,
+      "bytes": 32056,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "plugin:qtvkbpluginsplugin.qmltypes",
+      "files": 1,
+      "bytes": 215,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "plugin:styles",
+      "files": 1,
+      "bytes": 230712,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "plugin:tls",
+      "files": 3,
+      "bytes": 687016,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:Qt.labs.StyleKit",
+      "files": 42,
+      "bytes": 241700,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:Qt.labs.animation",
+      "files": 3,
+      "bytes": 35393,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:Qt.labs.assetdownloader",
+      "files": 10,
+      "bytes": 2935708,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:Qt.labs.folderlistmodel",
+      "files": 3,
+      "bytes": 39247,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:Qt.labs.platform",
+      "files": 3,
+      "bytes": 76012,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:Qt.labs.qmlmodels",
+      "files": 3,
+      "bytes": 46006,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:Qt.labs.settings",
+      "files": 3,
+      "bytes": 32571,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:Qt.labs.sharedimage",
+      "files": 3,
+      "bytes": 34234,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:Qt.labs.synchronizer",
+      "files": 3,
+      "bytes": 33223,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:Qt.labs.wavefrontmesh",
+      "files": 3,
+      "bytes": 33437,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:Qt3D.Animation",
+      "files": 3,
+      "bytes": 74805,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:Qt3D.Core",
+      "files": 3,
+      "bytes": 112286,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:Qt3D.Extras",
+      "files": 3,
+      "bytes": 171957,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:Qt3D.Input",
+      "files": 3,
+      "bytes": 153433,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:Qt3D.Logic",
+      "files": 3,
+      "bytes": 34345,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:Qt3D.Render",
+      "files": 3,
+      "bytes": 254378,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:Qt5Compat.GraphicalEffects",
+      "files": 28,
+      "bytes": 1029317,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:Qt5Compat.GraphicalEffects.private",
+      "files": 10,
+      "bytes": 493673,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtCharts",
+      "files": 3,
+      "bytes": 237824,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtCharts.designer",
+      "files": 2,
+      "bytes": 10532,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtCharts.designer.default",
+      "files": 16,
+      "bytes": 8107,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtCharts.designer.images",
+      "files": 32,
+      "bytes": 40888,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtCore",
+      "files": 3,
+      "bytes": 48406,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "REQUIRED",
+      "basis": "direct Python/QML import or mandatory platform/multimedia plugin",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtDataVisualization",
+      "files": 3,
+      "bytes": 204405,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtDataVisualization.designer",
+      "files": 4,
+      "bytes": 35468,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtDataVisualization.designer.default",
+      "files": 3,
+      "bytes": 1954,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtDataVisualization.designer.images",
+      "files": 6,
+      "bytes": 7645,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtGraphs",
+      "files": 3,
+      "bytes": 349615,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtGraphs.designer",
+      "files": 8,
+      "bytes": 36002,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtGraphs.designer.default",
+      "files": 9,
+      "bytes": 4349,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtGraphs.designer.images",
+      "files": 18,
+      "bytes": 23081,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtLocation",
+      "files": 4,
+      "bytes": 151429,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtMultimedia",
+      "files": 4,
+      "bytes": 127067,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "REQUIRED",
+      "basis": "direct Python/QML import or mandatory platform/multimedia plugin",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtNetwork",
+      "files": 3,
+      "bytes": 50758,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtPositioning",
+      "files": 3,
+      "bytes": 111784,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQml",
+      "files": 3,
+      "bytes": 38553,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "REQUIRED",
+      "basis": "direct Python/QML import or mandatory platform/multimedia plugin",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQml.Models",
+      "files": 3,
+      "bytes": 111290,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "REQUIRED",
+      "basis": "direct Python/QML import or mandatory platform/multimedia plugin",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQml.StateMachine",
+      "files": 3,
+      "bytes": 45245,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQml.WorkerScript",
+      "files": 3,
+      "bytes": 32282,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "REQUIRED",
+      "basis": "direct Python/QML import or mandatory platform/multimedia plugin",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQml.XmlListModel",
+      "files": 3,
+      "bytes": 35560,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick",
+      "files": 3,
+      "bytes": 693763,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "REQUIRED",
+      "basis": "direct Python/QML import or mandatory platform/multimedia plugin",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Controls",
+      "files": 3,
+      "bytes": 42066,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "REQUIRED",
+      "basis": "direct Python/QML import or mandatory platform/multimedia plugin",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Controls.Basic",
+      "files": 76,
+      "bytes": 196193,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Controls.FluentWinUI3",
+      "files": 854,
+      "bytes": 5390967,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Controls.Fusion",
+      "files": 76,
+      "bytes": 200003,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Controls.Imagine",
+      "files": 62,
+      "bytes": 213037,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Controls.Material",
+      "files": 73,
+      "bytes": 262874,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Controls.Universal",
+      "files": 72,
+      "bytes": 196624,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Controls.Windows",
+      "files": 58,
+      "bytes": 803298,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Controls.designer",
+      "files": 136,
+      "bytes": 105305,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Controls.impl",
+      "files": 10,
+      "bytes": 86205,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Dialogs",
+      "files": 3,
+      "bytes": 48378,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Dialogs.quickimpl",
+      "files": 60,
+      "bytes": 333515,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Effects",
+      "files": 3,
+      "bytes": 45275,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Layouts",
+      "files": 3,
+      "bytes": 59024,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "REQUIRED",
+      "basis": "direct Python/QML import or mandatory platform/multimedia plugin",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.LocalStorage",
+      "files": 3,
+      "bytes": 31472,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.NativeStyle",
+      "files": 3,
+      "bytes": 988954,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.NativeStyle.controls",
+      "files": 20,
+      "bytes": 42422,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.NativeStyle.util",
+      "files": 2,
+      "bytes": 1696,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Particles",
+      "files": 3,
+      "bytes": 117911,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Pdf",
+      "files": 8,
+      "bytes": 126360,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Pdf.+Material",
+      "files": 1,
+      "bytes": 695,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Pdf.+Universal",
+      "files": 1,
+      "bytes": 688,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Scene2D",
+      "files": 3,
+      "bytes": 34379,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Scene3D",
+      "files": 3,
+      "bytes": 35362,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Shapes",
+      "files": 3,
+      "bytes": 52022,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Templates",
+      "files": 3,
+      "bytes": 335140,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Timeline",
+      "files": 3,
+      "bytes": 36858,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Timeline.BlendTrees",
+      "files": 3,
+      "bytes": 34642,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.VectorImage",
+      "files": 3,
+      "bytes": 35167,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.VectorImage.Helpers",
+      "files": 3,
+      "bytes": 34598,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.VirtualKeyboard",
+      "files": 6,
+      "bytes": 42174,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.VirtualKeyboard.Components",
+      "files": 34,
+      "bytes": 865612,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.VirtualKeyboard.Core",
+      "files": 3,
+      "bytes": 92995,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.VirtualKeyboard.Layouts",
+      "files": 3,
+      "bytes": 84753,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.VirtualKeyboard.Settings",
+      "files": 3,
+      "bytes": 41147,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.VirtualKeyboard.Styles",
+      "files": 13,
+      "bytes": 525234,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.Window",
+      "files": 3,
+      "bytes": 31972,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "REQUIRED",
+      "basis": "direct Python/QML import or mandatory platform/multimedia plugin",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick.tooling",
+      "files": 11,
+      "bytes": 74607,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick3D",
+      "files": 4,
+      "bytes": 348253,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick3D.AssetUtils",
+      "files": 3,
+      "bytes": 33714,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick3D.AssetUtils.designer",
+      "files": 10,
+      "bytes": 18484,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick3D.Effects",
+      "files": 24,
+      "bytes": 55080,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick3D.Effects.designer",
+      "files": 46,
+      "bytes": 65042,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick3D.Helpers",
+      "files": 9,
+      "bytes": 141878,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick3D.Helpers.designer",
+      "files": 71,
+      "bytes": 182760,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick3D.Helpers.impl",
+      "files": 7,
+      "bytes": 66444,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick3D.Helpers.meshes",
+      "files": 1,
+      "bytes": 128684,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick3D.MaterialEditor",
+      "files": 13,
+      "bytes": 98696,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick3D.ParticleEffects",
+      "files": 3,
+      "bytes": 31107,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick3D.ParticleEffects.designer",
+      "files": 26,
+      "bytes": 271067,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick3D.Particles3D",
+      "files": 3,
+      "bytes": 109450,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick3D.Particles3D.designer",
+      "files": 121,
+      "bytes": 215506,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick3D.SpatialAudio",
+      "files": 3,
+      "bytes": 43596,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick3D.Xr",
+      "files": 4,
+      "bytes": 73137,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick3D.designer",
+      "files": 81,
+      "bytes": 333032,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick3D.designer.images",
+      "files": 103,
+      "bytes": 69360,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick3D.designer.source",
+      "files": 4,
+      "bytes": 1359,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtQuick3D.lightmapviewer",
+      "files": 8,
+      "bytes": 48772,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "NEEDS_TESTING",
+      "basis": "collector marked likely runtime-related, but static import evidence is not sufficient for safe deletion",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtRemoteObjects",
+      "files": 3,
+      "bytes": 36755,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtScxml",
+      "files": 3,
+      "bytes": 45085,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtSensors",
+      "files": 3,
+      "bytes": 68251,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtTest",
+      "files": 7,
+      "bytes": 145154,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtTextToSpeech",
+      "files": 3,
+      "bytes": 106890,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtWebChannel",
+      "files": 3,
+      "bytes": 34799,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtWebEngine",
+      "files": 3,
+      "bytes": 174607,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtWebEngine.ControlsDelegates",
+      "files": 17,
+      "bytes": 47545,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtWebSockets",
+      "files": 3,
+      "bytes": 87381,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "qml:QtWebView",
+      "files": 3,
+      "bytes": 40364,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    },
+    {
+      "module": "shiboken6",
+      "files": 5,
+      "bytes": 1124376,
+      "source_modules": [],
+      "license_status": "UNKNOWN",
+      "classification": "POSSIBLY_REMOVABLE",
+      "basis": "not found in direct imports; retain until isolated onedir regression",
+      "safe_to_delete_now": false
+    }
+  ],
+  "rule": "No Qt file is deleted in this review. Any removal requires a separate commit, size comparison, packaged smoke, and full media regression."
+}

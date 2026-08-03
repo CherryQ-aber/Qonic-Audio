@@ -27,6 +27,8 @@
     "snapshot": "third_party/licenses/microsoft/Microsoft-Visual-Cpp-V14-Redistributable-License-Terms.html",
     "snapshot_sha256": "F5B1EE76A201DDBD56DBEA08CCC24D4CBAF597897DF27F6AA76B2C7952AA4299"
   },
-  "owner_confirmation_status": "PENDING_OWNER_CONFIRMATION",
-  "owner_confirmation_required": "The project owner must personally confirm that they are a validly licensed Microsoft Visual Studio Community 2026 user, or otherwise hold the applicable Microsoft redistribution rights, and approve distribution of the unmodified enumerated VC Runtime files."
+  "owner_confirmation_status": "CLOSED",
+  "owner_confirmation_completed_on": "2026-08-03",
+  "owner_confirmation_evidence": "Project owner stated that the Microsoft VC Runtime owner licence confirmation is complete and CLOSED for the unchanged authoritative release. The owner's personal legal statement is not reproduced or signed by this technical record.",
+  "owner_confirmation_required": null
 }

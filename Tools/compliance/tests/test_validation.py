@@ -13,7 +13,7 @@ if str(TOOL_ROOT) not in sys.path:
 from collect_ffmpeg_info import collect_ffmpeg
 from build_compliance_bundle import _contains_forbidden_content
 from common import ComplianceError
-from validate_compliance import evaluate_exit_code
+from validate_compliance import evaluate_exit_code, validate_final_inventory_data
 from verify_ncmdump_asset import compare_ncmdump_asset, safe_extract_zip
 from verify_ffmpeg_asset import parse_archive_paths
 
@@ -137,6 +137,37 @@ class ValidationTests(unittest.TestCase):
             ),
             2,
         )
+
+    def test_final_inventory_rejects_unknown_native_component(self):
+        component = {
+            "component": "Microsoft VC Runtime",
+            "component_type": "runtime-dll",
+            "version": "14.x",
+            "source_package": "Visual Studio 2026 REDIST",
+            "upstream_project": "Microsoft",
+            "package_provenance": {"evidence": "test"},
+            "files": ["_internal/VCRUNTIME140.dll"],
+            "hashes": {"_internal/VCRUNTIME140.dll": "A" * 64},
+            "license": "Microsoft terms",
+            "license_files": ["docs/compliance/staging/licenses/Microsoft/test.txt"],
+            "redistribution_requirement": "unmodified",
+            "notice_requirement": "record terms",
+            "source_code_availability": "https://example.invalid",
+            "compliance_status": "CLOSED",
+        }
+        inventory = {
+            "schema_version": "1.0.0",
+            "generated_on": "2026-08-03",
+            "identity_algorithm": "SHA-256",
+            "authoritative_release": {"archive_sha256": "B" * 64},
+            "components": [component],
+            "native_file_ownership": {
+                "unassigned_native_files": ["_internal/mystery.dll"]
+            },
+            "summary": {},
+        }
+        errors, _ = validate_final_inventory_data(inventory)
+        self.assertTrue(any("UNKNOWN THIRD-PARTY COMPONENT" in error for error in errors))
 
 
 if __name__ == "__main__":

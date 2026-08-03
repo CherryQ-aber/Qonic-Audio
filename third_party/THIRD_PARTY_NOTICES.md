@@ -4,7 +4,7 @@ Product: `Qonic Audio`
 Version: `5.0 Internal Test`
 
 本文件由本地合规工具依据所有者冻结的唯一权威发行工件生成。
-Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整合规”声明。
+当前 Manifest 未报告 BLOCKER；仍应随每次发行重新执行校验。
 
 ## FFmpeg
 
@@ -41,9 +41,8 @@ Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整
 - 对应源码获取位置：https://codeload.github.com/taurusxin/ncmdump/tar.gz/76a55d862f767ee20ae417ecd128fde442eea77f
 - 对应源码 SHA-256：70D1C692130B0C0C53276417FD6246C02C4C39D057005F0435FF4942C7CFF11E
 - 本地 Manifest 路径：`third_party/THIRD_PARTY_MANIFEST.json`
-- 许可证状态：VERIFIED-UPSTREAM-ASSET-SOURCE-AND-LICENSE
+- 许可证状态：VERIFIED-FINAL-STAGING
 - 尚未解决的问题：
-  - 官方 GitHub Actions 的具体 runner 镜像版本与编译器补丁版本未在 Release 元数据中固定
 
 ## TagLib
 
@@ -131,16 +130,15 @@ Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整
 - 上游资产 SHA-256：`pyside6_addons-6.11.1-cp310-abi3-win_amd64.whl`=`0D13C4DFD671B050A48E4F8D8DDC724B7248F9C0437E7FC47FDF316278572923`
 - 实际分发文件：`Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avcodec-61.dll`, `Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avformat-61.dll`, `Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/PySide6/avutil-59.dll`, `Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/PySide6/swresample-5.dll`, `Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/PySide6/swscale-8.dll`
 - 上游声明许可证：LGPL-2.1-or-later AND BSD-3-Clause AND BSD-2-Clause AND BSD-Source-Code AND ISC AND MIT AND MPL-2.0
-- 本项目采用路线：LGPL-2.1-or-later
+- 本项目采用路线：LGPL-2.1-or-later AND BSD-3-Clause AND BSD-2-Clause AND BSD-Source-Code AND ISC AND MIT AND MPL-2.0
 - 版权所有者/声明：Copyright (c) 2000-2023 the FFmpeg developers
 - 是否修改：false
 - 使用方式：Qt Multimedia FFmpeg backend dynamic libraries
 - 对应源码获取位置：https://codeload.github.com/FFmpeg/FFmpeg/tar.gz/f46e514491172d15bd74b4abb1814cd2f05a763e
 - 对应源码 SHA-256：1FA39B5A6AE9AC02C2CF280EC5CC8321A0DD0B9AB34B6C73133CAFCCAF5DFA79
 - 本地 Manifest 路径：`third_party/THIRD_PARTY_MANIFEST.json`
-- 许可证状态：VERIFIED-QT-ATTRIBUTION-LGPL-ROUTE
+- 许可证状态：VERIFIED-FINAL-STAGING
 - 尚未解决的问题：
-  - Qt attribution 指向的预构建 FFmpeg 构建脚本仓库尚未固定到独立 commit；本轮已闭合精确 wheel、attribution、许可证和 FFmpeg 7.1.3 源码。
 
 ## Microsoft Visual C++ v14 Runtime
 
@@ -160,7 +158,6 @@ Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整
 - 本地 Manifest 路径：`third_party/THIRD_PARTY_MANIFEST.json`
 - 许可证状态：PROPRIETARY-REDISTRIBUTABLE-TERMS-RECORDED
 - 尚未解决的问题：
-  - The project owner must personally confirm that they are a validly licensed Microsoft Visual Studio Community 2026 user, or otherwise hold the applicable Microsoft redistribution rights, and approve distribution of the unmodified enumerated VC Runtime files.
 
 ## mutagen
 
@@ -213,17 +210,15 @@ Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整
 - 上游资产 SHA-256：UNKNOWN
 - 实际分发文件：`DIST/watchdog-apache-2.0.txt`
 - 上游声明许可证：Apache-2.0
-- 本项目采用路线：UNKNOWN
+- 本项目采用路线：Apache-2.0
 - 版权所有者/声明：见对应上游许可证与源码包
 - 是否修改：false
 - 使用方式：python-import
 - 对应源码获取位置：UNKNOWN
 - 对应源码 SHA-256：UNKNOWN
 - 本地 Manifest 路径：`third_party/THIRD_PARTY_MANIFEST.json`
-- 许可证状态：DECLARED-PENDING-FILE-CHECK
+- 许可证状态：VERIFIED-FINAL-STAGING
 - 尚未解决的问题：
-  - 确认发行包内实际打包版本与本机构建环境版本一致
-  - 确认许可证全文和版权声明已纳入最终合规包
 
 ## NumPy
 
@@ -234,17 +229,15 @@ Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整
 - 上游资产 SHA-256：UNKNOWN
 - 实际分发文件：`Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/numpy`, `Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/numpy-2.4.6.dist-info`, `Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/numpy.libs`, `Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/numpy-2.4.6.dist-info/licenses/numpy`, `Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/numpy-2.4.6.dist-info/licenses/numpy/_core/include/numpy`
 - 上游声明许可证：BSD-3-Clause candidate
-- 本项目采用路线：UNKNOWN
+- 本项目采用路线：BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0
 - 版权所有者/声明：见对应上游许可证与源码包
 - 是否修改：false
 - 使用方式：python-import-or-transitive-bundle
 - 对应源码获取位置：UNKNOWN
 - 对应源码 SHA-256：UNKNOWN
 - 本地 Manifest 路径：`third_party/THIRD_PARTY_MANIFEST.json`
-- 许可证状态：License status pending verification
+- 许可证状态：VERIFIED-FINAL-STAGING
 - 尚未解决的问题：
-  - 确认该组件是否为当前功能直接依赖或 PyInstaller 环境污染带入
-  - 确认完整许可证与第三方声明
 
 ## Pillow
 
@@ -255,17 +248,15 @@ Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整
 - 上游资产 SHA-256：UNKNOWN
 - 实际分发文件：`Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/PIL`
 - 上游声明许可证：HPND candidate
-- 本项目采用路线：UNKNOWN
+- 本项目采用路线：MIT-CMU
 - 版权所有者/声明：见对应上游许可证与源码包
 - 是否修改：false
 - 使用方式：python-import-or-transitive-bundle
 - 对应源码获取位置：UNKNOWN
 - 对应源码 SHA-256：UNKNOWN
 - 本地 Manifest 路径：`third_party/THIRD_PARTY_MANIFEST.json`
-- 许可证状态：License status pending verification
+- 许可证状态：VERIFIED-FINAL-STAGING
 - 尚未解决的问题：
-  - 确认该组件是否为当前功能直接依赖或 PyInstaller 环境污染带入
-  - 确认完整许可证与第三方声明
 
 ## charset-normalizer
 
@@ -276,14 +267,12 @@ Manifest 中仍有 BLOCKER；本文件是当前证据清单，不构成“完整
 - 上游资产 SHA-256：UNKNOWN
 - 实际分发文件：`Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test/_internal/charset_normalizer`
 - 上游声明许可证：MIT candidate
-- 本项目采用路线：UNKNOWN
+- 本项目采用路线：MIT
 - 版权所有者/声明：见对应上游许可证与源码包
 - 是否修改：false
 - 使用方式：python-import-or-transitive-bundle
 - 对应源码获取位置：UNKNOWN
 - 对应源码 SHA-256：UNKNOWN
 - 本地 Manifest 路径：`third_party/THIRD_PARTY_MANIFEST.json`
-- 许可证状态：License status pending verification
+- 许可证状态：VERIFIED-FINAL-STAGING
 - 尚未解决的问题：
-  - 确认该组件是否为当前功能直接依赖或 PyInstaller 环境污染带入
-  - 确认完整许可证与第三方声明

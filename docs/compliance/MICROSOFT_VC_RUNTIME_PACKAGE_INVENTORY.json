@@ -14,7 +14,7 @@
     "unknown_or_needs_review": 0,
     "vc_redist_executables": 0,
     "compiler_build_tools_or_other_development_tools": 0,
-    "owner_confirmation_status": "PENDING_OWNER_CONFIRMATION"
+    "owner_confirmation_status": "CLOSED"
   },
   "permitted_redistributable": [
     {"path":"_internal/numpy.libs/msvcp140-a4c2229bdc2a2a630acdc095b4d86008.dll","original_filename":"msvcp140.dll","file_version":"14.40.33810.0","sha256":"A4C2229BDC2A2A630ACDC095B4D86008E5C3E3BC7773174354F3DA4F5BEB9CDE","signature_status":"Valid"},

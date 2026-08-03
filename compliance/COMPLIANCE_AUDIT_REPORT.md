@@ -8,7 +8,7 @@
 - 唯一权威工件：`Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test.7z`。
 - 权威归档 SHA-256：`BB0967E85AF2857C23587F3CEF37C37D14ED4E4106B7261F21E2F247B47F42F4`；所有者冻结值：`BB0967E85AF2857C23587F3CEF37C37D14ED4E4106B7261F21E2F247B47F42F4`。
 - 权威工件校验：`True`；同版本候选分叉：`False`。
-- 当前结论：`0` 个 BLOCKER、`4` 个 WARNING。
+- 当前结论：`0` 个 BLOCKER、`3` 个 WARNING。
 
 ## 2. 当前发行结构
 
@@ -90,7 +90,6 @@
 - `FFMPEG_SELF_BUILD_B5_VERIFIED`：正式发行已采用获批并验证的 Qonic Audio Runtime 自构建；B5 onedir、归档、Corresponding Source、打包 smoke 与完整回归均已通过。
 - `QT_GPL_ONLY_MODULES_RETAINED`：发行包包含 18 组 GPL-only 模块；项目采用 GPL-3.0 路线，所有者决定本轮保留并推迟最小化。
 - `QT_POSSIBLY_UNUSED_MODULES`：发行包包含 126 组 POSSIBLY_UNUSED Qt/QML/插件模块。
-- `MSVC_REDISTRIBUTION_LICENSE_CONFIRMATION`：11 个 Microsoft VC Runtime 文件已按 Visual Studio 2026 REDIST 清单单列；仍需项目所有者确认 Microsoft Visual Studio Community 2026 许可或其它适用再分发权利。
 
 ## 12. 本阶段已自动完成的整改
 
@@ -104,8 +103,7 @@
 ## 13. 必须由项目所有者继续处理的事项
 
 - FFmpeg：当前自构建仅限 Qonic Audio Converter Audio Runtime；未来视频功能必须使用独立受控运行时或新的独立审核构建。
-- Microsoft VC Runtime：确认当前构建与分发受有效 Visual Studio 或 Build Tools 许可覆盖。
-- 在所有 BLOCKER 关闭前不得发布最终合规声明或正式 Release。
+- Qt：项目所有者须在正式公开发行前记录 GPL/LGPL/commercial 的最终适用路线；技术材料见 docs/compliance/THIRD_PARTY_DEPENDENCY_INVENTORY.json。
 
 ## 14. 建议的后续顺序
 

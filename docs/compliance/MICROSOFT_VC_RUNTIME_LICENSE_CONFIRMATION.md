@@ -2,12 +2,13 @@
 
 ## Status
 
-**PENDING OWNER CONFIRMATION**
+**CLOSED — OWNER CONFIRMATION RECORDED**
 
 This record is a technical audit of the current host and the sole authoritative
-Qonic Audio v5.0 Internal Test package. It records a local installation of
-Microsoft Visual Studio Community 2026, but does not sign, state, or infer the
-project owner's affirmative licence confirmation or redistribution approval.
+Qonic Audio v5.0 Internal Test package. On 2026-08-03 the project owner stated
+that the required Microsoft VC Runtime licence confirmation is complete for
+this unchanged authoritative release. This technical record does not reproduce
+or sign the owner's personal legal statement.
 
 ## Audited release
 
@@ -40,8 +41,8 @@ recorded rather than treated as optional absence.
 | Installed VC++ 2015-2022 runtime packages | x64 14.44.35211.0; x86 14.44.35211.0 |
 
 The local Community 2026 installation establishes the applicable product,
-licence-terms and REDIST-list evidence for this host. It does not replace the
-owner's affirmative confirmation. The complete machine evidence is in
+licence-terms and REDIST-list evidence for this host. The separate owner
+confirmation is now recorded as CLOSED. The complete machine evidence is in
 [`MICROSOFT_VC_RUNTIME_TOOLCHAIN_INVENTORY.json`](MICROSOFT_VC_RUNTIME_TOOLCHAIN_INVENTORY.json).
 
 ## Authoritative package inventory and classification
@@ -51,7 +52,7 @@ The package contains 11 files matching `vcruntime*.dll`, `msvcp*.dll`,
 
 | Classification | Count | Result |
 | --- | ---: | --- |
-| `permitted_redistributable` | 11 | `MSVCP140*` and `VCRUNTIME140*` files with Microsoft product metadata; all have a valid Authenticode status. They are consistent with the VC++ runtime material in the VS 2026 REDIST scope and are classified as permitted redistributables, subject to the pending owner confirmation and unmodified distribution condition. |
+| `permitted_redistributable` | 11 | `MSVCP140*` and `VCRUNTIME140*` files with Microsoft product metadata; all have a valid Authenticode status. They are consistent with the VC++ runtime material in the VS 2026 REDIST scope and remain unmodified. The owner confirmation is recorded as CLOSED. |
 | `debug_nonredist` | 0 | No `debug_nonredist`, DebugCRT, DebugCXXAMP, DebugMFC, DebugOpenMP or onecore debug indicator found. |
 | `unknown_or_needs_review` | 0 | No matching runtime file outside the reviewed set. |
 | `vc_redist*.exe` | 0 | No redistributable installer is embedded. |
@@ -83,16 +84,13 @@ Official sources consulted on 2026-08-02:
 - [Visual Studio 2026 Redistribution / REDIST list](https://learn.microsoft.com/en-us/visualstudio/releases/2026/redistribution)
 - [Redistribute Visual C++ Files](https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files?view=msvc-170)
 
-## Required owner statement
+## Closure record
 
-To close this item, the project owner must record this exact confirmation (or a
-legally equivalent statement approved by their counsel):
-
-> I confirm that I am a validly licensed Microsoft Visual Studio Community 2026
-> user, or otherwise hold the applicable Microsoft redistribution rights, and
-> approve distribution of the unmodified VC Runtime files enumerated in
-> `docs/compliance/MICROSOFT_VC_RUNTIME_PACKAGE_INVENTORY.json` with the Qonic
-> Audio v5.0 Internal Test authoritative release.
+The project owner reported the required Microsoft Visual Studio Community 2026
+licence/redistribution confirmation completed on 2026-08-03 for the unchanged
+authoritative package. The personal legal statement is deliberately not copied
+or signed by this technical audit. If the authority archive or the 11-file
+Runtime inventory changes, reopen this item before distribution.
 
 Until that statement is recorded, the technical classification above does not
 close the owner-licence condition.
