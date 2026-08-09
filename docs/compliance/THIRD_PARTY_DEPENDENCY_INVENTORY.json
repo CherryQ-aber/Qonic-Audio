@@ -444,7 +444,8 @@
         "exact_wheels_verified": true,
         "wheel_evidence": "compliance/report/qt/qt-wheel-verification.json",
         "source_archive": "third_party/source-archives/qt/pyside-setup-everywhere-src-6.11.1.tar.xz",
-        "lgpl_route_evidence": "docs/compliance/QT_LGPL_ROUTE_VERIFICATION.json"
+        "lgpl_route_evidence": "docs/compliance/QT_LGPL_ROUTE_VERIFICATION.json",
+        "integration_candidate": "docs/compliance/QT_LGPL_INTEGRATION_CANDIDATE.json"
       },
       "files": [
         "_internal/PySide6/pyside6.abi3.dll",
@@ -466,9 +467,9 @@
       "redistribution_requirement": "The selected route is LGPL-3.0; retain the applicable licence text, notices, source-availability information and dynamic-library replacement conditions.",
       "notice_requirement": "Provide PySide6/Qt licence text and Qt attribution material.",
       "source_code_availability": "docs/compliance/QT_SOURCE_AVAILABILITY.md",
-      "compliance_status": "OWNER_CONFIRMATION_REQUIRED",
+      "compliance_status": "WARNING",
       "notes": [
-        "LGPL route technical staging has passed; owner confirmation is recorded, while integration-candidate and native Windows acceptance remain pending."
+        "LGPL route technical staging and the r2 candidate automatic Windows checks have passed; visible native Windows interaction acceptance remains pending."
       ]
     },
     {
@@ -480,7 +481,8 @@
       "package_provenance": {
         "exact_wheels_verified": true,
         "wheel_evidence": "compliance/report/qt/qt-wheel-verification.json",
-        "lgpl_route_evidence": "docs/compliance/QT_LGPL_ROUTE_VERIFICATION.json"
+        "lgpl_route_evidence": "docs/compliance/QT_LGPL_ROUTE_VERIFICATION.json",
+        "integration_candidate": "docs/compliance/QT_LGPL_INTEGRATION_CANDIDATE.json"
       },
       "files": [
         "_internal/shiboken6/Shiboken.pyd",
@@ -501,9 +503,9 @@
       "redistribution_requirement": "Use under the selected LGPL-3.0 route and its distribution conditions.",
       "notice_requirement": "Provide applicable Qt licence text and attribution.",
       "source_code_availability": "docs/compliance/QT_SOURCE_AVAILABILITY.md",
-      "compliance_status": "OWNER_CONFIRMATION_REQUIRED",
+      "compliance_status": "WARNING",
       "notes": [
-        "LGPL route technical staging has passed; owner confirmation is recorded, while integration-candidate and native Windows acceptance remain pending."
+        "LGPL route technical staging and the r2 candidate automatic Windows checks have passed; visible native Windows interaction acceptance remains pending."
       ]
     },
     {
@@ -517,6 +519,8 @@
         "wheel_evidence": "compliance/report/qt/qt-wheel-verification.json",
         "module_inventory": "docs/compliance/QT_MODULE_MINIMIZATION_REVIEW.json",
         "lgpl_route_evidence": "docs/compliance/QT_LGPL_ROUTE_VERIFICATION.json",
+        "integration_candidate": "docs/compliance/QT_LGPL_INTEGRATION_CANDIDATE.json",
+        "native_windows_acceptance": "docs/compliance/QT_WINDOWS_NATIVE_ACCEPTANCE.json",
         "source_archives": "third_party/source-archives/qt/"
       },
       "files": [
@@ -6200,9 +6204,9 @@
       "redistribution_requirement": "The selected LGPL-3.0 dynamic-linking route requires applicable licence text, attribution, source-obtaining information, and ability to replace the libraries; GPL-only module groups must remain absent from the integration candidate.",
       "notice_requirement": "Provide Qt licensing, third-party-code and SBOM/attribution material.",
       "source_code_availability": "docs/compliance/QT_SOURCE_AVAILABILITY.md",
-      "compliance_status": "OWNER_CONFIRMATION_REQUIRED",
+      "compliance_status": "WARNING",
       "notes": [
-        "The GPL-only groups pass isolated staging removal. Owner confirmation is recorded; integration-candidate and native Windows acceptance remain pending."
+        "The r2 candidate removes the verified GPL-only groups and passes automatic Windows checks. Visible native Windows interaction acceptance remains pending."
       ]
     },
     {
@@ -6720,15 +6724,14 @@
         "shiboken6",
         "Qt Runtime"
       ],
-      "action": "Owner confirmation of the selected LGPL-3.0 route is recorded. Before public release, create and identify the integration candidate, retain the staged notices and source-availability information in it, and record native Windows acceptance evidence. This does not reopen the CLOSED Microsoft VC Runtime item."
+      "action": "Owner confirmation is recorded and the r2 LGPL integration candidate carries the staged notices/source-availability material. Before public release, record visible native Windows interaction acceptance for that candidate. This does not reopen the CLOSED Microsoft VC Runtime item."
     }
   ],
   "summary": {
     "component_count": 16,
     "status_counts": {
       "CLOSED": 11,
-      "OWNER_CONFIRMATION_REQUIRED": 3,
-      "WARNING": 2
+      "WARNING": 5
     },
     "owner_action_count": 1,
     "unknown_third_party_native_blocker_count": 0

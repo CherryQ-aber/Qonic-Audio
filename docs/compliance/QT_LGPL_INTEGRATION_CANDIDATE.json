@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "created_at": "2026-08-09T13:15:23.758382+00:00",
+  "candidate_type": "non-authoritative LGPL-3.0 Qt integration candidate",
+  "parent_authoritative_onedir": "D:\\CherryQ_Studio\\Audio_Tools\\AudioConverterApp\\Release\\External_Test\\2026-07-30_audio-validation-fix\\Qonic_Audio_v5.0_internal_test",
+  "parent_authoritative_archive": "D:\\CherryQ_Studio\\Audio_Tools\\AudioConverterApp\\Release\\External_Test\\2026-07-30_audio-validation-fix\\Qonic_Audio_v5.0_internal_test.7z",
+  "parent_authoritative_archive_sha256": "BB0967E85AF2857C23587F3CEF37C37D14ED4E4106B7261F21E2F247B47F42F4",
+  "candidate_qt_version": "6.11.1",
+  "candidate_pyside6_version": "6.11.1",
+  "candidate_shiboken6_version": "6.11.1",
+  "removed_gpl_only_groups": {
+    "qtgraphs": 39,
+    "qtquick3d": 556,
+    "qtquicktimeline": 8,
+    "qtvirtualkeyboard": 84
+  },
+  "removed_gpl_only_file_count": 687,
+  "recipient_qt_materials": [
+    "LICENSES/QT_LGPL_NOTICE.md",
+    "LICENSES/Qt/LGPL-3.0.txt",
+    "LICENSES/Qt/Qt-6.11-Licensing.html",
+    "LICENSES/Qt/Qt-6.11.1-Third-Party-Code.html",
+    "LICENSES/Qt/Qt-6.11-SBOM-Documentation.html",
+    "LICENSES/Qt/QT_SOURCE_AVAILABILITY.md",
+    "LICENSES/Qt/QT_SOURCE_REQUIREMENTS.json",
+    "LICENSES/PySide6/LGPL-3.0.txt",
+    "LICENSES/Shiboken6/LGPL-3.0.txt"
+  ],
+  "content_tree_sha256_excluding_manifest": "E9F2C2CEC4328C97280B4F6CCDAFB4262308BA60B3857434A096E35B81BDF8B9",
+  "content_file_count_excluding_manifest": 2328
+}

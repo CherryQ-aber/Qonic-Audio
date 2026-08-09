@@ -1,6 +1,6 @@
 # Qt / PySide6 LGPL Route Confirmation
 
-Status: **OWNER CONFIRMATION RECORDED — INTEGRATION ACCEPTANCE PENDING**
+Status: **OWNER CONFIRMATION RECORDED — HUMAN WINDOWS ACCEPTANCE PENDING**
 
 | Field | Value |
 | --- | --- |
@@ -26,6 +26,11 @@ Status: **OWNER CONFIRMATION RECORDED — INTEGRATION ACCEPTANCE PENDING**
   [QT_SOURCE_AVAILABILITY.md](QT_SOURCE_AVAILABILITY.md).
 - The applicable LGPLv3 text and Qt/PySide/Shiboken notices are staged under
   `docs/compliance/staging/licenses/`.
+- The identified r2 integration candidate removed all four verified GPL-only
+  groups and carries recipient-facing LGPLv3, attribution and exact
+  source-availability material. Its automatic `QT_QPA_PLATFORM=windows` smoke
+  and runtime-plugin checks passed; see
+  [QT_WINDOWS_NATIVE_ACCEPTANCE.md](QT_WINDOWS_NATIVE_ACCEPTANCE.md).
 
 ## Owner confirmation record
 
@@ -42,9 +47,9 @@ agent-issued legal opinion or an automatic release acceptance.
 
 ## Remaining release-close gate
 
-The LGPL-3.0 public-release route is not yet CLOSED. Before a public release
-is marked compliant, the project must create and identify the integration
-candidate, preserve the staged LGPLv3/notices/source-availability materials in
-that candidate, and record successful native Windows acceptance evidence.
-The frozen authoritative package remains unchanged and is not this future
-integration candidate.
+The LGPL-3.0 public-release route is not yet CLOSED. The r2 integration
+candidate has been created, identified and automatically checked, but the
+visible native Windows interaction acceptance listed in
+`QT_WINDOWS_NATIVE_ACCEPTANCE.md` remains to be recorded. The frozen
+authoritative package remains unchanged and is not this future integration
+candidate.

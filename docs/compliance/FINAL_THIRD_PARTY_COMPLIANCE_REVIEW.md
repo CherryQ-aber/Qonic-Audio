@@ -23,6 +23,9 @@ Scope: the sole owner-authoritative Qonic Audio v5.0 Internal Test onedir archiv
 
 - **libffi ABI 8 (source version not embedded)** — The ABI is identified as 8, but the exact libffi source-release version is not embedded in the frozen DLL.
 - **PyInstaller bootloader not embedded in frozen artifact** — The frozen executable's CArchive identifies the PyInstaller bootloader. The current build executable differs, so its version is not used as frozen-artifact proof; the exact build-time PyInstaller version is not embedded.
+- **PySide6 6.11.1** — LGPL route technical staging and the r2 candidate automatic Windows checks have passed; visible native Windows interaction acceptance remains pending.
+- **shiboken6 6.11.1** — LGPL route technical staging and the r2 candidate automatic Windows checks have passed; visible native Windows interaction acceptance remains pending.
+- **Qt Runtime 6.11.1** — The r2 candidate removes the verified GPL-only groups and passes automatic Windows checks. Visible native Windows interaction acceptance remains pending.
 
 ## C. BLOCKER
 
@@ -30,15 +33,15 @@ None.
 
 ## D. OWNER ACTION
 
-- **PySide6 6.11.1** — LGPL route technical staging has passed; owner confirmation is recorded, while integration-candidate and native Windows acceptance remain pending.
-- **shiboken6 6.11.1** — LGPL route technical staging has passed; owner confirmation is recorded, while integration-candidate and native Windows acceptance remain pending.
-- **Qt Runtime 6.11.1** — The GPL-only groups pass isolated staging removal. Owner confirmation is recorded; integration-candidate and native Windows acceptance remain pending.
-
-- Required owner action `QT_LICENSE_ROUTE`: Owner confirmation of the selected LGPL-3.0 route is recorded. Before public release, create and identify the integration candidate, retain the staged notices and source-availability information in it, and record native Windows acceptance evidence. This does not reopen the CLOSED Microsoft VC Runtime item.
+None.
 
 ## E. NOT APPLICABLE
 
 None.
+
+## F. REMAINING OWNER ACTION
+
+- Required owner action `QT_LICENSE_ROUTE`: Owner confirmation is recorded and the r2 LGPL integration candidate carries the staged notices/source-availability material. Before public release, record visible native Windows interaction acceptance for that candidate. This does not reopen the CLOSED Microsoft VC Runtime item.
 
 ## Release boundary
 

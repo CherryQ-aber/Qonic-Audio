@@ -1,0 +1,98 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-09T13:19:33.064478+00:00",
+  "candidate": "D:\\CherryQ_Studio\\Audio_Tools\\AudioConverterApp\\Release\\Integration_Candidates\\2026-08-09_lgpl-qt-r2\\Qonic_Audio_v5.0_internal_test",
+  "candidate_manifest": "COMPLIANCE_INTEGRATION_CANDIDATE.json",
+  "candidate_tree_sha256": "E9F2C2CEC4328C97280B4F6CCDAFB4262308BA60B3857434A096E35B81BDF8B9",
+  "candidate_tree_file_count": 2328,
+  "candidate_manifest_matches": true,
+  "windows_qml_smokes": [
+    {
+      "command": [
+        "D:\\CherryQ_Studio\\Audio_Tools\\AudioConverterApp\\Release\\Integration_Candidates\\2026-08-09_lgpl-qt-r2\\Qonic_Audio_v5.0_internal_test\\Qonic_Audio_v5.0_internal_test.exe",
+        "--qml-smoke-test"
+      ],
+      "qt_qpa_platform": "windows",
+      "exit_code": 0,
+      "stdout": "[Qonic QML UI] 当前模式：QML Test Mode\n[Qonic QML UI] 可用功能：无\n[Qonic QML UI] 会话主题：dark\n",
+      "stderr": "",
+      "passed": true
+    },
+    {
+      "command": [
+        "D:\\CherryQ_Studio\\Audio_Tools\\AudioConverterApp\\Release\\Integration_Candidates\\2026-08-09_lgpl-qt-r2\\Qonic_Audio_v5.0_internal_test\\Qonic_Audio_v5.0_internal_test.exe",
+        "--qml-smoke-test",
+        "--qml-open-module=autoConvert"
+      ],
+      "qt_qpa_platform": "windows",
+      "exit_code": 0,
+      "stdout": "[Qonic QML UI] 当前模式：QML Test Mode\n[Qonic QML UI] 可用功能：无\n[Qonic QML UI] 会话主题：dark\n",
+      "stderr": "",
+      "passed": true
+    },
+    {
+      "command": [
+        "D:\\CherryQ_Studio\\Audio_Tools\\AudioConverterApp\\Release\\Integration_Candidates\\2026-08-09_lgpl-qt-r2\\Qonic_Audio_v5.0_internal_test\\Qonic_Audio_v5.0_internal_test.exe",
+        "--qml-smoke-test",
+        "--qml-open-module=audioEditor"
+      ],
+      "qt_qpa_platform": "windows",
+      "exit_code": 0,
+      "stdout": "[Qonic QML UI] 当前模式：QML Test Mode\n[Qonic QML UI] 可用功能：无\n[Qonic QML UI] 会话主题：dark\n",
+      "stderr": "",
+      "passed": true
+    },
+    {
+      "command": [
+        "D:\\CherryQ_Studio\\Audio_Tools\\AudioConverterApp\\Release\\Integration_Candidates\\2026-08-09_lgpl-qt-r2\\Qonic_Audio_v5.0_internal_test\\Qonic_Audio_v5.0_internal_test.exe",
+        "--qml-smoke-test",
+        "--qml-open-module=metadata"
+      ],
+      "qt_qpa_platform": "windows",
+      "exit_code": 0,
+      "stdout": "[Qonic QML UI] 当前模式：QML Test Mode\n[Qonic QML UI] 可用功能：无\n[Qonic QML UI] 会话主题：dark\n",
+      "stderr": "",
+      "passed": true
+    },
+    {
+      "command": [
+        "D:\\CherryQ_Studio\\Audio_Tools\\AudioConverterApp\\Release\\Integration_Candidates\\2026-08-09_lgpl-qt-r2\\Qonic_Audio_v5.0_internal_test\\Qonic_Audio_v5.0_internal_test.exe",
+        "--qml-smoke-test",
+        "--qml-open-module=lyricsCover"
+      ],
+      "qt_qpa_platform": "windows",
+      "exit_code": 0,
+      "stdout": "[Qonic QML UI] 当前模式：QML Test Mode\n[Qonic QML UI] 可用功能：无\n[Qonic QML UI] 会话主题：dark\n",
+      "stderr": "",
+      "passed": true
+    }
+  ],
+  "required_files": {
+    "_internal/PySide6/plugins/platforms/qwindows.dll": true,
+    "_internal/PySide6/plugins/imageformats/qjpeg.dll": true,
+    "_internal/PySide6/plugins/multimedia/ffmpegmediaplugin.dll": true,
+    "_internal/PySide6/plugins/multimedia/windowsmediaplugin.dll": true,
+    "LICENSES/QT_LGPL_NOTICE.md": true,
+    "LICENSES/Qt/LGPL-3.0.txt": true,
+    "LICENSES/Qt/QT_SOURCE_AVAILABILITY.md": true,
+    "LICENSES/Qt/QT_SOURCE_REQUIREMENTS.json": true,
+    "LICENSES/PySide6/LGPL-3.0.txt": true,
+    "LICENSES/Shiboken6/LGPL-3.0.txt": true,
+    "COMPLIANCE_INTEGRATION_CANDIDATE.json": true
+  },
+  "remaining_gpl_only_group_files": {
+    "qtgraphs": [],
+    "qtquick3d": [],
+    "qtquicktimeline": [],
+    "qtvirtualkeyboard": []
+  },
+  "automatic_status": "PASS",
+  "human_interaction_status": "PENDING",
+  "human_interaction_required": [
+    "Use the candidate's visible Windows desktop window to choose an audio file with the native file picker.",
+    "Play a known-good local audio file and confirm audible Qt Multimedia playback, pause, seek and stop.",
+    "Confirm image/cover display for a file with embedded artwork.",
+    "Confirm system-tray visibility and hide/restore or close-to-tray behaviour.",
+    "Confirm Widgets fallback behaviour if the candidate exposes a legacy/native fallback path."
+  ]
+}

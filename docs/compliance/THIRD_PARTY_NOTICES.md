@@ -110,7 +110,7 @@ This notice index names only the components actually found in the Qonic Audio v5
 - License file location: `docs/compliance/staging/licenses/PySide6/GPL-3.0.txt`, `docs/compliance/staging/licenses/PySide6/LGPL-3.0.txt`, `docs/compliance/staging/licenses/PySide6/LicenseRef-Qt-Commercial.txt`, `docs/compliance/staging/licenses/PySide6/SOURCE_AVAILABILITY.md`
 - Upstream project: Qt for Python / The Qt Company
 - Source availability: docs/compliance/QT_SOURCE_AVAILABILITY.md
-- Notes: LGPL route technical staging has passed; owner confirmation is recorded, while integration-candidate and native Windows acceptance remain pending.
+- Notes: LGPL route technical staging and the r2 candidate automatic Windows checks have passed; visible native Windows interaction acceptance remains pending.
 
 ## shiboken6
 
@@ -121,7 +121,7 @@ This notice index names only the components actually found in the Qonic Audio v5
 - License file location: `docs/compliance/staging/licenses/Shiboken6/GPL-3.0.txt`, `docs/compliance/staging/licenses/Shiboken6/LGPL-3.0.txt`, `docs/compliance/staging/licenses/Shiboken6/SOURCE_AVAILABILITY.md`
 - Upstream project: Qt for Python / The Qt Company
 - Source availability: docs/compliance/QT_SOURCE_AVAILABILITY.md
-- Notes: LGPL route technical staging has passed; owner confirmation is recorded, while integration-candidate and native Windows acceptance remain pending.
+- Notes: LGPL route technical staging and the r2 candidate automatic Windows checks have passed; visible native Windows interaction acceptance remains pending.
 
 ## Qt Runtime
 
@@ -132,7 +132,7 @@ This notice index names only the components actually found in the Qonic Audio v5
 - License file location: `docs/compliance/staging/licenses/Qt/LGPL-2.1.txt`, `docs/compliance/staging/licenses/Qt/LGPL-3.0.txt`, `docs/compliance/staging/licenses/Qt/Qt-6.11-Licensing.html`, `docs/compliance/staging/licenses/Qt/Qt-6.11-SBOM-Documentation.html`, `docs/compliance/staging/licenses/Qt/Qt-6.11.1-Third-Party-Code.html`, `docs/compliance/staging/licenses/Qt/Qt-6.11.1-WebEngine-Licensing.html`, `docs/compliance/staging/licenses/Qt/SOURCE_AVAILABILITY.md`
 - Upstream project: The Qt Company
 - Source availability: docs/compliance/QT_SOURCE_AVAILABILITY.md
-- Notes: The GPL-only groups pass isolated staging removal. Owner confirmation is recorded; integration-candidate and native Windows acceptance remain pending.
+- Notes: The r2 candidate removes the verified GPL-only groups and passes automatic Windows checks. Visible native Windows interaction acceptance remains pending.
 
 ## Qt Multimedia FFmpeg
 
