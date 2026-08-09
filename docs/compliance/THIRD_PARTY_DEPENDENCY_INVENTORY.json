@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_on": "2026-08-03",
+  "generated_on": "2026-08-09",
   "identity_algorithm": "SHA-256",
   "authoritative_release": {
     "authority_file": "Release/External_Test/2026-07-30_audio-validation-fix/RELEASE_AUTHORITY.json",
@@ -443,7 +443,8 @@
       "package_provenance": {
         "exact_wheels_verified": true,
         "wheel_evidence": "compliance/report/qt/qt-wheel-verification.json",
-        "source_archive": "third_party/source-archives/qt/pyside-setup-everywhere-src-6.11.1.tar.xz"
+        "source_archive": "third_party/source-archives/qt/pyside-setup-everywhere-src-6.11.1.tar.xz",
+        "lgpl_route_evidence": "docs/compliance/QT_LGPL_ROUTE_VERIFICATION.json"
       },
       "files": [
         "_internal/PySide6/pyside6.abi3.dll",
@@ -457,15 +458,17 @@
       "license": "LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only",
       "license_files": [
         "docs/compliance/staging/licenses/PySide6/GPL-3.0.txt",
-        "docs/compliance/staging/licenses/PySide6/LicenseRef-Qt-Commercial.txt"
+        "docs/compliance/staging/licenses/PySide6/LGPL-3.0.txt",
+        "docs/compliance/staging/licenses/PySide6/LicenseRef-Qt-Commercial.txt",
+        "docs/compliance/staging/licenses/PySide6/SOURCE_AVAILABILITY.md"
       ],
       "bundled_components": [],
-      "redistribution_requirement": "Choose and comply with the applicable Qt open-source licence route or commercial terms.",
+      "redistribution_requirement": "The selected route is LGPL-3.0; retain the applicable licence text, notices, source-availability information and dynamic-library replacement conditions.",
       "notice_requirement": "Provide PySide6/Qt licence text and Qt attribution material.",
-      "source_code_availability": "third_party/source-archives/qt/pyside-setup-everywhere-src-6.11.1.tar.xz",
+      "source_code_availability": "docs/compliance/QT_SOURCE_AVAILABILITY.md",
       "compliance_status": "OWNER_CONFIRMATION_REQUIRED",
       "notes": [
-        "Technical evidence is complete; the project owner must record the final Qt licence route for the public distribution."
+        "LGPL route technical staging has passed; owner confirmation remains pending."
       ]
     },
     {
@@ -476,7 +479,8 @@
       "upstream_project": "Qt for Python / The Qt Company",
       "package_provenance": {
         "exact_wheels_verified": true,
-        "wheel_evidence": "compliance/report/qt/qt-wheel-verification.json"
+        "wheel_evidence": "compliance/report/qt/qt-wheel-verification.json",
+        "lgpl_route_evidence": "docs/compliance/QT_LGPL_ROUTE_VERIFICATION.json"
       },
       "files": [
         "_internal/shiboken6/Shiboken.pyd",
@@ -489,15 +493,17 @@
       "aggregate_sha256": "C92DA92CA0C0020C171DB419CA2E666C9BF79017631723AAB5780D4577880B70",
       "license": "LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only",
       "license_files": [
-        "docs/compliance/staging/licenses/Shiboken6/GPL-3.0.txt"
+        "docs/compliance/staging/licenses/Shiboken6/GPL-3.0.txt",
+        "docs/compliance/staging/licenses/Shiboken6/LGPL-3.0.txt",
+        "docs/compliance/staging/licenses/Shiboken6/SOURCE_AVAILABILITY.md"
       ],
       "bundled_components": [],
-      "redistribution_requirement": "Use under the same approved Qt licence route as PySide6.",
+      "redistribution_requirement": "Use under the selected LGPL-3.0 route and its distribution conditions.",
       "notice_requirement": "Provide applicable Qt licence text and attribution.",
-      "source_code_availability": "third_party/source-archives/qt/pyside-setup-everywhere-src-6.11.1.tar.xz",
+      "source_code_availability": "docs/compliance/QT_SOURCE_AVAILABILITY.md",
       "compliance_status": "OWNER_CONFIRMATION_REQUIRED",
       "notes": [
-        "Follows the same owner licence-route confirmation as PySide6."
+        "LGPL route technical staging has passed; owner confirmation remains pending."
       ]
     },
     {
@@ -510,6 +516,7 @@
         "exact_wheels_verified": true,
         "wheel_evidence": "compliance/report/qt/qt-wheel-verification.json",
         "module_inventory": "docs/compliance/QT_MODULE_MINIMIZATION_REVIEW.json",
+        "lgpl_route_evidence": "docs/compliance/QT_LGPL_ROUTE_VERIFICATION.json",
         "source_archives": "third_party/source-archives/qt/"
       },
       "files": [
@@ -6186,15 +6193,16 @@
         "docs/compliance/staging/licenses/Qt/Qt-6.11-Licensing.html",
         "docs/compliance/staging/licenses/Qt/Qt-6.11-SBOM-Documentation.html",
         "docs/compliance/staging/licenses/Qt/Qt-6.11.1-Third-Party-Code.html",
-        "docs/compliance/staging/licenses/Qt/Qt-6.11.1-WebEngine-Licensing.html"
+        "docs/compliance/staging/licenses/Qt/Qt-6.11.1-WebEngine-Licensing.html",
+        "docs/compliance/staging/licenses/Qt/SOURCE_AVAILABILITY.md"
       ],
       "bundled_components": [],
-      "redistribution_requirement": "Dynamic-linking route requires applicable licence text, attribution, source-obtaining information, and ability to replace the libraries; GPL-only modules require GPL-compatible distribution or commercial terms.",
+      "redistribution_requirement": "The selected LGPL-3.0 dynamic-linking route requires applicable licence text, attribution, source-obtaining information, and ability to replace the libraries; GPL-only module groups must remain absent from the integration candidate.",
       "notice_requirement": "Provide Qt licensing, third-party-code and SBOM/attribution material.",
-      "source_code_availability": "third_party/source-archives/qt/ plus exact official source URLs in compliance/report/qt/qt-source-requirements.json",
+      "source_code_availability": "docs/compliance/QT_SOURCE_AVAILABILITY.md",
       "compliance_status": "OWNER_CONFIRMATION_REQUIRED",
       "notes": [
-        "22 exact Qt source-module archives and attribution materials are verified. The final Qt GPL/LGPL/commercial route remains an owner legal choice."
+        "The GPL-only groups pass isolated staging removal. Owner confirmation and native Windows acceptance remain pending."
       ]
     },
     {
@@ -6712,7 +6720,7 @@
         "shiboken6",
         "Qt Runtime"
       ],
-      "action": "Record the final public-distribution Qt licence route (GPL-3.0-or-later, LGPL-3.0 compliance route, or commercial terms) before publication. This does not reopen the CLOSED Microsoft VC Runtime item."
+      "action": "The selected public-distribution route is LGPL-3.0. The owner must confirm the pending LGPL route record after the integration candidate retains the staged notices, source-availability information and native Windows acceptance evidence. This does not reopen the CLOSED Microsoft VC Runtime item."
     }
   ],
   "summary": {

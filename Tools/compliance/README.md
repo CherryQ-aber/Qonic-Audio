@@ -8,6 +8,7 @@
 - 不修改 `converter.py`、`watcher.py`、QML、requirements、PyInstaller spec 或二进制。
 - 当前唯一审计基线是 `Release/External_Test/2026-07-30_audio-validation-fix/` 下的冻结归档及对应展开目录，权威归档 SHA-256 为 `BB0967E85AF2857C23587F3CEF37C37D14ED4E4106B7261F21E2F247B47F42F4`。
 - FFmpeg、ffprobe 与 ncmdump 未获授权时不得替换；Qt 模块最小化不属于本轮。
+- Qt LGPLv3 路线验证只能在独立 staging onedir 中删除模块组；绝不得修改权威 onedir 或其 `.7z`。
 - 报告中的候选许可证和风险分类不是法律意见。
 - 输出会脱敏项目根目录和 Windows 用户目录。
 
@@ -57,6 +58,26 @@ python Tools/compliance/validate_compliance.py `
 ```powershell
 python Tools/compliance/finalize_third_party_compliance.py --project-root .
 ```
+
+## Qt LGPLv3 staging 验证
+
+该命令创建一个临时 onedir 副本，按 `Qt Graphs`、`Qt Quick 3D`、
+`Qt Quick Timeline` 和 `Qt Virtual Keyboard` 四个 GPL-only 模块组移除，
+并对每一步运行打包版 QML smoke、PE 动态导入和 DLL replacement-loader
+检查。`--staging` 必须是权威包之外的临时目录。
+
+```powershell
+python Tools/compliance/verify_qt_lgpl_route.py `
+  --source "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test" `
+  --authoritative-archive "Release/External_Test/2026-07-30_audio-validation-fix/Qonic_Audio_v5.0_internal_test.7z" `
+  --staging "Temp/qt-lgpl-route-test" `
+  --review "docs/compliance/QT_MODULE_MINIMIZATION_REVIEW.json" `
+  --project-root . `
+  --output "docs/compliance/QT_LGPL_ROUTE_VERIFICATION.json"
+```
+
+它的成功只说明 LGPL 路线在 staging 技术上可行；不代替项目所有者确认，
+也不构成新的正式发行包。
 
 ## ncmdump 官方资产比对
 

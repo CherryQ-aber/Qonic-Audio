@@ -30,11 +30,11 @@ None.
 
 ## D. OWNER ACTION
 
-- **PySide6 6.11.1** — Technical evidence is complete; the project owner must record the final Qt licence route for the public distribution.
-- **shiboken6 6.11.1** — Follows the same owner licence-route confirmation as PySide6.
-- **Qt Runtime 6.11.1** — 22 exact Qt source-module archives and attribution materials are verified. The final Qt GPL/LGPL/commercial route remains an owner legal choice.
+- **PySide6 6.11.1** — LGPL route technical staging has passed; owner confirmation remains pending.
+- **shiboken6 6.11.1** — LGPL route technical staging has passed; owner confirmation remains pending.
+- **Qt Runtime 6.11.1** — The GPL-only groups pass isolated staging removal. Owner confirmation and native Windows acceptance remain pending.
 
-- Required owner action `QT_LICENSE_ROUTE`: Record the final public-distribution Qt licence route (GPL-3.0-or-later, LGPL-3.0 compliance route, or commercial terms) before publication. This does not reopen the CLOSED Microsoft VC Runtime item.
+- Required owner action `QT_LICENSE_ROUTE`: The selected public-distribution route is LGPL-3.0. The owner must confirm the pending LGPL route record after the integration candidate retains the staged notices, source-availability information and native Windows acceptance evidence. This does not reopen the CLOSED Microsoft VC Runtime item.
 
 ## E. NOT APPLICABLE
 

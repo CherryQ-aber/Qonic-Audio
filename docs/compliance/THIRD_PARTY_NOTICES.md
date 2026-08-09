@@ -107,10 +107,10 @@ This notice index names only the components actually found in the Qonic Audio v5
 - Version: 6.11.1
 - Copyright / attribution: Qt for Python / The Qt Company
 - License: LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
-- License file location: `docs/compliance/staging/licenses/PySide6/GPL-3.0.txt`, `docs/compliance/staging/licenses/PySide6/LicenseRef-Qt-Commercial.txt`
+- License file location: `docs/compliance/staging/licenses/PySide6/GPL-3.0.txt`, `docs/compliance/staging/licenses/PySide6/LGPL-3.0.txt`, `docs/compliance/staging/licenses/PySide6/LicenseRef-Qt-Commercial.txt`, `docs/compliance/staging/licenses/PySide6/SOURCE_AVAILABILITY.md`
 - Upstream project: Qt for Python / The Qt Company
-- Source availability: third_party/source-archives/qt/pyside-setup-everywhere-src-6.11.1.tar.xz
-- Notes: Technical evidence is complete; the project owner must record the final Qt licence route for the public distribution.
+- Source availability: docs/compliance/QT_SOURCE_AVAILABILITY.md
+- Notes: LGPL route technical staging has passed; owner confirmation remains pending.
 
 ## shiboken6
 
@@ -118,10 +118,10 @@ This notice index names only the components actually found in the Qonic Audio v5
 - Version: 6.11.1
 - Copyright / attribution: Qt for Python / The Qt Company
 - License: LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
-- License file location: `docs/compliance/staging/licenses/Shiboken6/GPL-3.0.txt`
+- License file location: `docs/compliance/staging/licenses/Shiboken6/GPL-3.0.txt`, `docs/compliance/staging/licenses/Shiboken6/LGPL-3.0.txt`, `docs/compliance/staging/licenses/Shiboken6/SOURCE_AVAILABILITY.md`
 - Upstream project: Qt for Python / The Qt Company
-- Source availability: third_party/source-archives/qt/pyside-setup-everywhere-src-6.11.1.tar.xz
-- Notes: Follows the same owner licence-route confirmation as PySide6.
+- Source availability: docs/compliance/QT_SOURCE_AVAILABILITY.md
+- Notes: LGPL route technical staging has passed; owner confirmation remains pending.
 
 ## Qt Runtime
 
@@ -129,10 +129,10 @@ This notice index names only the components actually found in the Qonic Audio v5
 - Version: 6.11.1
 - Copyright / attribution: The Qt Company
 - License: LGPL-3.0-only OR GPL-3.0-only, module-dependent
-- License file location: `docs/compliance/staging/licenses/Qt/LGPL-2.1.txt`, `docs/compliance/staging/licenses/Qt/LGPL-3.0.txt`, `docs/compliance/staging/licenses/Qt/Qt-6.11-Licensing.html`, `docs/compliance/staging/licenses/Qt/Qt-6.11-SBOM-Documentation.html`, `docs/compliance/staging/licenses/Qt/Qt-6.11.1-Third-Party-Code.html`, `docs/compliance/staging/licenses/Qt/Qt-6.11.1-WebEngine-Licensing.html`
+- License file location: `docs/compliance/staging/licenses/Qt/LGPL-2.1.txt`, `docs/compliance/staging/licenses/Qt/LGPL-3.0.txt`, `docs/compliance/staging/licenses/Qt/Qt-6.11-Licensing.html`, `docs/compliance/staging/licenses/Qt/Qt-6.11-SBOM-Documentation.html`, `docs/compliance/staging/licenses/Qt/Qt-6.11.1-Third-Party-Code.html`, `docs/compliance/staging/licenses/Qt/Qt-6.11.1-WebEngine-Licensing.html`, `docs/compliance/staging/licenses/Qt/SOURCE_AVAILABILITY.md`
 - Upstream project: The Qt Company
-- Source availability: third_party/source-archives/qt/ plus exact official source URLs in compliance/report/qt/qt-source-requirements.json
-- Notes: 22 exact Qt source-module archives and attribution materials are verified. The final Qt GPL/LGPL/commercial route remains an owner legal choice.
+- Source availability: docs/compliance/QT_SOURCE_AVAILABILITY.md
+- Notes: The GPL-only groups pass isolated staging removal. Owner confirmation and native Windows acceptance remain pending.
 
 ## Qt Multimedia FFmpeg
 
