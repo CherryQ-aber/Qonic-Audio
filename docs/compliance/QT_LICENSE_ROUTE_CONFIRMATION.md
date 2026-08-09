@@ -1,6 +1,6 @@
 # Qt / PySide6 LGPL Route Confirmation
 
-Status: **PENDING OWNER CONFIRMATION**
+Status: **OWNER CONFIRMATION RECORDED — INTEGRATION ACCEPTANCE PENDING**
 
 | Field | Value |
 | --- | --- |
@@ -27,10 +27,24 @@ Status: **PENDING OWNER CONFIRMATION**
 - The applicable LGPLv3 text and Qt/PySide/Shiboken notices are staged under
   `docs/compliance/staging/licenses/`.
 
-## Owner confirmation required
+## Owner confirmation record
 
-This document deliberately does not contain a signature or an automatic legal
-acceptance.  It can become CLOSED only after the project owner confirms that
-the future public package will use the tested LGPL candidate, retain the
-required notices and source-availability material, and complete the specified
-native Windows acceptance checks.
+On 2026-08-09 (Asia/Shanghai), the project owner provided the following
+confirmation in the Qonic Audio project task:
+
+> 我确认 Qonic Audio 后续公开发行采用 LGPL-3.0 路线，使用经验证的
+> Qt/PySide6/shiboken6 6.11.1 动态链接 integration candidate，持续移除已验证的
+> GPL-only Qt 模块组，并随发行提供 LGPLv3、Qt 归属及精确源码可得性材料；同时完成
+> Windows 原生验收。
+
+This record captures the owner's project-direction statement. It is not an
+agent-issued legal opinion or an automatic release acceptance.
+
+## Remaining release-close gate
+
+The LGPL-3.0 public-release route is not yet CLOSED. Before a public release
+is marked compliant, the project must create and identify the integration
+candidate, preserve the staged LGPLv3/notices/source-availability materials in
+that candidate, and record successful native Windows acceptance evidence.
+The frozen authoritative package remains unchanged and is not this future
+integration candidate.

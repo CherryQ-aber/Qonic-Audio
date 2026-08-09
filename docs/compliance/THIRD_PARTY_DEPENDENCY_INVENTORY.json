@@ -468,7 +468,7 @@
       "source_code_availability": "docs/compliance/QT_SOURCE_AVAILABILITY.md",
       "compliance_status": "OWNER_CONFIRMATION_REQUIRED",
       "notes": [
-        "LGPL route technical staging has passed; owner confirmation remains pending."
+        "LGPL route technical staging has passed; owner confirmation is recorded, while integration-candidate and native Windows acceptance remain pending."
       ]
     },
     {
@@ -503,7 +503,7 @@
       "source_code_availability": "docs/compliance/QT_SOURCE_AVAILABILITY.md",
       "compliance_status": "OWNER_CONFIRMATION_REQUIRED",
       "notes": [
-        "LGPL route technical staging has passed; owner confirmation remains pending."
+        "LGPL route technical staging has passed; owner confirmation is recorded, while integration-candidate and native Windows acceptance remain pending."
       ]
     },
     {
@@ -6202,7 +6202,7 @@
       "source_code_availability": "docs/compliance/QT_SOURCE_AVAILABILITY.md",
       "compliance_status": "OWNER_CONFIRMATION_REQUIRED",
       "notes": [
-        "The GPL-only groups pass isolated staging removal. Owner confirmation and native Windows acceptance remain pending."
+        "The GPL-only groups pass isolated staging removal. Owner confirmation is recorded; integration-candidate and native Windows acceptance remain pending."
       ]
     },
     {
@@ -6720,7 +6720,7 @@
         "shiboken6",
         "Qt Runtime"
       ],
-      "action": "The selected public-distribution route is LGPL-3.0. The owner must confirm the pending LGPL route record after the integration candidate retains the staged notices, source-availability information and native Windows acceptance evidence. This does not reopen the CLOSED Microsoft VC Runtime item."
+      "action": "Owner confirmation of the selected LGPL-3.0 route is recorded. Before public release, create and identify the integration candidate, retain the staged notices and source-availability information in it, and record native Windows acceptance evidence. This does not reopen the CLOSED Microsoft VC Runtime item."
     }
   ],
   "summary": {

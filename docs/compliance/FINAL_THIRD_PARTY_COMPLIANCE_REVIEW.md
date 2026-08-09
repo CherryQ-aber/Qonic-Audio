@@ -30,11 +30,11 @@ None.
 
 ## D. OWNER ACTION
 
-- **PySide6 6.11.1** — LGPL route technical staging has passed; owner confirmation remains pending.
-- **shiboken6 6.11.1** — LGPL route technical staging has passed; owner confirmation remains pending.
-- **Qt Runtime 6.11.1** — The GPL-only groups pass isolated staging removal. Owner confirmation and native Windows acceptance remain pending.
+- **PySide6 6.11.1** — LGPL route technical staging has passed; owner confirmation is recorded, while integration-candidate and native Windows acceptance remain pending.
+- **shiboken6 6.11.1** — LGPL route technical staging has passed; owner confirmation is recorded, while integration-candidate and native Windows acceptance remain pending.
+- **Qt Runtime 6.11.1** — The GPL-only groups pass isolated staging removal. Owner confirmation is recorded; integration-candidate and native Windows acceptance remain pending.
 
-- Required owner action `QT_LICENSE_ROUTE`: The selected public-distribution route is LGPL-3.0. The owner must confirm the pending LGPL route record after the integration candidate retains the staged notices, source-availability information and native Windows acceptance evidence. This does not reopen the CLOSED Microsoft VC Runtime item.
+- Required owner action `QT_LICENSE_ROUTE`: Owner confirmation of the selected LGPL-3.0 route is recorded. Before public release, create and identify the integration candidate, retain the staged notices and source-availability information in it, and record native Windows acceptance evidence. This does not reopen the CLOSED Microsoft VC Runtime item.
 
 ## E. NOT APPLICABLE
 
