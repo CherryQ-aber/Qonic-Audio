@@ -1,0 +1,215 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-12T08:48:10.811188+00:00",
+  "candidate_root": "<candidate_root>",
+  "manifest_status": "NOT_FOR_PUBLIC_RELEASE_UNTIL_OWNER_GATES_CLOSED",
+  "source_commit": "eb480c3e5bd235e5088bbbe1bfc0ccb8048d5f08",
+  "required_missing": [],
+  "gpl_only_qt_files": {},
+  "static_tree_sha256": {
+    "expected": "9AE16E0975590EC1363C00F08E0BAF77EB48120F3D6E6F06795623B2A418C5B8",
+    "actual": "9AE16E0975590EC1363C00F08E0BAF77EB48120F3D6E6F06795623B2A418C5B8",
+    "passed": true
+  },
+  "source_hashes": {
+    "ffmpeg_source": {
+      "file": "Corresponding_Source\\qonic-ffmpeg-complete-corresponding-source.tar.gz",
+      "actual": "2B3A9A878B46050CACA71253C1E43F6239DE91C5C5C59DC72F8F2E0306A5C35A",
+      "expected": "2B3A9A878B46050CACA71253C1E43F6239DE91C5C5C59DC72F8F2E0306A5C35A"
+    },
+    "application_source": {
+      "file": "Corresponding_Source\\qonic-audio-source-eb480c3e5bd2.tar.gz",
+      "actual": "82138BEFE8A00D3973A91F8A10EE90C5F40DD83B2C6F1108176E5B0CED01F46B",
+      "expected": "82138BEFE8A00D3973A91F8A10EE90C5F40DD83B2C6F1108176E5B0CED01F46B"
+    }
+  },
+  "application_source_forbidden_members": [],
+  "dynamic_linkage": {
+    "method": "PE import-table inspection of shipped PySide6 binding modules",
+    "records": [
+      {
+        "file": "_internal\\PySide6\\QtCore.pyd",
+        "exists": true,
+        "imports": [
+          "Qt6Core.dll",
+          "pyside6.abi3.dll",
+          "python3.dll",
+          "shiboken6.abi3.dll"
+        ],
+        "qt_shared_library_imports": [
+          "Qt6Core.dll"
+        ]
+      },
+      {
+        "file": "_internal\\PySide6\\QtGui.pyd",
+        "exists": true,
+        "imports": [
+          "Qt6Gui.dll",
+          "pyside6.abi3.dll"
+        ],
+        "qt_shared_library_imports": [
+          "Qt6Gui.dll"
+        ]
+      },
+      {
+        "file": "_internal\\PySide6\\QtMultimedia.pyd",
+        "exists": true,
+        "imports": [
+          "KERNEL32.dll",
+          "MSVCP140.dll",
+          "Qt6Core.dll",
+          "Qt6Gui.dll",
+          "Qt6Multimedia.dll",
+          "VCRUNTIME140.dll",
+          "VCRUNTIME140_1.dll",
+          "api-ms-win-crt-heap-l1-1-0.dll",
+          "api-ms-win-crt-runtime-l1-1-0.dll",
+          "api-ms-win-crt-string-l1-1-0.dll",
+          "pyside6.abi3.dll",
+          "python3.dll",
+          "shiboken6.abi3.dll"
+        ],
+        "qt_shared_library_imports": [
+          "Qt6Core.dll",
+          "Qt6Gui.dll",
+          "Qt6Multimedia.dll"
+        ]
+      },
+      {
+        "file": "_internal\\PySide6\\QtQml.pyd",
+        "exists": true,
+        "imports": [
+          "KERNEL32.dll",
+          "MSVCP140.dll",
+          "Qt6Core.dll",
+          "Qt6Qml.dll",
+          "VCRUNTIME140.dll",
+          "VCRUNTIME140_1.dll",
+          "api-ms-win-crt-heap-l1-1-0.dll",
+          "api-ms-win-crt-math-l1-1-0.dll",
+          "api-ms-win-crt-runtime-l1-1-0.dll",
+          "api-ms-win-crt-string-l1-1-0.dll",
+          "pyside6.abi3.dll",
+          "pyside6qml.abi3.dll",
+          "python3.dll",
+          "shiboken6.abi3.dll"
+        ],
+        "qt_shared_library_imports": [
+          "Qt6Core.dll",
+          "Qt6Qml.dll"
+        ]
+      },
+      {
+        "file": "_internal\\PySide6\\QtQuick.pyd",
+        "exists": true,
+        "imports": [
+          "KERNEL32.dll",
+          "MSVCP140.dll",
+          "Qt6Core.dll",
+          "Qt6Gui.dll",
+          "Qt6Qml.dll",
+          "Qt6Quick.dll",
+          "VCRUNTIME140.dll",
+          "VCRUNTIME140_1.dll",
+          "api-ms-win-crt-heap-l1-1-0.dll",
+          "api-ms-win-crt-runtime-l1-1-0.dll",
+          "api-ms-win-crt-string-l1-1-0.dll",
+          "pyside6.abi3.dll",
+          "pyside6qml.abi3.dll",
+          "python3.dll",
+          "shiboken6.abi3.dll"
+        ],
+        "qt_shared_library_imports": [
+          "Qt6Core.dll",
+          "Qt6Gui.dll",
+          "Qt6Qml.dll",
+          "Qt6Quick.dll"
+        ]
+      },
+      {
+        "file": "_internal\\PySide6\\QtWidgets.pyd",
+        "exists": true,
+        "imports": [
+          "Qt6Widgets.dll",
+          "pyside6.abi3.dll"
+        ],
+        "qt_shared_library_imports": [
+          "Qt6Widgets.dll"
+        ]
+      }
+    ],
+    "dynamic_qt_imports_present": true
+  },
+  "qml_smokes": [
+    {
+      "command": [
+        "<candidate_root>\\Qonic_Audio_v5.0_internal_test.exe",
+        "--qml-smoke-test"
+      ],
+      "cwd": "<candidate_root>",
+      "exit_code": 0,
+      "stdout": "[Qonic QML UI] 当前模式：QML Test Mode\n[Qonic QML UI] 可用功能：无\n[Qonic QML UI] 会话主题：dark\n",
+      "stderr": "",
+      "passed": true
+    },
+    {
+      "command": [
+        "<candidate_root>\\Qonic_Audio_v5.0_internal_test.exe",
+        "--qml-smoke-test",
+        "--qml-open-module=autoConvert"
+      ],
+      "cwd": "<candidate_root>",
+      "exit_code": 0,
+      "stdout": "[Qonic QML UI] 当前模式：QML Test Mode\n[Qonic QML UI] 可用功能：无\n[Qonic QML UI] 会话主题：dark\n",
+      "stderr": "",
+      "passed": true
+    },
+    {
+      "command": [
+        "<candidate_root>\\Qonic_Audio_v5.0_internal_test.exe",
+        "--qml-smoke-test",
+        "--qml-open-module=audioEditor"
+      ],
+      "cwd": "<candidate_root>",
+      "exit_code": 0,
+      "stdout": "[Qonic QML UI] 当前模式：QML Test Mode\n[Qonic QML UI] 可用功能：无\n[Qonic QML UI] 会话主题：dark\n",
+      "stderr": "",
+      "passed": true
+    },
+    {
+      "command": [
+        "<candidate_root>\\Qonic_Audio_v5.0_internal_test.exe",
+        "--qml-smoke-test",
+        "--qml-open-module=metadata"
+      ],
+      "cwd": "<candidate_root>",
+      "exit_code": 0,
+      "stdout": "[Qonic QML UI] 当前模式：QML Test Mode\n[Qonic QML UI] 可用功能：无\n[Qonic QML UI] 会话主题：dark\n",
+      "stderr": "",
+      "passed": true
+    },
+    {
+      "command": [
+        "<candidate_root>\\Qonic_Audio_v5.0_internal_test.exe",
+        "--qml-smoke-test",
+        "--qml-open-module=lyricsCover"
+      ],
+      "cwd": "<candidate_root>",
+      "exit_code": 0,
+      "stdout": "[Qonic QML UI] 当前模式：QML Test Mode\n[Qonic QML UI] 可用功能：无\n[Qonic QML UI] 会话主题：dark\n",
+      "stderr": "",
+      "passed": true
+    }
+  ],
+  "forbidden_paths": [],
+  "archive": {
+    "requested": true,
+    "path": "Qonic_Audio_v5.0_lgpl_publication_candidate.7z",
+    "sha256": "CC51CB7B7553821DE644D92C6AD3430F30C404A3F976B19CB6E02028771C2FFE",
+    "test_exit_code": 0,
+    "listing_exit_code": 0,
+    "forbidden_members": [],
+    "passed": true
+  },
+  "passed": true
+}

@@ -7,6 +7,7 @@ import hashlib
 import json
 import subprocess
 import sys
+import tarfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -61,6 +62,18 @@ def source_hashes(root: Path, manifest: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def source_archive_forbidden_members(root: Path, manifest: dict[str, Any]) -> list[str]:
+    """Inspect the embedded application-source archive, not only its hash."""
+
+    source = root / str(manifest["application_source"]["file"])
+    with tarfile.open(source, "r:gz") as archive:
+        return sorted(
+            member.name
+            for member in archive.getmembers()
+            if any(part.lower() == "codex_memory" for part in Path(member.name).parts)
+        )
+
+
 def test_archive(seven_zip: Path, archive: Path) -> dict[str, Any]:
     if not archive.is_file():
         return {"requested": False}
@@ -85,6 +98,7 @@ def verify(root: Path, timeout: int, run_smokes: bool, seven_zip: Path | None, a
     expected_tree = manifest["static_tree_sha256"]
     actual_tree = tree_sha256(root)
     sources = source_hashes(root, manifest)
+    source_archive_forbidden = source_archive_forbidden_members(root, manifest)
     smokes = run_packaged_smokes(root, EXE_NAME, timeout) if run_smokes else []
     archive_result = test_archive(seven_zip, archive) if seven_zip and archive else {"requested": False}
     required_missing = check_required(root)
@@ -99,6 +113,7 @@ def verify(root: Path, timeout: int, run_smokes: bool, seven_zip: Path | None, a
         "gpl_only_qt_files": gpl_only,
         "static_tree_sha256": {"expected": expected_tree, "actual": actual_tree, "passed": expected_tree == actual_tree},
         "source_hashes": sources,
+        "application_source_forbidden_members": source_archive_forbidden,
         "dynamic_linkage": dynamic_linkage_evidence(root),
         "qml_smokes": smokes,
         "forbidden_paths": scan_forbidden_paths(root),
@@ -110,6 +125,7 @@ def verify(root: Path, timeout: int, run_smokes: bool, seven_zip: Path | None, a
             not gpl_only,
             expected_tree == actual_tree,
             all(item["actual"] == item["expected"] for item in sources.values()),
+            not source_archive_forbidden,
             result["dynamic_linkage"]["dynamic_qt_imports_present"],
             all(item["passed"] for item in smokes),
             not result["forbidden_paths"],
