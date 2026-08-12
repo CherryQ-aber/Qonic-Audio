@@ -22,10 +22,10 @@ jobs:
 
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -36,6 +36,14 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
           python -m pip install pytest==8.4.2
+
+      - name: Prepare ignored test configuration
+        shell: pwsh
+        run: |
+          if (Test-Path -LiteralPath "config.json") {
+            throw "A clean checkout must not contain tracked config.json."
+          }
+          Copy-Item -LiteralPath "config.example.json" -Destination "config.json"
 
       - name: Run stable Windows core tests
         shell: pwsh
