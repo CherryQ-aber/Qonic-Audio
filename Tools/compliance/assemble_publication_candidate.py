@@ -13,6 +13,7 @@ import json
 import shutil
 import subprocess
 import sys
+import tarfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -99,6 +100,14 @@ def write_recipient_materials(root: Path, project_root: Path, commit: str, ffmpe
         cwd=project_root,
         check=True,
     )
+    with tarfile.open(app_source, "r:gz") as archive:
+        forbidden = [
+            member.name for member in archive.getmembers()
+            if any(part.lower() == "codex_memory" for part in Path(member.name).parts)
+        ]
+    if forbidden:
+        app_source.unlink()
+        raise RuntimeError("application source archive contains Codex_memory")
     (source_dir / "SHA256SUMS.txt").write_text(
         f"{sha256(ffmpeg_destination)}  {ffmpeg_destination.name}\n"
         f"{sha256(app_source)}  {app_source.name}\n",

@@ -1,4 +1,9 @@
-# Qonic Audio r3 Publication Candidate — Automatic Evidence
+# Qonic Audio r3 Publication Candidate — Invalidated Evidence
+
+> **Do not publish r3.** Final source-archive inspection found that its
+> application-source tarball still contains the tracked Codex_memory directory.
+> The candidate is retained as audit evidence only and has been superseded by
+> the r4 rebuild procedure.
 
 ## Candidate identity
 
@@ -10,7 +15,7 @@
 | Archive size | 169,479,550 bytes |
 | Source commit | 24b407956b8b6f945c9018c5b3b55b28a7c00c6b |
 | Candidate static-tree SHA-256 | 03F840AD1942052E4DCA35387EE1C76188622E2D021289682D5F202981D371B7 |
-| Candidate status | NOT_FOR_PUBLIC_RELEASE_UNTIL_OWNER_GATES_CLOSED |
+| Candidate status | INVALID_SOURCE_ARCHIVE_EXPOSES_CODEX_MEMORY |
 
 The 2026-07-30 frozen authority archive remains unchanged and is not this
 candidate.
@@ -21,8 +26,10 @@ candidate.
 - Candidate verifier: passed required notices and license bodies, source archive
   hashes, GPL-only Qt absence, static-tree hash, dynamic Qt shared-library
   imports, forbidden-file scan, five packaged QML smoke tests, and 7z t.
-- The packaged candidate does not contain a runtime log, local configuration,
-  Codex_memory, cache/output directories or the removed GPL-only Qt groups.
+- The packaged application directory does not contain a runtime log, local
+  configuration, cache/output directories or the removed GPL-only Qt groups.
+  This check did not inspect archive members deeply enough and therefore did
+  not catch Codex_memory inside the application-source tarball.
 - The candidate includes:
   - dynamic LGPLv3 Qt/PySide6/Shiboken6 6.11.1 notice, attribution and exact
     source availability;
