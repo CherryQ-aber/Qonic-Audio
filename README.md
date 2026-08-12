@@ -2,24 +2,29 @@
 
 **Qonic Audio Converter & Editor** 是一个面向 Windows 的本地音频处理工具，包含“自动转码”和“音频编辑”两个工作区。
 
-当前版本：`v5.0 Internal Test`
-当前阶段：`v5.0 内部测试版`
+当前版本：`5.0.0-beta.1`
 
-> 这是 UI 重构后的内部人工测试基线，不是正式对外发行版。QML 主界面与旧 Widgets 界面目前并存；User Trial Mode 只供人工验收，不能视为最终用户流程。
+当前发行渠道：`Internal Beta`
+
+项目类型：`Personal Software Project`
+
+> 本项目是持续开发中的个人音频软件项目，主要用于开发者本人长期使用及有限测试。项目可以提供 Windows 预发布构建，但目前不存在 Official Stable Public Release。
 
 ## 开源与分发
 
 - Qonic Audio 项目自有代码采用 `GPL-3.0-or-later`，完整条款见 `LICENSE`。
 - 第三方组件继续遵循各自许可证，来源和审核材料见 `LICENSES/`。
-- 当前主分发工件为便携版 `.7z` 和 SHA-256 校验清单。
-- 安装器、数字签名、自动更新与文件关联留到 RC 之后的独立计划。
-- 当前版本尚未晋级 RC；RC1 门禁和推荐工件见 `docs/RELEASE_STRATEGY.md`。
+- 当前主发行渠道为 Internal Beta；GitHub 二进制构建如发布，必须标记为 **Pre-release**。
+- 安装器继续作为核心工程能力；便携版 `.7z` 可作为受控测试工件。
+- 数字签名、自动更新与文件关联属于可选增强，不阻塞当前 Internal Beta。
+- Qonic 仅是 working/project name；Public commercial brand 为 `NOT FROZEN`，Qonance 未采用，正式商标清查延后到未来明确规划 Official Public Release 时。
+- 当前状态与发行规则分别以 `docs/PROJECT_STATUS.md` 和 `docs/RELEASE_STRATEGY.md` 为准。
 
-## v5.0 内部测试版定位
+## Internal Beta 定位
 
 - 验收 QML 工作台的受控扫描、队列、转换、watcher、设置保存与既有音频编辑链路。
 - 保持 `CapabilityGate`、no-clobber 发布、源文件保护和显式写入确认；`QONIC_QML_LIVE=1` 不能自行授予真实能力。
-- 冻结 Phase 5.7 的业务范围。下一阶段优先重组普通用户的任务流程，而不是继续增加能力或按钮。
+- Internal Beta 不限制后续功能迭代，但不承担 Stable Public Release、商业品牌或大规模用户支持承诺。
 - 完整范围和当前人工验收结论见 `docs/UI_REFACTOR_CHANGE_SUMMARY.md`、`docs/PHASE_5_7_CLOSEOUT.md` 与 `Known_Issues.md`。
 
 ## 主要功能
@@ -111,11 +116,11 @@ python -m unittest discover -v
 powershell -ExecutionPolicy Bypass -File .\build_release.ps1
 ```
 
-当前构建脚本使用 `Qonic_Audio.spec`。v5.0 内部测试版构建通过后将生成：
+当前构建脚本使用 `Qonic_Audio.spec`。Internal Beta 构建通过后将生成：
 
-- `Release/Qonic_Audio_v5.0_internal_test`
-- `Release/Qonic_Audio_v5.0_internal_test.7z`
-- `Release/Qonic_Audio_v5.0_internal_test-SHA256SUMS.txt`
+- `Release/Qonic_Audio_v5.0.0-beta.1`
+- `Release/Qonic_Audio_v5.0.0-beta.1.7z`
+- `Release/Qonic_Audio_v5.0.0-beta.1-SHA256SUMS.txt`
 
 `.7z` 是当前默认和主分发工件。如需内部验证 7z SFX，可显式执行：
 
@@ -123,11 +128,21 @@ powershell -ExecutionPolicy Bypass -File .\build_release.ps1
 powershell -ExecutionPolicy Bypass -File .\build_release.ps1 -IncludeSfx
 ```
 
-SFX `.exe` 不作为当前 GitHub Release 主下载，也不等同于安装器。
+SFX `.exe` 仅供内部验证，不等同于安装器。
+
+构建可安装的 Internal Beta 候选：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\build_installer.ps1
+```
+
+安装器脚本只接受已经验证的 Internal Beta onedir（默认查找 `Release/Internal_Beta_Candidates`，也可用 `-ApplicationSource` 显式指定），避免把未完成 Qt LGPL route 验证的原始 PyInstaller collection 误包为分发安装器。它提供 Program Files 安装、开始菜单入口、可选桌面快捷方式与卸载。构建需要 Inno Setup 6；缺少编译器时必须记录为 `NOT RUN`。
+
+安装器根据 Windows UI 语言自动选择简体中文或英文，不额外显示语言选择窗口；中文 Windows 使用简体中文，其他未提供翻译的语言环境回退英文。产品名、版本号和 `Internal Beta` 渠道标识保持统一英文元数据。
 
 发行规范以 `main_qml.py` 为唯一产品入口，旧 `gui.py` 不进入 v5.0 主程序。可执行文件包含 Qonic Audio 产品名、完整说明和内部测试版本属性。构建脚本会检查自有 QML、图标、GPL 项目许可证、FFmpeg 和 ncmdump，运行打包后离屏 smoke，并在生成归档时写出 SHA-256 清单。
 
-发行目录不会携带开发机的 `config.json`，而是附带 `config.example.json` 作为示例配置；顶层 `LICENSE` 和 `LICENSES/` 会一并进入发行包。
+发行目录不会携带开发机的 `config.json`，而是附带 `config.example.json` 作为示例配置；顶层 `LICENSE` 和 `LICENSES/` 会一并进入发行包。已安装/冻结运行时的配置、缓存、日志和临时数据位于 `%LOCALAPPDATA%\Qonic Audio`，不会写入 Program Files；默认用户输出位于用户 Music 目录。
 
 ## 常见问题
 

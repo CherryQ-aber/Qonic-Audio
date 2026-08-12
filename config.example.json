@@ -1,7 +1,7 @@
 {
     "watch_folder": "C:/CloudMusic/VipSongsDownload",
-    "output_folder": "__PROGRAM_DIR__/Music_Output",
-    "editor_output_folder": "__PROGRAM_DIR__/AudioEditor_Output",
+    "output_folder": "__USER_MUSIC_DIR__/Qonic Audio/Music_Output",
+    "editor_output_folder": "__USER_MUSIC_DIR__/Qonic Audio/AudioEditor_Output",
     "target_format": "flac",
     "create_format_subfolder": true,
     "embed_lyrics_after_convert": true,
@@ -17,5 +17,12 @@
     "folder_browser_width": 260,
     "lyrics_timestamp_precision": "millisecond",
     "theme_mode": "system",
-    "first_launch_completed": false
+    "first_launch_completed": false,
+    "window_state": {
+        "x": null,
+        "y": null,
+        "width": 1536,
+        "height": 982,
+        "maximized": false
+    }
 }

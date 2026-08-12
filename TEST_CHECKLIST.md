@@ -1,86 +1,100 @@
-# Qonic Audio v5.0 内部测试版发行验收清单
+# Qonic Audio 5.0.0-beta.1 Release Gates
 
-本清单只覆盖当前 QML 产品入口。旧 Widgets 界面、旧的直接写回操作和已经退出生产层级的历史 UI 不作为 v5.0 发行验收标准。
+Status date: 2026-08-13
 
-## 自动化与构建基线
+Current channel: **Internal Beta**
 
-- [x] 品牌、窗口标题、包名和规范文件统一为 Qonic Audio。
-- [x] `requirements.txt` 与 `requirements-dev.txt` 使用精确版本。
-- [x] 完整自动化回归通过：`613 passed, 2 warnings, 76 subtests passed`。
-- [x] 会触发 `Qt6Core.dll / 0xc0000409` 的 AppShell 测试线程收尾问题已修复。
-- [x] dark / light / black / purple 四套主题源码 QML smoke 通过。
-- [x] 自动化与 smoke 前后 `config.json` SHA-256 不变。
-- [x] `Qonic_Audio.spec` 使用 `main_qml.py`，并携带自有 QML 和应用图标。
-- [x] PyInstaller onedir 构建成功。
-- [x] 打包后的四套主题 QML smoke 通过。
-- [x] onedir 包含 QML、图标、`ffmpeg.exe`、Pitch 校验所需的 `ffprobe.exe`、ncmdump 和发行文档。
-- [x] 项目顶层 `LICENSE` 使用 GPLv3 正文，并被构建脚本复制到 onedir。
-- [x] onedir 不包含 `config.json` 或非运行必需的 `ffplay.exe`。
-- [ ] 所有发行改动冻结后重新生成最终候选 onedir 和主分发 `.7z`。
-- [ ] 最终 `.7z` 通过 `7z t`，SHA-256 清单与实际文件一致；如显式生成 SFX，也单独验证。
-- [ ] 最终包执行内部资料、个人路径、邮箱、密钥、缓存和临时日志扫描。
+Status vocabulary: `PASS`, `WARNING`, `BLOCKER`, `NOT RUN`.
 
-## 首次启动与设置
+## Internal Beta Gate — active
 
-- [ ] 在无 `config.json` 的发行目录启动，显示 Qonic Audio QML 主界面。
-- [ ] 默认输出目录为程序目录下的 `Music_Output` 和 `AudioEditor_Output`。
-- [ ] 中文、空格和较长路径可保存、重启后可读取。
-- [ ] `config.json` 缺字段时合并默认值；损坏时给出可理解的恢复结果。
-- [ ] 设置确认框只列本轮修改；取消不会写盘。
-- [ ] 日志/缓存扫描不阻塞界面，清理前显示清单，运行任务期间禁止清理。
+| Check | Status | Evidence / acceptance rule |
+| --- | --- | --- |
+| Central version/channel metadata consistency | PASS | `app_info.py`, QML bridge, Windows version info, package and installer names agree on `5.0.0-beta.1` / Internal Beta. |
+| Python syntax/import sanity | PASS | Explicit `py_compile` and targeted release tests passed. |
+| Complete automated tests | PASS | `636 passed, 2 warnings, 76 subtests passed`. |
+| QML source smoke | PASS | Default plus `autoConvert`, `audioEditor`, `metadata`, and `lyricsCover`; config SHA-256 unchanged. |
+| PyInstaller onedir build | PASS | `build_release.ps1` completed on 2026-08-13; 3,098 files and bundled runtime/material checks passed. |
+| Packaged QML smoke | PASS | Build script's packaged `audioEditor` smoke passed; five-smoke LGPL route verification also passed. |
+| Portable archive integrity and SHA-256 | PASS | Raw build archive passed `7z t`; LGPL Internal Beta candidate also passed `7z t`, SHA-256 below. |
+| Installer config contract | PASS | Automated contract test covers Program Files, Start Menu, optional desktop shortcut, uninstall, Internal Beta label, LocalAppData preservation, and Windows UI language detection. |
+| Installer compilation | PASS | Inno Setup 6.7.3 produced the bilingual auto-detect candidate below; version resources and SHA-256 were verified. |
+| Install / launch / upgrade data preservation / uninstall | NOT RUN | Must be tested with a built installer candidate. |
+| Frozen/source config/cache/log/temp outside Program Files/project tree | PASS | Unified App Paths and isolated frozen-mode tests use per-user Config/Cache/Logs roots; test override prevents developer-profile pollution. |
+| Legacy portable config migration | PASS | Automated tests migrate legacy config once, preserve unknown settings and the original file, and mark existing users as First Run completed. |
+| Theme / First Run / window state lifecycle | PASS | Theme restart persistence, durable skip/accept, window serialization, centering, multi-screen restore and invalid-screen fallback are automated; installed desktop scenarios remain NOT RUN. |
+| Clean Windows without Python/developer tools | NOT RUN | Candidate must run with bundled dependencies. |
+| Real desktop/DPI/multi-display/tray | NOT RUN | Candidate-specific manual test. |
+| Real media/core workflow/no-clobber | NOT RUN | Candidate-specific manual/automated evidence. |
+| Third-party compliance manifest consistency | WARNING | Strict validation: 0 blockers, 6 warnings; manifest age, 2 component evidence warnings, and historical/full-PyInstaller Qt inventory warnings. Separate LGPL candidate removed all 687 verified GPL-only files and passed smoke. |
+| Required licences/notices/source availability included | PASS | Candidate carries Qt/PySide6/Shiboken6 LGPL, Qt attribution/source availability, Microsoft material, project licence, and third-party notices. |
+| P0/P1 defects | WARNING | No new P0/P1 is known from policy or installer-build work; installed-machine verification is pending. |
 
-## 窗口、主题与文件树
+## Candidate verification record
 
-- [ ] dark / light / black / purple 四套主题完成真实桌面视觉检查。
-- [ ] Windows 100% / 125% / 150% DPI 下无裁切、重叠和不可达控件。
-- [ ] 双屏不同 DPI 下拖动、最大化还原和 Windows 11 Snap 正常。
-- [ ] 八边缩放、最小化、最大化、关闭到托盘、托盘恢复和托盘退出正常。
-- [ ] 文件树展开、搜索和自动刷新不卡 UI，不产生重复行。
-- [ ] 双击普通音频进入“文件信息”并同步唯一播放器但不自动播放。
-- [ ] 右键“仅载入播放器”不改变当前编辑文件。
-- [ ] 普通音频可拖入编辑/转码区；NCM 只进入转码区；工作区外释放无动作。
+Commands and results are filled only after actual execution. Historical v5.0/r4 results are not copied here as new passes.
 
-## 自动转码
+```text
+python -m py_compile app_info.py config.py logger.py ui_next\bridge\app_state_viewmodel.py
+PASS
 
-- [ ] MP3、FLAC、WAV、M4A、AAC、OGG、OPUS 和 NCM 可按支持边界入列。
-- [ ] 目录扫描显示新增、重复、不支持和完成/取消摘要。
-- [ ] 单选、Ctrl 多选、Shift 连选和右键未选中行作用于正确任务。
-- [ ] “本轮跳过”、任务级格式和临时输出目录不会写入全局配置。
-- [ ] 单个、选中和全部转换只调度预期任务。
-- [ ] 已有输出不被覆盖，自动使用 no-clobber 新名称。
-- [ ] 同格式处理、失败重试、取消和当前任务后停止均保留源文件。
-- [ ] NCM 中间文件只位于程序受控临时目录，原下载目录无残留。
-- [ ] 转换过程无终端窗口闪现，退出时线程和 FFmpeg 子进程正常收尾。
-- [ ] 跨盘、中文空格路径和长路径转换成功，源 SHA-256 不变。
+python -m pytest -q
+636 passed, 2 warnings, 76 subtests passed
 
-## 音频编辑与播放器
+python main_qml.py --qml-smoke-test [five module variants]
+PASS; config SHA-256 unchanged
 
-- [ ] MP3 / FLAC / M4A / OGG / OPUS 可读取并组合导出 Metadata、歌词和封面新副本。
-- [ ] WAV / AAC 组合编辑显示明确暂不支持，源文件与已有目标不变。
-- [ ] Pitch 试听只生成临时预览；正式导出与“加载结果”保持分离。
-- [ ] 统一导出默认另存新副本，已有目标必须再次确认。
-- [ ] 覆盖当前源音频只在明确确认、全模块选择和回滚保护成立时允许。
-- [ ] 播放中导出、取消、失败、同名冲突和跨盘输出均不丢草稿。
-- [ ] 文件切换时“放弃修改并载入 / 导出 / 取消”三个分支符合预期。
-- [ ] 导入 `.lrc` 后继续编辑再导出，内嵌歌词回读校验通过。
-- [ ] 正常 FLAC 播放结束保持“播放结束”且可重播；损坏样本仍报告错误。
-- [ ] 播放中 seek 后仍显示播放中并可立即暂停。
-- [ ] 源音频、原 `.lrc` 和未选择覆盖的已有输出 SHA-256 不变。
+python Tools\compliance\validate_compliance.py ... --strict
+WARNING; blockers=0, warnings=6, exit=1
 
-## 干净 Windows 异机验收
+powershell -File .\build_release.ps1
+PASS; packaged smoke PASS; 7z integrity PASS
 
-- [ ] 在未安装 Python、FFmpeg、ncmdump 和开发工具的普通 Windows 电脑启动。
-- [ ] 首次启动、转换、编辑导出、播放、设置保存和退出均无缺失 DLL/QML 插件。
-- [ ] Windows Defender/SmartScreen 结果已记录；当前未签名 `.7z` 便携分发提供明确解压和校验说明。
-- [ ] 普通用户权限下可写配置、日志、缓存和输出目录。
-- [ ] 异机验收记录 Windows 版本、DPI、CPU、音频设备和测试文件格式。
+python Tools\compliance\verify_qt_lgpl_route.py ...
+PASS; 687 GPL-only Qt files removed in staging; packaged smokes PASS
 
-## 发布与合规
+Internal Beta LGPL portable candidate:
+Release\Internal_Beta_Candidates\2026-08-13_5.0.0-beta.1\Qonic_Audio_v5.0.0-beta.1_Internal_Beta_LGPL.7z
+SHA-256: 6408218ECBC710160A6008CB7999BBD70C8AF0C5A29BDC38119F4807241C8A15
 
-- [x] 当前版本继续使用 `v5.0 Internal Test`；只有全部 RC 门禁完成后才统一晋级 `v5.0 RC1`。
-- [x] 项目自有代码采用 `GPL-3.0-or-later`，顶层 `LICENSE` 已加入源码和发行包。
-- [ ] 补齐 FFmpeg、ncmdump、PySide6/Qt 的来源、许可证和分发义务材料。
-- [ ] 确认项目著作权标注主体；不要把品牌名自动当成法律实体。
-- [ ] 确认现有品牌图标可用于 Qonic；如不可用，替换应用和文件关联图标。
-- [x] 当前以 `.7z` 便携包为主分发；SFX 不作为主下载，安装器、数字签名、升级机制延期到 RC 之后。
-- [ ] 从干净发行提交创建 Git tag 和 GitHub Release，附带 SHA-256 与 Known Issues。
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build_installer.ps1 -ApplicationSource ".\Release\Internal_Beta_Candidates\2026-08-13_5.0.0-beta.1\Qonic_Audio_v5.0.0-beta.1"
+PASS; Inno Setup 6.7.3; installer version 5.0.0-beta.1; file version 5.0.0.1
+Language contract PASS; uilanguage auto-detection, no language dialog, zh-CN + English fallback
+
+Internal Beta installer candidate:
+Release\Installer_Candidates\Qonic_Audio_v5.0.0-beta.1_Setup.exe
+SHA-256: 544F9762D07B3BEB3FD8C271D4558E6CD084BD3655C4FC631F605BBB97EE225C
+Signature: WARNING / NotSigned
+
+Install / launch / upgrade data preservation / uninstall
+NOT RUN
+```
+
+## GitHub Pre-release rule
+
+- [x] Internal Beta binary releases are permitted.
+- [x] GitHub release must be marked Pre-release.
+- [x] Release notes must say this is an ongoing personal project and not an Official Stable Public Release.
+- [x] `Latest Stable`, `Official Stable`, `Production Release`, and `Public Stable Release` labels are prohibited.
+
+## Public Stable Gate — deferred
+
+Status: **DEFERRED — PUBLIC RELEASE ONLY**
+
+The following checks are retained for a future explicit owner decision and do not block Internal Beta:
+
+- Brand freeze and target-market brand clearance.
+- Trademark decision or registration if applicable.
+- Stable-channel/version/support policy.
+- Company/legal structure only if a future distribution model requires it.
+- Commercial signing/trust program if chosen.
+- Website, store submission, marketing, public support, and applicable privacy/legal documents.
+- A new clean public candidate with revalidated compliance and SHA-256 evidence.
+
+Current brand record:
+
+```text
+Brand: NOT FROZEN
+Qonance: NOT ADOPTED
+Formal trademark clearance: DEFERRED
+```

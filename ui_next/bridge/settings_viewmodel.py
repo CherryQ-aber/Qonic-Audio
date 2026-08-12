@@ -12,7 +12,7 @@ from config import (
     CONFIG_FILE,
     get_cache_folder,
     load_config,
-    save_config,
+    update_config,
 )
 from formats import DEFAULT_TARGET_FORMAT, SUPPORTED_TARGET_FORMATS, normalize_target_format
 from logger import LOG_DIR, LOG_FILE
@@ -20,6 +20,7 @@ from ui_next.bridge.base_viewmodel import BaseViewModel
 from cache_manager import format_size
 from ui_next.bridge.capabilities import CACHE_CLEANUP, CONFIG_WRITE, CapabilityGate
 from ui_next.bridge.log_model import LogModel
+from ui.theme import resolve_theme_mode
 from ui_next.bridge.settings_storage import (
     clear_log_storage,
     clear_selected_cache,
@@ -222,6 +223,10 @@ class SettingsViewModel(BaseViewModel):
     @Property(str, notify=settingsChanged)
     def themeMode(self) -> str:
         return str(self._pending_config.get("theme_mode") or "system")
+
+    @Property(str, notify=settingsChanged)
+    def resolvedThemeMode(self) -> str:
+        return self._resolve_theme_mode(self.themeMode)
 
     @Property(str, notify=settingsChanged)
     def logLevel(self) -> str:
@@ -599,12 +604,39 @@ class SettingsViewModel(BaseViewModel):
     def setOverwriteExistingLyrics(self, enabled: bool) -> None:
         self.updatePendingValue("overwrite_existing_lyrics", bool(enabled))
 
-    @Slot(str)
-    def setThemeMode(self, value: str) -> None:
+    @Slot(str, result=bool)
+    def setThemeMode(self, value: str) -> bool:
+        return self.applyThemeMode(value)
+
+    @Slot(str, result=bool)
+    def applyThemeMode(self, value: str) -> bool:
         normalized = str(value or "system").strip().lower()
-        if normalized not in {"system", "dark", "light"}:
+        if normalized not in {"system", "dark", "light", "black", "purple"}:
             normalized = "system"
-        self.updatePendingValue("theme_mode", normalized)
+        if not self.allows_capability(CONFIG_WRITE):
+            self.updatePendingValue("theme_mode", normalized)
+            self._set_save_status(
+                "主题已在本次运行中预览，但当前模式不允许持久化。",
+                level="warning",
+            )
+            return True
+
+        try:
+            saved = update_config({"theme_mode": normalized})
+        except Exception as exc:
+            self._set_save_status(f"主题保存失败：{exc}", level="error")
+            return False
+
+        self._current_config = dict(saved)
+        self._pending_config["theme_mode"] = normalized
+        self._set_pending_changes(bool(self._changed_keys()))
+        self.settingsChanged.emit()
+        self._set_save_status("主题已保存。")
+        return True
+
+    @Slot(str, result=str)
+    def resolveThemeMode(self, value: str) -> str:
+        return self._resolve_theme_mode(value)
 
     @Slot(str)
     def setLogLevel(self, value: str) -> None:
@@ -688,14 +720,18 @@ class SettingsViewModel(BaseViewModel):
             self._set_save_status("已取消应用，修改仍保留。")
             return
 
-        # Merge only the confirmed changes onto the newest on-disk config.
-        # Unchanged keys may have been updated elsewhere while Settings was
-        # open and must not be overwritten by a stale page snapshot.
-        config_to_save = load_config()
-        for key in self._changed_keys():
-            if key in self._pending_config:
-                config_to_save[key] = self._pending_config[key]
-        self._current_config = save_config(config_to_save)
+        # Apply only confirmed changes. update_config merges them onto the
+        # newest on-disk state while holding the shared config lock.
+        updates = {
+            key: self._pending_config[key]
+            for key in self._changed_keys()
+            if key in self._pending_config
+        }
+        try:
+            self._current_config = update_config(updates)
+        except Exception as exc:
+            self._set_save_status(f"设置保存失败：{exc}", level="error")
+            return
         self._pending_config = dict(self._current_config)
         self._set_pending_changes(False)
         self.settingsChanged.emit()
@@ -742,7 +778,9 @@ class SettingsViewModel(BaseViewModel):
         self.saveStatusChanged.emit(message)
         self.set_status_message(message)
 
-        if level == "warning":
+        if level == "error":
+            self._logger.error(message)
+        elif level == "warning":
             self._logger.warning(message)
         else:
             self._logger.info(message)
@@ -764,7 +802,7 @@ class SettingsViewModel(BaseViewModel):
             return self._as_bool(value, False)
         if key == "theme_mode":
             normalized = str(value or "system").strip().lower()
-            return normalized if normalized in {"system", "dark", "light"} else "system"
+            return normalized if normalized in {"system", "dark", "light", "black", "purple"} else "system"
         if key == "log_level":
             normalized = str(value or "INFO").strip().upper()
             return normalized if normalized in {"DEBUG", "INFO", "WARNING", "ERROR"} else "INFO"
@@ -990,6 +1028,13 @@ class SettingsViewModel(BaseViewModel):
             QMessageBox.StandardButton.No,
         )
         return result == QMessageBox.StandardButton.Yes
+
+    @staticmethod
+    def _resolve_theme_mode(value: str) -> str:
+        normalized = str(value or "system").strip().lower()
+        if normalized in {"black", "purple"}:
+            return normalized
+        return resolve_theme_mode(normalized)
 
     @staticmethod
     def _as_bool(value, default: bool = False) -> bool:

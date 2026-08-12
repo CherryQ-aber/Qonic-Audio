@@ -199,7 +199,7 @@ class DefaultStartupSafetyTests(unittest.TestCase):
             patch("ui_next.bridge.auto_convert_viewmodel.ConvertThread") as convert_thread,
             patch("ui_next.bridge.auto_convert_viewmodel.ScanThread") as scan_thread,
             patch("ui_next.bridge.settings_viewmodel.load_config", return_value=current_config),
-            patch("ui_next.bridge.settings_viewmodel.save_config") as save_config,
+            patch("ui_next.bridge.settings_viewmodel.update_config") as update_config,
         ):
             auto_convert = AutoConvertViewModel(MagicMock(), capability_gate=gate)
             settings = SettingsViewModel(capability_gate=gate)
@@ -210,7 +210,7 @@ class DefaultStartupSafetyTests(unittest.TestCase):
             watcher_thread.assert_not_called()
             convert_thread.assert_not_called()
             scan_thread.assert_not_called()
-            save_config.assert_not_called()
+            update_config.assert_not_called()
             auto_convert.shutdown()
 
     def test_smoke_subprocess_keeps_config_unchanged_even_with_legacy_user_test_env(self):

@@ -11,6 +11,7 @@ Item {
     property QtObject theme: Theme {}
     property QtObject typography: Typography {}
     property var themeModeOptions: [
+        {"value": "system", "label": "跟随系统"},
         {"value": "dark", "label": "深色主题"},
         {"value": "light", "label": "浅色主题"},
         {"value": "black", "label": "黑色主题"},
@@ -466,9 +467,8 @@ Item {
                     theme: root.theme
                     typography: root.typography
                     title: "主题与界面"
-                    subtitle: "主题可立即预览且仅本次运行生效；其它界面设置确认后保存。"
-                    statusLabel: root.settingChanged("theme_mode")
-                        || root.settingChanged("ui_density")
+                    subtitle: "主题选择会立即保存；其它界面设置确认后保存。"
+                    statusLabel: root.settingChanged("ui_density")
                         || root.settingChanged("editor_file_bar_mode") ? "未保存" : ""
                     statusTone: "warning"
 
@@ -483,12 +483,16 @@ Item {
                             theme: root.theme
                             typography: root.typography
                             options: themeModeOptions
-                            value: theme.mode
-                            onFormatSelected: theme.setMode(value)
+                            value: settingsViewModel.themeMode
+                            onFormatSelected: {
+                                if (settingsViewModel.applyThemeMode(value)) {
+                                    theme.setMode(settingsViewModel.resolveThemeMode(value))
+                                }
+                            }
                         }
 
                         Text {
-                            text: "仅本次运行生效"
+                            text: "选择后立即保存"
                             color: theme.muted
                             font.family: typography.fontFamily
                             font.pixelSize: typography.sizeSmall

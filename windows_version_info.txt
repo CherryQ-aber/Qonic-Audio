@@ -1,7 +1,7 @@
 VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(5, 0, 0, 0),
-    prodvers=(5, 0, 0, 0),
+        filevers=(5, 0, 0, 1),
+        prodvers=(5, 0, 0, 1),
     mask=0x3f,
     flags=0x0,
     OS=0x40004,
@@ -16,11 +16,11 @@ VSVersionInfo(
           '040904B0',
           [
             StringStruct('FileDescription', 'Qonic Audio Converter & Editor'),
-            StringStruct('FileVersion', '5.0 Internal Test'),
+            StringStruct('FileVersion', '5.0.0-beta.1'),
             StringStruct('InternalName', 'Qonic Audio'),
-            StringStruct('OriginalFilename', 'Qonic_Audio_v5.0_internal_test.exe'),
+            StringStruct('OriginalFilename', 'Qonic_Audio_v5.0.0-beta.1.exe'),
             StringStruct('ProductName', 'Qonic Audio'),
-            StringStruct('ProductVersion', '5.0 Internal Test')
+            StringStruct('ProductVersion', '5.0.0-beta.1 (Internal Beta)')
           ]
         )
       ]

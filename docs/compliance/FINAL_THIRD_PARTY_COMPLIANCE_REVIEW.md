@@ -1,5 +1,11 @@
 # Final Third-Party Compliance Review
 
+Current distribution policy: **Internal Beta; compliance requirements unchanged**.
+
+Authority for release policy: `docs/RELEASE_STRATEGY.md`.
+
+The component findings below remain mandatory for personal and limited-tester binary distribution. Public brand, trademark, company, marketing, and Stable-channel decisions are outside this compliance review and are deferred Public Stable gates.
+
 Scope: the sole owner-authoritative Qonic Audio v5.0 Internal Test onedir archive and its corresponding expanded directory, plus the separately identified Qt LGPL integration-candidate evidence recorded in this inventory.
 
 - Archive SHA-256: `BB0967E85AF2857C23587F3CEF37C37D14ED4E4106B7261F21E2F247B47F42F4`

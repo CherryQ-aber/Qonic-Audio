@@ -15,7 +15,8 @@ ApplicationWindow {
     height: 982
     minimumWidth: 1080
     minimumHeight: 680
-    visible: !(root.windowControlBridge && root.windowControlBridge.deferInitialShow)
+    // WindowController restores/clamps geometry before the first visible frame.
+    visible: !root.windowControlBridge
     color: theme.background
     title: appState.appName + " " + appState.versionLabel
     flags: root.nativeWindowChrome
@@ -462,6 +463,14 @@ ApplicationWindow {
         editSession: editSessionViewModel
         processingSession: processingSessionViewModel
         selectAllDraftsOnOpen: root.pendingFileExportFlowActive
+    }
+
+    FirstRunDialog {
+        id: firstRunDialog
+        theme: theme
+        typography: typography
+        viewModel: typeof firstRunViewModel !== "undefined"
+            ? firstRunViewModel : null
     }
 
     Dialog {

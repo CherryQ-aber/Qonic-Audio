@@ -18,7 +18,7 @@ from PySide6.QtCore import (
 from PySide6.QtGui import QCursor, QDesktopServices, QGuiApplication
 from PySide6.QtWidgets import QFileDialog, QFileSystemModel
 
-from config import load_config, save_config
+from config import load_config, update_config
 from formats import (
     EDITOR_AUDIO_EXTENSIONS,
     SUPPORTED_INPUT_EXTENSIONS,
@@ -686,8 +686,7 @@ class FolderBrowserModel(QFileSystemModel):
         if not self._capability_gate.allows(CONFIG_WRITE):
             return
         try:
-            config_data = load_config()
-            config_data.update(
+            update_config(
                 {
                     "folder_browser_root": self._root_path,
                     "folder_browser_favorites": list(self._favorites),
@@ -696,7 +695,6 @@ class FolderBrowserModel(QFileSystemModel):
                     "folder_browser_width": self._pane_width,
                 }
             )
-            save_config(config_data)
         except Exception as exc:
             self._set_status(f"文件浏览状态暂未保存：{exc}")
 

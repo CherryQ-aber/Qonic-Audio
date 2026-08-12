@@ -19,7 +19,10 @@ from app_info import (
     APP_BRAND_NAME,
     APP_DESCRIPTION,
     APP_DISPLAY_NAME,
+    APP_INSTALLER_BASENAME,
     APP_PACKAGE_BASENAME,
+    APP_PROJECT_CLASSIFICATION,
+    APP_RELEASE_CHANNEL,
     APP_RELEASE_NOTES_NAME,
     APP_SPEC_NAME,
     APP_WINDOW_TITLE,
@@ -1268,16 +1271,22 @@ class ReleaseConfigurationTests(unittest.TestCase):
         self.assertEqual(APP_BRAND_NAME, "Qonic")
         self.assertEqual(APP_DISPLAY_NAME, "Qonic Audio")
         self.assertEqual(APP_DESCRIPTION, "Qonic Audio Converter & Editor")
-        self.assertEqual(APP_VERSION, "5.0 Internal Test")
+        self.assertEqual(APP_VERSION, "5.0.0-beta.1")
+        self.assertEqual(APP_RELEASE_CHANNEL, "Internal Beta")
+        self.assertEqual(APP_PROJECT_CLASSIFICATION, "Personal Software Project")
         self.assertEqual(
             APP_WINDOW_TITLE,
-            "Qonic Audio v5.0 Internal Test",
+            "Qonic Audio v5.0.0-beta.1 — Internal Beta",
         )
 
     def test_release_package_basename_is_versioned(self):
         self.assertEqual(
             APP_PACKAGE_BASENAME,
-            "Qonic_Audio_v5.0_internal_test",
+            "Qonic_Audio_v5.0.0-beta.1",
+        )
+        self.assertEqual(
+            APP_INSTALLER_BASENAME,
+            "Qonic_Audio_v5.0.0-beta.1_Setup",
         )
 
     def test_spec_only_packages_required_external_tools(self):
@@ -1301,8 +1310,8 @@ class ReleaseConfigurationTests(unittest.TestCase):
             encoding="utf-8"
         )
         self.assertIn("Qonic Audio Converter & Editor", version_info)
-        self.assertIn("Qonic_Audio_v5.0_internal_test.exe", version_info)
-        self.assertIn("5.0 Internal Test", version_info)
+        self.assertIn("Qonic_Audio_v5.0.0-beta.1.exe", version_info)
+        self.assertIn("5.0.0-beta.1 (Internal Beta)", version_info)
 
     def test_release_build_script_uses_versioned_outputs_and_required_docs(self):
         build_script = Path("build_release.ps1").read_text(encoding="utf-8")
@@ -1311,8 +1320,12 @@ class ReleaseConfigurationTests(unittest.TestCase):
         self.assertIn('Join-Path $Root "Known_Issues.md"', build_script)
         self.assertIn('Join-Path $Root "TEST_CHECKLIST.md"', build_script)
         self.assertIn('Join-Path $Root "EXTERNAL_TEST_GUIDE.md"', build_script)
+        self.assertIn('Join-Path $Root "docs\\PROJECT_STATUS.md"', build_script)
+        self.assertIn('Join-Path $Root "docs\\RELEASE_STRATEGY.md"', build_script)
         self.assertIn('Join-Path $Root "config.example.json"', build_script)
         self.assertIn('Join-Path $Root "LICENSE"', build_script)
+        self.assertIn('Join-Path $Root "docs\\compliance\\staging\\licenses"', build_script)
+        self.assertIn('Join-Path $Root "docs\\compliance\\THIRD_PARTY_NOTICES.md"', build_script)
         self.assertIn('Join-Path $Root "windows_version_info.txt"', build_script)
         self.assertIn("APP_PACKAGE_BASENAME", build_script)
         self.assertIn("APP_SPEC_NAME", build_script)
@@ -1325,6 +1338,7 @@ class ReleaseConfigurationTests(unittest.TestCase):
         self.assertIn(r"_internal\Tools\ffmpeg\bin\ffprobe.exe", build_script)
         self.assertIn("--qml-smoke-test", build_script)
         self.assertIn("Start-Process", build_script)
+        self.assertIn('Join-Path $BuildRoot "smoke-localappdata"', build_script)
         self.assertIn(r"logs\runtime.log", build_script)
         self.assertIn("SHA256SUMS.txt", build_script)
         self.assertIn("function Get-Sha256Hex", build_script)
@@ -1333,6 +1347,7 @@ class ReleaseConfigurationTests(unittest.TestCase):
         self.assertIn("if ($IncludeSfx)", build_script)
         self.assertIn("$SkipArchive -and $IncludeSfx", build_script)
         self.assertIn("@($ArchivePath, $SfxPath, $ChecksumPath)", build_script)
+        self.assertIn('(Join-Path $ReleasePath "Cache")', build_script)
 
     def test_release_audit_docs_exist(self):
         self.assertTrue(Path("README.md").is_file())

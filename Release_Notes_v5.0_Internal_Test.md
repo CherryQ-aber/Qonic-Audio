@@ -1,12 +1,16 @@
-# Qonic Audio v5.0 Internal Test Release Notes
+# Qonic Audio 5.0.0-beta.1 — Internal Beta Release Notes
 
 ## 版本定位
 
-`v5.0 Internal Test / v5.0 内部测试版` 是 UI 重构后的内部人工测试与代码审查基线，不是正式对外发行版，也不代表最终产品体验已通过。
+**Internal Beta Build**
+
+This build is part of an ongoing personal software project. It is primarily maintained for personal use and limited testing. It is not an official stable public release.
+
+本构建主要供开发者本人长期使用及有限测试，不代表 Stable、Official 或 Production Release。
 
 本版本用于确认 QML 工作台在受控安全边界内完成扫描、队列、转换、watcher、设置保存、全局播放、统一编辑草稿/导出和 Pitch 工作流。Phase 5.9.5 的用户任务流与工作区整合已经完成工程实现，当前进入发行构建、人工验收和合规收尾。
 
-项目已确认采用开源路线，自有代码以 `GPL-3.0-or-later` 发布。FFmpeg Audio Runtime、ncmdump、PySide6 / Qt 的对应材料已随 2026-07-30 权威工件归档；当前主分发工件确定为 `.7z` 便携包和 SHA-256 清单。安装器、数字签名、自动更新及文件关联留到 RC 之后规划。
+项目自有代码以 `GPL-3.0-or-later` 发布。FFmpeg Audio Runtime、ncmdump、PySide6 / Qt 的对应材料已随 2026-07-30 权威工件归档；安装器为当前工程能力，便携 `.7z` 可作为受控测试工件。数字签名、自动更新及文件关联是可选增强。
 
 ## 本轮范围
 
@@ -21,15 +25,15 @@
 
 | 维度 | 结论 |
 | --- | --- |
-| 工程功能 | 通过：完整自动化回归、四套主题源码 smoke、QML onedir 构建和打包后 smoke 已通过。 |
-| 数据安全 | 通过：CapabilityGate、no-clobber、源文件保护、显式确认保存保持有效。 |
-| 用户体验 | 待人工发行验收：工作区任务流已完成整合，但真实媒体、DPI、双屏、窗口/托盘和最终视觉尚未全部签字。 |
-| 发行策略 | 已确定：GPL-3.0-or-later 开源、`.7z` 主分发；安装器和数字签名延期。带封面音频流修复后的新权威工件已冻结。 |
-| RC 状态 | 未晋级：须先通过真实桌面、真实媒体、干净 Windows、第三方合规和品牌图标门禁。 |
+| 工程功能 | 历史基线已通过；`5.0.0-beta.1` 候选必须以本轮真实验证结果为准。 |
+| 数据安全 | CapabilityGate、no-clobber、源文件保护和显式确认保存保持不变；新 installed-data 路径需验证。 |
+| 用户体验 | Internal Beta 候选仍需真实安装、媒体、DPI、双屏、窗口/托盘验收。 |
+| 发行策略 | Personal Software Project / Internal Beta；GitHub 仅允许 Pre-release。 |
+| Stable 状态 | 当前不存在；Public Stable Gate 已延后，不阻塞 Internal Beta。 |
 
 详细工作区合同见 `docs/PHASE_5_9_5_WORKSPACE_INTEGRATION_CONTRACT.md`；UI 重构全量总结见 `docs/UI_REFACTOR_CHANGE_SUMMARY.md`。
 
-RC1 的统一版本迁移和工件要求见 `docs/RELEASE_STRATEGY.md`。门禁完成前，版本源、包名和 Windows 版本资源继续保持 Internal Test。
+当前 Internal Beta Gate 与未来延后的 Public Stable Gate 见 `docs/RELEASE_STRATEGY.md` 和 `TEST_CHECKLIST.md`。版本号达到 1.x 或更高也不会自动变成 Stable。
 
 ## 未包含的承诺
 
@@ -37,5 +41,6 @@ RC1 的统一版本迁移和工件要求见 `docs/RELEASE_STRATEGY.md`。门禁�
 - 不在启动时自动扫描、监听或转换。
 - 不把 Metadata、Lyrics、Cover 草稿自动写回。
 - 不将兼容环境变量或测试模式作为正式产品模式。
-- 不以本内部测试版替代干净 Windows 异机测试、第三方许可证闭合或正式发布验证。
-- 不把可选 7z SFX 视为安装器；当前 GitHub Release 主下载只规划 `.7z`。
+- 不以历史内部测试结果替代新候选的干净 Windows、安装器和第三方许可证验证。
+- 不把可选 7z SFX 视为安装器；Internal Beta 安装器由独立 Inno Setup 配置生成。
+- 不承诺 Stable Public Release 日期、商业品牌、公司主体或大规模用户支持。

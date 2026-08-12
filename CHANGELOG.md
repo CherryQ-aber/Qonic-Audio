@@ -1,5 +1,33 @@
 # Qonic Audio Changelog
 
+## 5.0.0-beta.1 — Internal Beta
+
+### Changed
+
+- 建立统一 App Paths：配置、缓存、日志分别使用 `%LOCALAPPDATA%\Qonic Audio\Config`、`Cache` 与 `Logs`；源码运行可用 `QONIC_USER_DATA_ROOT` 隔离测试配置。
+- 旧 EXE/项目同目录配置与早期 LocalAppData 根配置改为一次性只读迁移；迁移保留未知字段、不删除旧文件，并避免升级用户被误判为 First Run。
+- QML 主题改为即时原子保存并跨重启恢复；窗口保存 normal geometry 与 maximized 状态，首次居中并在显示器移除/分辨率变化时回到有效区域。
+- 正式 QML 入口新增轻量 First Run 目录确认，支持单/多候选、另选目录与暂时跳过；接受目录只保存设置，不启动监听或转换。
+- 项目正式重定位为长期维护的 `Personal Software Project / Internal Beta`；当前不存在 Stable Public Release。
+- `app_info.py` 新增独立 Release Channel 与项目分类，窗口/版本属性/包名统一为 `5.0.0-beta.1 · Internal Beta`。
+- 发行策略改为 Development → Internal Validation → Internal Beta → optional GitHub Pre-release；原 RC/Public Stable 项目改为延后 Gate。
+- Qonic 只作为 working/project name；Brand NOT FROZEN，Qonance NOT ADOPTED，商标与商业品牌清查延后到未来明确规划 Official Public Release 时。
+- 冻结运行时的配置、缓存、日志与临时数据迁移到 `%LOCALAPPDATA%\Qonic Audio`；旧便携配置仅在新配置不存在时复制，用户自选路径保持不变。
+- 新增基于 Inno Setup 的可复现安装层，继续包裹现有 PyInstaller onedir，提供 Program Files、开始菜单、可选桌面快捷方式与卸载；用户数据在卸载/升级时保留。
+- Internal Beta Gate 与 Public Stable Deferred Gate 分离；第三方许可证、Runtime inventory、Notices、对应源码与 SHA-256 要求不降级。
+
+### Preserved
+
+- 未修改音频算法、转码逻辑、播放器架构、QML 页面结构、FFmpeg 构建、Qt Runtime 裁剪和历史发行/合规证据。
+
+### Built
+
+- 使用 Inno Setup 6.7.3 从已验证 LGPL candidate 生成 `Qonic_Audio_v5.0.0-beta.1_Setup.exe`；版本资源标记 `5.0.0-beta.1 / Internal Beta`。
+- 2026-08-13 从包含 Post-Install User State 修复的新 PyInstaller onedir 重建 LGPL portable 与安装器候选；portable SHA-256 为 `6408218ECBC710160A6008CB7999BBD70C8AF0C5A29BDC38119F4807241C8A15`，安装器 SHA-256 为 `544F9762D07B3BEB3FD8C271D4558E6CD084BD3655C4FC631F605BBB97EE225C`。
+- 当前安装器按 Windows UI 语言自动选择简体中文或英文，不显示额外语言选择框，并随安装目录提供 Inno Setup 许可证。
+- 首个纯英文安装器 SHA-256 `7F1FFBB1C2CCB9A27D6EAC638A0A356647907FEDCE9EAA18573EF771F7C5302E` 已归档为 `NONAUTHORITATIVE / NOT FOR RELEASE`。
+- 构建脚本支持 winget 按用户安装的 Inno Setup、深层 Qt 路径临时盘符缩短、集中版本号派生和随包 SHA-256 文件。真实安装/升级/卸载验收未在本步骤执行。
+
 ## v5.0 内部测试版
 
 ### Changed

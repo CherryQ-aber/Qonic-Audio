@@ -21,6 +21,12 @@ in `LICENSE`.
   included. The project-owner confirmation and audit evidence are maintained
   in the release compliance records; no debug runtime or build tool is shipped.
 
+## Installer build component
+
+- **Inno Setup 6.7.3** — used to create the Windows installer wrapper. See
+  `Inno-Setup-License.txt`. The vendored Simplified Chinese message source and
+  its pinned upstream provenance are recorded under `installer/languages/`.
+
 ## Publication-candidate material
 
 The release-assembly process copies the complete component notice index and

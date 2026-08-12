@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from pathlib import Path
+import logging
 import sys
 
-from PySide6.QtCore import QEvent, QObject, Property, QTimer, Signal, Slot, Qt
+from PySide6.QtCore import QEvent, QObject, Property, QRect, QTimer, Signal, Slot, Qt
 from PySide6.QtGui import QCloseEvent, QIcon, QWindow
 from PySide6.QtWidgets import QApplication, QMenu, QSystemTrayIcon
+
+from config import load_config, update_config
 
 from ui_next.bridge.windows_native_window import (
     NativeHitTestRegions,
@@ -45,6 +48,11 @@ class WindowController(QObject):
         self._active = False
         self._native_hover_control = ""
         self._native_pressed_control = ""
+        self._logger = logging.getLogger("AudioConverter.Window")
+        self._persist_window_state = not self._smoke_test
+        self._saved_window_state = dict(load_config().get("window_state") or {})
+        self._normal_geometry: QRect | None = None
+        self._last_persisted_state: dict | None = None
         platform_name = application.platformName().lower()
         self._frameless_enabled = sys.platform == "win32" and platform_name == "windows"
         self._initial_show_ready = not self._frameless_enabled
@@ -95,6 +103,7 @@ class WindowController(QObject):
         if self._frameless_enabled:
             self._application.installNativeEventFilter(self._native_filter)
             self._native_filter.attach_window(window)
+        self._restore_window_state()
         if not self._initial_show_ready:
             self._initial_show_ready = True
             self.initialShowReadyChanged.emit()
@@ -104,7 +113,10 @@ class WindowController(QObject):
     @Slot()
     def showInitialWindow(self) -> None:
         if self._window is not None:
-            self._window.show()
+            if bool(self._saved_window_state.get("maximized", False)):
+                self._window.showMaximized()
+            else:
+                self._window.show()
             self._window.requestActivate()
 
     @Slot()
@@ -171,6 +183,7 @@ class WindowController(QObject):
     @Slot()
     def quitApplication(self) -> None:
         self._quitting = True
+        self._persist_current_window_state()
         if self._tray_icon is not None:
             self._tray_icon.hide()
         self._application.quit()
@@ -178,6 +191,7 @@ class WindowController(QObject):
     @Slot()
     def shutdown(self) -> None:
         self._quitting = True
+        self._persist_current_window_state()
         if self._tray_icon is not None:
             self._tray_icon.hide()
         if self._window is not None:
@@ -190,6 +204,8 @@ class WindowController(QObject):
         if watched is not self._window:
             return False
         if event.type() == QEvent.Type.Close:
+            self._capture_window_state()
+            self._persist_current_window_state()
             if self._quitting or self._smoke_test or not self._tray_available:
                 return False
             close_event = event if isinstance(event, QCloseEvent) else None
@@ -201,9 +217,12 @@ class WindowController(QObject):
         if event.type() in (
             QEvent.Type.WindowStateChange,
             QEvent.Type.ActivationChange,
+            QEvent.Type.Move,
+            QEvent.Type.Resize,
             QEvent.Type.Show,
             QEvent.Type.Hide,
         ):
+            self._capture_window_state()
             self._sync_window_state()
         if event.type() in (
             QEvent.Type.WinIdChange,
@@ -279,6 +298,75 @@ class WindowController(QObject):
         self._active = active
         self.stateChanged.emit()
 
+    def _restore_window_state(self) -> None:
+        if self._window is None:
+            return
+        screens = [screen.availableGeometry() for screen in self._application.screens()]
+        primary_screen = self._application.primaryScreen()
+        primary = (
+            primary_screen.availableGeometry()
+            if primary_screen is not None
+            else (screens[0] if screens else QRect(0, 0, 1536, 982))
+        )
+        geometry, fallback_used = resolve_window_geometry(
+            self._saved_window_state,
+            screens,
+            primary,
+            minimum_width=max(1, int(self._window.minimumWidth() or 1)),
+            minimum_height=max(1, int(self._window.minimumHeight() or 1)),
+        )
+        self._window.setGeometry(geometry)
+        self._normal_geometry = QRect(geometry)
+        self._logger.info(
+            "Restored window state: x=%d y=%d width=%d height=%d maximized=%s fallback=%s",
+            geometry.x(),
+            geometry.y(),
+            geometry.width(),
+            geometry.height(),
+            bool(self._saved_window_state.get("maximized", False)),
+            fallback_used,
+        )
+
+    def _capture_window_state(self) -> None:
+        if self._window is None:
+            return
+        states = self._window.windowStates()
+        if states & (
+            Qt.WindowState.WindowMaximized
+            | Qt.WindowState.WindowMinimized
+            | Qt.WindowState.WindowFullScreen
+        ):
+            return
+        geometry = self._window.geometry()
+        if geometry.width() > 0 and geometry.height() > 0:
+            self._normal_geometry = QRect(geometry)
+
+    def _serialized_window_state(self) -> dict:
+        geometry = self._normal_geometry
+        if geometry is None and self._window is not None:
+            geometry = self._window.geometry()
+        if geometry is None:
+            geometry = QRect(0, 0, 1536, 982)
+        maximized = bool(
+            self._window is not None
+            and self._window.windowStates() & Qt.WindowState.WindowMaximized
+        )
+        return serialize_window_state(geometry, maximized)
+
+    def _persist_current_window_state(self) -> bool:
+        if not self._persist_window_state or self._window is None:
+            return True
+        state = self._serialized_window_state()
+        if state == self._last_persisted_state:
+            return True
+        try:
+            update_config({"window_state": state})
+        except Exception:
+            self._logger.exception("Window state save failed")
+            return False
+        self._last_persisted_state = dict(state)
+        return True
+
     def _set_native_control_state(self, hovered: str, pressed: str) -> None:
         if (
             hovered == self._native_hover_control
@@ -310,4 +398,71 @@ class WindowController(QObject):
         self.trayAvailabilityChanged.emit()
 
 
-__all__ = ["WindowController"]
+def serialize_window_state(geometry: QRect, maximized: bool) -> dict:
+    return {
+        "x": int(geometry.x()),
+        "y": int(geometry.y()),
+        "width": max(1, int(geometry.width())),
+        "height": max(1, int(geometry.height())),
+        "maximized": bool(maximized),
+    }
+
+
+def resolve_window_geometry(
+    state: dict,
+    screens: list[QRect],
+    primary: QRect,
+    *,
+    minimum_width: int,
+    minimum_height: int,
+) -> tuple[QRect, bool]:
+    available_screens = [QRect(rect) for rect in screens if rect.isValid()]
+    primary_rect = QRect(primary) if primary.isValid() else QRect(0, 0, 1536, 982)
+    if not available_screens:
+        available_screens = [primary_rect]
+
+    try:
+        requested_width = max(1, int(state.get("width", 1536)))
+        requested_height = max(1, int(state.get("height", 982)))
+    except (AttributeError, TypeError, ValueError):
+        requested_width, requested_height = 1536, 982
+
+    def fitted_size(screen: QRect) -> tuple[int, int]:
+        width = min(requested_width, screen.width())
+        height = min(requested_height, screen.height())
+        if screen.width() >= minimum_width:
+            width = max(width, minimum_width)
+        if screen.height() >= minimum_height:
+            height = max(height, minimum_height)
+        return max(1, width), max(1, height)
+
+    x = state.get("x") if isinstance(state, dict) else None
+    y = state.get("y") if isinstance(state, dict) else None
+    has_saved_position = x is not None and y is not None
+    if has_saved_position:
+        try:
+            candidate = QRect(int(x), int(y), requested_width, requested_height)
+        except (TypeError, ValueError):
+            has_saved_position = False
+
+    if has_saved_position:
+        intersections = [candidate.intersected(rect) for rect in available_screens]
+        best_index = max(
+            range(len(intersections)),
+            key=lambda index: intersections[index].width() * intersections[index].height(),
+        )
+        intersection = intersections[best_index]
+        if intersection.width() >= 64 and intersection.height() >= 48:
+            target = available_screens[best_index]
+            width, height = fitted_size(target)
+            clamped_x = min(max(candidate.x(), target.left()), target.right() - width + 1)
+            clamped_y = min(max(candidate.y(), target.top()), target.bottom() - height + 1)
+            return QRect(clamped_x, clamped_y, width, height), False
+
+    width, height = fitted_size(primary_rect)
+    centered_x = primary_rect.x() + (primary_rect.width() - width) // 2
+    centered_y = primary_rect.y() + (primary_rect.height() - height) // 2
+    return QRect(centered_x, centered_y, width, height), True
+
+
+__all__ = ["WindowController", "resolve_window_geometry", "serialize_window_state"]

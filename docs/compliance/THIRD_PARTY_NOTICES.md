@@ -177,3 +177,14 @@ This notice index names only the components actually found in the Qonic Audio v5
 - Upstream project: Microsoft
 - Source availability: https://learn.microsoft.com/en-us/visualstudio/releases/2026/redistribution
 - Notes: None.
+
+## Inno Setup
+
+- Component: Inno Setup installer engine and Simplified Chinese messages
+- Version: 6.7.3 / language file compatible with 6.5.0+
+- Copyright / attribution: Copyright (C) 1997-2026 Jordan Russell; portions Copyright (C) 2000-2026 Martijn Laan; Simplified Chinese translation maintained by Zhenghan Yang
+- License: Inno Setup License
+- License file location: `LICENSES/Inno-Setup-License.txt`
+- Upstream project: Jordan Russell's Software / Inno Setup
+- Source availability: https://github.com/jrsoftware/issrc/tree/is-6_7_3
+- Notes: Build/installer component only; the application runtime architecture and application licence are unchanged.

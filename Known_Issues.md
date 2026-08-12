@@ -1,20 +1,23 @@
-# Qonic Audio v5.0 内部测试版 Known Issues
+# Qonic Audio 5.0.0-beta.1 Internal Beta — Known Issues
 
-本文件记录 `v5.0 内部测试版` 当前仍未闭合的问题。它用于内部人工验收和代码审查，不代表可对外发布的产品结论。
+本文件记录当前 Internal Beta 仍未闭合的问题。项目没有 Official Stable Public Release。
 
-## 发行前必须继续跟进
+## Internal Beta Gate 仍需跟进
 
-- Phase 5.9.5 已完成两个一级工作区、全局播放器、文件树、统一编辑草稿/导出和任务队列交互整合；自动化与离屏验收通过，但真实媒体、DPI、双屏、窗口控制、托盘和最终视觉仍需人工发行验收。
-- v5.0 已建立以 `main_qml.py` 为入口的 PyInstaller onedir 构建和打包后 QML smoke。带内嵌封面音频流修复已从干净提交重建为新的权威归档；仍需在未安装 Python、FFmpeg 的干净 Windows 环境完成异机回归。
+- `5.0.0-beta.1` 安装器已使用 Inno Setup 6.7.3 编译并完成版本/SHA-256 核验；真实安装、启动、升级数据保留、卸载和干净 Windows 验收仍为 `NOT RUN`。
+- 安装器已配置随 Windows UI 语言自动选择简体中文或英文，当前 `zh-CN` 环境预期使用简体中文；真实向导显示与升级时重新检测语言仍待随安装验收人工确认。
+- 当前安装器未进行数字签名，状态为 `NotSigned`；按 Internal Beta Policy 属于可选增强，不是当前硬阻塞项。
+- `%LOCALAPPDATA%\Qonic Audio` 数据分离和旧便携配置迁移需要随新冻结包执行真实安装环境回归。
+- 新候选仍需复跑完整自动化、打包后 QML smoke、真实媒体和干净 Windows 验收；旧 v5.0/r4 结果仅作历史支持证据。
 - 真实 AppShell 测试曾因销毁时遗漏等待设置存储扫描线程而触发 `Qt6Core.dll / 0xc0000409`；测试清理现已与生产退出顺序对齐，完整回归恢复通过。正式候选仍需继续观察退出时后台线程和子进程是否全部收尾。
-- 项目自有代码已确定采用 `GPL-3.0-or-later`，顶层许可证已进入构建。FFmpeg、ncmdump、PySide6 / Qt 的来源、许可证与对应源码材料已随当前权威工件归档；正式发布前仍需确认 Microsoft VC Runtime 分发许可，并补齐 NumPy、Pillow、charset-normalizer 的许可证核查。
+- 项目自有代码采用 `GPL-3.0-or-later`。当前最终第三方审查为 0 BLOCKER、2 WARNING；所有许可证、通知、源码可得性与运行时清单要求继续适用于 Internal Beta。
 - 源码中 QML 与 Legacy Widgets 继续并存，但 v5.0 发行规范只打包 QML 主入口；旧 `gui.py` 仅作为兼容开发入口，不得再作为 v5.0 对外可执行入口。
 
-## 后续版本计划
+## 延后与可选事项
 
-- 下一阶段优先完成真实桌面、真实媒体、干净 Windows、第三方合规和品牌图标验收；全部完成后再统一晋级 `v5.0 RC1`。
-- 图标与视觉资源后续补齐：当前已使用现有图标资源完成打包，后续可继续补齐更完整的品牌图标、文件关联图标和安装包视觉资源。
-- 当前主分发形式为 PyInstaller onedir 的 `.7z` 便携包；7z SFX 仅保留可选内部验证。安装器、数字签名、自动更新和文件关联已明确延期到 RC 之后，不阻塞 RC1。
+- Brand/Trademark/Company/Commercial signing/Stable channel/marketing/store/public support 均为 `DEFERRED — PUBLIC RELEASE ONLY`，不阻塞 Internal Beta。
+- 自动更新、Crash reporting、签名、文件关联和 Release automation 为可选增强。
+- Qonic 是工作名称，Public commercial brand 尚未冻结；Qonance 未采用。
 - 任务状态暂不持久化：任务队列仍以内存状态为主，程序重启后不会恢复上一次的任务队列。
 
 ## 当前可接受限制

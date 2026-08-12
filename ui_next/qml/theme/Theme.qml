@@ -1,7 +1,7 @@
 import QtQuick
 
-// Session-only visual tokens. Theme selection lives in this QML object and is
-// deliberately not connected to SettingsViewModel or config.json.
+// Central visual tokens. SettingsViewModel owns persistence; this object owns
+// only the resolved palette used by the current QML scene.
 QtObject {
     id: root
 

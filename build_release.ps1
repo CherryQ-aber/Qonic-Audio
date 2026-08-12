@@ -20,9 +20,13 @@ $ReleaseNotesPath = Join-Path $Root ((& python -c "from app_info import APP_RELE
 $KnownIssuesPath = Join-Path $Root "Known_Issues.md"
 $TestChecklistPath = Join-Path $Root "TEST_CHECKLIST.md"
 $ExternalTestGuidePath = Join-Path $Root "EXTERNAL_TEST_GUIDE.md"
+$ProjectStatusPath = Join-Path $Root "docs\PROJECT_STATUS.md"
+$ReleasePolicyPath = Join-Path $Root "docs\RELEASE_STRATEGY.md"
 $ConfigExamplePath = Join-Path $Root "config.example.json"
 $ProjectLicensePath = Join-Path $Root "LICENSE"
 $LicensesPath = Join-Path $Root "LICENSES"
+$StagedLicensesPath = Join-Path $Root "docs\compliance\staging\licenses"
+$ThirdPartyNoticesPath = Join-Path $Root "docs\compliance\THIRD_PARTY_NOTICES.md"
 $VersionInfoPath = Join-Path $Root "windows_version_info.txt"
 
 function Get-SafeChildPath {
@@ -124,8 +128,11 @@ foreach ($requiredFile in @(
     $KnownIssuesPath,
     $TestChecklistPath,
     $ExternalTestGuidePath,
+    $ProjectStatusPath,
+    $ReleasePolicyPath,
     $ConfigExamplePath,
     $ProjectLicensePath,
+    $ThirdPartyNoticesPath,
     $VersionInfoPath,
     (Join-Path $Root "Tools\ffmpeg\bin\ffmpeg.exe"),
     (Join-Path $Root "Tools\ffmpeg\bin\ffprobe.exe"),
@@ -153,21 +160,25 @@ $BuiltAppPath = Join-Path $DistPath $AppName
 Reset-SafeDirectory -Path $ReleasePath -Parent $Root
 Copy-Item -Path (Join-Path $BuiltAppPath "*") -Destination $ReleasePath -Recurse -Force
 
-New-Item -ItemType Directory -Path (Join-Path $ReleasePath "logs") -Force | Out-Null
-New-Item -ItemType Directory -Path (Join-Path $ReleasePath "Music_Output") -Force | Out-Null
-New-Item -ItemType Directory -Path (Join-Path $ReleasePath "AudioEditor_Output") -Force | Out-Null
 Copy-Item -LiteralPath $ReadmePath -Destination (Join-Path $ReleasePath "README.md") -Force
 Copy-Item -LiteralPath $ChangelogPath -Destination (Join-Path $ReleasePath "CHANGELOG.md") -Force
 Copy-Item -LiteralPath $ReleaseNotesPath -Destination (Join-Path $ReleasePath (Split-Path -Leaf $ReleaseNotesPath)) -Force
 Copy-Item -LiteralPath $KnownIssuesPath -Destination (Join-Path $ReleasePath "Known_Issues.md") -Force
 Copy-Item -LiteralPath $TestChecklistPath -Destination (Join-Path $ReleasePath "TEST_CHECKLIST.md") -Force
 Copy-Item -LiteralPath $ExternalTestGuidePath -Destination (Join-Path $ReleasePath "EXTERNAL_TEST_GUIDE.md") -Force
+New-Item -ItemType Directory -Path (Join-Path $ReleasePath "docs") -Force | Out-Null
+Copy-Item -LiteralPath $ProjectStatusPath -Destination (Join-Path $ReleasePath "docs\PROJECT_STATUS.md") -Force
+Copy-Item -LiteralPath $ReleasePolicyPath -Destination (Join-Path $ReleasePath "docs\RELEASE_STRATEGY.md") -Force
 Copy-Item -LiteralPath $ConfigExamplePath -Destination (Join-Path $ReleasePath "config.example.json") -Force
 Copy-Item -LiteralPath $ProjectLicensePath -Destination (Join-Path $ReleasePath "LICENSE") -Force
 
 if (Test-Path -LiteralPath $LicensesPath) {
     Copy-Item -LiteralPath $LicensesPath -Destination (Join-Path $ReleasePath "LICENSES") -Recurse -Force
 }
+if (Test-Path -LiteralPath $StagedLicensesPath) {
+    Copy-Item -Path (Join-Path $StagedLicensesPath "*") -Destination (Join-Path $ReleasePath "LICENSES") -Recurse -Force
+}
+Copy-Item -LiteralPath $ThirdPartyNoticesPath -Destination (Join-Path $ReleasePath "THIRD_PARTY_NOTICES.md") -Force
 
 $ReleaseExe = Join-Path $ReleasePath "$AppName.exe"
 $ReleaseQmlEntry = Join-Path $ReleasePath "_internal\ui_next\qml\AppShell.qml"
@@ -189,9 +200,15 @@ $previousQtPlatform = [Environment]::GetEnvironmentVariable(
     "QT_QPA_PLATFORM",
     "Process"
 )
+$previousLocalAppData = [Environment]::GetEnvironmentVariable(
+    "LOCALAPPDATA",
+    "Process"
+)
+$smokeLocalAppData = Join-Path $BuildRoot "smoke-localappdata"
 
 try {
     $env:QT_QPA_PLATFORM = "offscreen"
+    $env:LOCALAPPDATA = $smokeLocalAppData
     $smokeProcess = Start-Process `
         -FilePath $ReleaseExe `
         -ArgumentList @(
@@ -209,6 +226,12 @@ finally {
     else {
         $env:QT_QPA_PLATFORM = $previousQtPlatform
     }
+    if ($null -eq $previousLocalAppData) {
+        Remove-Item Env:LOCALAPPDATA -ErrorAction SilentlyContinue
+    }
+    else {
+        $env:LOCALAPPDATA = $previousLocalAppData
+    }
 }
 
 if ($smokeProcess.ExitCode -ne 0) {
@@ -222,6 +245,11 @@ if (Test-Path -LiteralPath $ReleaseRuntimeLog) {
 
 foreach ($forbiddenPath in @(
     (Join-Path $ReleasePath "config.json"),
+    (Join-Path $ReleasePath "Cache"),
+    (Join-Path $ReleasePath "Temp"),
+    (Join-Path $ReleasePath "logs"),
+    (Join-Path $ReleasePath "Music_Output"),
+    (Join-Path $ReleasePath "AudioEditor_Output"),
     $ReleaseRuntimeLog,
     (Join-Path $ReleasePath "_internal\Tools\ffmpeg\bin\ffplay.exe")
 )) {

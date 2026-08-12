@@ -9,23 +9,23 @@ class QmlLightThemeCoverageTests(unittest.TestCase):
     def _source(self, path: str) -> str:
         return (PROJECT_ROOT / path).read_text(encoding="utf-8")
 
-    def test_settings_switch_is_session_only_and_never_updates_theme_config_draft(self):
+    def test_settings_switch_persists_through_the_settings_view_model(self):
         source = self._source("ui_next/qml/pages/SettingsPage.qml")
         self.assertIn('"value": "dark"', source)
         self.assertIn('"value": "light"', source)
         self.assertIn('"value": "black"', source)
         self.assertIn('"value": "purple"', source)
-        self.assertIn("onFormatSelected: theme.setMode(value)", source)
-        self.assertIn("仅本次运行生效", source)
+        self.assertIn('"value": "system"', source)
+        self.assertIn("settingsViewModel.applyThemeMode(value)", source)
+        self.assertIn("选择后立即保存", source)
         self.assertNotIn('updatePendingValue("theme_mode"', source)
-        self.assertNotIn("save_config", source)
 
     def test_optional_environment_theme_input_is_limited_to_supported_palettes(self):
         source = self._source("main_qml.py")
         self.assertIn('"QONIC_QML_THEME"', source)
         self.assertIn('"CHERRYQ_QML_THEME"', source)
-        self.assertIn('{"dark", "light", "black", "purple"}', source)
-        self.assertIn("requested_theme not in supported_themes", source)
+        self.assertIn('{"system", "dark", "light", "black", "purple"}', source)
+        self.assertIn("raw_requested_theme not in supported_themes", source)
         self.assertIn('setContextProperty("qmlThemeMode", qml_theme_mode)', source)
 
     def test_light_critical_controls_use_shared_theme_components(self):

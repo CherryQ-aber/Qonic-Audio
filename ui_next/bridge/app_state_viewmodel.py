@@ -6,9 +6,17 @@ from ui_next.bridge.base_viewmodel import BaseViewModel
 from ui_next.bridge.capabilities import CapabilityGate
 
 try:
-    from app_info import APP_DISPLAY_NAME, APP_STAGE, APP_VERSION
+    from app_info import (
+        APP_DISPLAY_NAME,
+        APP_PROJECT_CLASSIFICATION,
+        APP_RELEASE_CHANNEL,
+        APP_STAGE,
+        APP_VERSION,
+    )
 except ImportError:
     APP_DISPLAY_NAME = "Qonic Audio"
+    APP_PROJECT_CLASSIFICATION = "Personal Software Project"
+    APP_RELEASE_CHANNEL = "Internal Beta"
     APP_STAGE = "QML UI Preview"
     APP_VERSION = "Preview"
 
@@ -126,11 +134,19 @@ class AppStateViewModel(BaseViewModel):
 
     @Property(str, constant=True)
     def versionLabel(self) -> str:
-        return f"v{APP_VERSION}"
+        return f"v{APP_VERSION} · {APP_RELEASE_CHANNEL}"
 
     @Property(str, constant=True)
     def stageLabel(self) -> str:
         return APP_STAGE
+
+    @Property(str, constant=True)
+    def releaseChannelLabel(self) -> str:
+        return APP_RELEASE_CHANNEL
+
+    @Property(str, constant=True)
+    def projectClassification(self) -> str:
+        return APP_PROJECT_CLASSIFICATION
 
     @Property(str, constant=True)
     def previewMode(self) -> str:

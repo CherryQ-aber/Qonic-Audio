@@ -1,32 +1,105 @@
-# Qonic Audio 发行策略
+# Qonic Audio Release and Distribution Policy
 
-## 当前结论
+Authority: **Source of Truth for release channels, distribution, and gates**
 
-- 项目采用开源路线，项目自有代码以 `GPL-3.0-or-later` 发布。
-- 当前版本继续保持 `v5.0 Internal Test`；只有完成本文件的 RC 门禁后，才统一晋级为 `v5.0 RC1`。
-- 当前主分发工件为便携版 `.7z`，同时发布 SHA-256 校验清单。
-- 7z SFX 只作为可选内部构建验证，不作为 GitHub Release 的主下载。
-- 安装器、数字签名、自动更新和文件关联移入 RC 之后的独立计划，不阻塞 RC1。
+Effective: 2026-08-12
 
-## RC1 晋级门禁
+## Current policy
 
-以下项目全部完成后，才能同时修改版本源、包名、Windows 版本资源和发行说明：
+Qonic Audio is a Personal Software Project under active development. The current and default release channel is **Internal Beta**. It may remain in this channel indefinitely regardless of feature count or major version number.
 
-1. 真实桌面人工验收完成，包括四套主题、100% / 125% / 150% DPI、双屏、Snap、托盘和窗口控制。
-2. 使用真实媒体完成自动转码、NCM、Metadata、Lyrics、Cover、Pitch、播放器和 no-clobber 回归。
-3. 在未安装 Python、FFmpeg、ncmdump 和开发工具的干净 Windows 环境完成异机验收。
-4. FFmpeg、ncmdump、PySide6 / Qt 的来源、许可证文本、版权声明和源码获取义务形成可随包审核的材料。
-5. 项目著作权标注主体得到确认，避免把品牌名误写成尚未成立的法律实体。
-6. Qonic 品牌图标的使用权得到确认。
-7. 从干净发行提交构建 `.7z`，通过完整测试、打包后 smoke、`7z t`、SHA-256 和敏感信息扫描。
+There is currently no Stable, Official Public, Production, or Latest Stable release. Only the project owner can explicitly reactivate a Public Stable process in the future.
 
-## RC1 工件建议
+## Release flow
 
-推荐 GitHub Release 同时提供：
+```text
+Development Build
+↓
+Internal Validation
+↓
+Internal Beta Build
+↓
+GitHub Pre-release (optional)
+↓
+Personal / limited tester use
+↓
+Continue iteration
+```
 
-- `Qonic_Audio_v5.0_rc1.7z`
-- `Qonic_Audio_v5.0_rc1-SHA256SUMS.txt`
-- 与 tag 对应的源代码归档
-- `LICENSE`、`LICENSES/`、Release Notes 和 Known Issues
+## Channels
 
-RC1 不默认发布未签名 SFX `.exe`，降低 SmartScreen 误解和“安装器”认知混淆。安装器与数字签名应在便携版 RC 稳定后单独设计、测试和验收。
+- `dev`: local development and incomplete validation.
+- `internal`: owner/internal validation candidate.
+- `beta`: installable Internal Beta candidate for personal or limited tester use.
+
+Current channel: `beta` / **Internal Beta**.
+
+The centralized version source is `app_info.py`. The first build under this policy is `5.0.0-beta.1`; the project is not forced back to 0.x.
+
+## GitHub distribution
+
+GitHub may host source, documentation, issues, roadmap, changelog, tests, build scripts, tags, and Internal Beta artifacts. Every binary Internal Beta release must be marked **Pre-release**.
+
+Allowed artifacts include:
+
+- Windows installer;
+- optional portable PyInstaller onedir archive;
+- SHA-256 checksum file;
+- `LICENSE`, third-party notices/licences, and required source-availability material;
+- release notes and known issues.
+
+Required release-note statement:
+
+> Internal Beta Build
+>
+> This build is part of an ongoing personal software project. It is primarily maintained for personal use and limited testing. It is not an official stable public release.
+
+Internal Beta releases must not use `Latest Stable`, `Official Stable`, `Production Release`, or `Public Stable Release` labels.
+
+## Installer policy
+
+The installer is retained as core infrastructure because the application is a long-lived desktop tool. The existing PyInstaller `onedir` remains the application runtime; the installer only installs that verified tree.
+
+The active installer contract includes:
+
+- installation under Program Files;
+- Start Menu entry;
+- optional desktop shortcut;
+- uninstall support;
+- configuration/cache/log/temp outside the program directory;
+- preserved LocalAppData during uninstall and upgrades;
+- bundled runtime dependencies, licences, and notices.
+
+Unsigned Internal Beta installers may be shared with named testers with clear checksum and SmartScreen expectations. Commercial code signing is optional and not a current blocker.
+
+## Internal Beta Gate — active
+
+A candidate may be installed or optionally published as a GitHub Pre-release only when:
+
+1. centralized version and channel metadata are consistent;
+2. PyInstaller onedir and installer builds complete from controlled scripts;
+3. package runs without user-installed Python, FFmpeg, ncmdump, or developer tools;
+4. install, upgrade-data preservation, and uninstall behavior are verified;
+5. config/cache/log/temp remain outside Program Files;
+6. source protection, no-clobber, and configuration migration remain valid;
+7. complete regression, QML smoke, and installer/package checks pass;
+8. licences, notices, runtime inventory, corresponding source, and SHA-256 artifacts are present;
+9. P0/P1 defects are closed or explicitly block the candidate.
+
+Detailed statuses are recorded in `TEST_CHECKLIST.md`.
+
+## Public Stable Gate — deferred
+
+Status: **DEFERRED — PUBLIC RELEASE ONLY**.
+
+This future gate includes public brand clearance, trademark decisions, Stable-channel policy, public support commitments, commercial signing if chosen, website/store/marketing work, and applicable public privacy/legal documents. Company formation is not presumed to be necessary unless a future owner decision and distribution model require it.
+
+None of these items blocks Internal Beta development or limited distribution.
+
+## Optional enhancements
+
+Automatic updates, crash reporting, release automation, GitHub Actions builds, signing, file associations, and incremental updates may be developed later. They are not current Internal Beta blockers unless a candidate explicitly depends on them.
+
+## Historical evidence
+
+The 2026-07-30 authority record and r3/r4 public-publication candidate evidence remain intact. They document earlier technical/compliance work but do not establish a current public-release target.

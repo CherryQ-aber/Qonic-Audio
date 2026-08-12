@@ -180,20 +180,20 @@ class CapabilityGateTests(unittest.TestCase):
                 return_value=current_config,
             ),
             patch(
-                "ui_next.bridge.settings_viewmodel.save_config",
-                side_effect=lambda data: dict(data),
-            ) as save_config,
+                "ui_next.bridge.settings_viewmodel.update_config",
+                side_effect=lambda data: {**current_config, **data},
+            ) as update_config,
         ):
             view_model = SettingsViewModel(capability_gate=gate)
             view_model.updatePendingValue("target_format", "flac")
 
             with patch.object(view_model, "_confirm_live_save", return_value=False):
                 view_model.savePendingChanges()
-            save_config.assert_not_called()
+            update_config.assert_not_called()
 
             with patch.object(view_model, "_confirm_live_save", return_value=True):
                 view_model.savePendingChanges()
-            save_config.assert_called_once()
+            update_config.assert_called_once()
 
     def test_workflow_capabilities_are_allowed_but_unknown_is_rejected(self):
         gate = CapabilityGate(
@@ -271,14 +271,14 @@ class CapabilityGuardIntegrationTests(unittest.TestCase):
                 return_value=real_config,
             ),
             patch(
-                "ui_next.bridge.settings_viewmodel.save_config"
-            ) as save_config,
+                "ui_next.bridge.settings_viewmodel.update_config"
+            ) as update_config,
         ):
             view_model = SettingsViewModel(live_mode=True)
             view_model.updatePendingValue("target_format", "flac")
             view_model.savePendingChanges()
 
-        save_config.assert_not_called()
+        update_config.assert_not_called()
         self.assertTrue(view_model.previewMode)
         self.assertIn("当前不可用", view_model.statusMessage)
 

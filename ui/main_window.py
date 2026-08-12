@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QGroupBox,
     QHeaderView,
     QHBoxLayout,
+    QInputDialog,
     QLabel,
     QLineEdit,
     QMenu,
@@ -3029,8 +3030,9 @@ class MainWindow(QMainWindow):
             )
             return
 
-        # 首次启动始终弹出引导，让用户了解监听目录的概念
-        if not is_first_launch_completed() or not is_valid_watch_folder():
+        # First Run has its own durable state; an invalid/removed watch folder
+        # is a normal Settings concern and must not re-trigger onboarding.
+        if not is_first_launch_completed():
             self.show_first_use_guidance()
             return
 
@@ -3043,41 +3045,62 @@ class MainWindow(QMainWindow):
     # =========================
     def show_first_use_guidance(self):
         candidates = find_watch_folder_candidates()
-
-        if candidates:
+        candidate = ""
+        if len(candidates) == 1:
             candidate = candidates[0]
-            result = QMessageBox.question(
+        elif len(candidates) > 1:
+            candidate, accepted = QInputDialog.getItem(
                 self,
-                "找到可能的下载目录",
-                (
-                    "当前监听目录不可用，但找到了一个可能的网易云下载目录：\n\n"
-                    f"{candidate}\n\n"
-                    "是否使用这个目录作为监听目录？"
-                )
+                "检测到多个可用目录",
+                "请选择监听目录：",
+                candidates,
+                0,
+                False,
             )
+            if not accepted:
+                candidate = ""
 
-            if result == QMessageBox.StandardButton.Yes:
-                self.config_data["watch_folder"] = candidate
-                self.config_data["first_launch_completed"] = True
-                self.config_data = self._save_config_if_allowed(self.config_data)
-                self.watch_label.setText(f"监听目录:\n{candidate}")
-                self.log_box.append(f"已使用自动发现的监听目录:\n{candidate}")
-                self.update_overview_label()
+        prompt = QMessageBox(self)
+        prompt.setWindowTitle("Qonic Audio 首次启动")
+        if candidate:
+            prompt.setText(f"检测到可能的音乐下载目录：\n\n{candidate}")
+            prompt.setInformativeText("是否将此目录设为自动监听目录？")
+        else:
+            prompt.setText("暂未自动检测到支持的音乐下载目录。")
+            prompt.setInformativeText("你可以手动选择，也可以稍后在设置中配置。")
+        use_button = prompt.addButton("使用此目录", QMessageBox.ButtonRole.AcceptRole)
+        use_button.setEnabled(bool(candidate))
+        choose_button = prompt.addButton("选择其他目录", QMessageBox.ButtonRole.ActionRole)
+        skip_button = prompt.addButton("暂时跳过", QMessageBox.ButtonRole.RejectRole)
+        prompt.exec()
 
-                if self.auto_start_checkbox.isChecked():
-                    self.start_monitor()
-
+        selected = candidate
+        if prompt.clickedButton() is choose_button:
+            selected = QFileDialog.getExistingDirectory(self, "选择监听目录")
+            if not selected:
                 return
+        elif prompt.clickedButton() is skip_button:
+            selected = ""
+        elif prompt.clickedButton() is not use_button:
+            return
 
-        # 无论用户是否接受了候选目录，只要看到了引导就算完成首次引导
-        self.config_data["first_launch_completed"] = True
-        self.config_data = self._save_config_if_allowed(self.config_data)
+        next_config = dict(self.config_data)
+        if selected:
+            next_config["watch_folder"] = os.path.normpath(selected)
+        next_config["first_launch_completed"] = True
+        try:
+            self.config_data = self._save_config_if_allowed(next_config)
+        except Exception as exc:
+            logging.exception("首次启动设置保存失败")
+            QMessageBox.critical(self, "保存失败", f"首次启动设置未能保存：\n{exc}")
+            return
 
-        QMessageBox.information(
-            self,
-            "首次使用提示",
-            "请先选择监听目录。通常可以选择网易云音乐的下载目录，设置后即可开始监听。"
-        )
+        if selected:
+            self.watch_label.setText(f"监听目录:\n{selected}")
+            self.log_box.append(f"首次启动监听目录已保存:\n{selected}")
+        else:
+            self.log_box.append("首次启动已跳过监听目录设置")
+        self.update_overview_label()
 
     # =========================
     # 切换目录后扫描提示

@@ -1,34 +1,31 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "recorded_at": "2026-08-12",
-  "candidate": {
-    "name": "r4 LGPL publication candidate",
+  "current_policy": {
+    "project_classification": "PERSONAL_SOFTWARE_PROJECT",
+    "release_channel": "INTERNAL_BETA",
+    "stable_public_release_exists": false,
+    "public_stable_gate": "DEFERRED_PUBLIC_RELEASE_ONLY",
+    "overall_status": "NOT_ACTIVE_NOT_BLOCKING_INTERNAL_BETA"
+  },
+  "brand": {
+    "current_name_role": "WORKING_PROJECT_NAME",
+    "public_commercial_brand": "NOT_FROZEN",
+    "qonance_adopted": false,
+    "trademark_clearance": "DEFERRED_UNTIL_PUBLIC_RELEASE_IS_PLANNED"
+  },
+  "historical_context": {
+    "former_candidate": "r4 LGPL publication candidate",
     "archive_sha256": "CC51CB7B7553821DE644D92C6AD3430F30C404A3F976B19CB6E02028771C2FFE",
     "embedded_version": "5.0 Internal Test",
-    "release_eligible": false
+    "former_selected_public_version": "1.0.0",
+    "former_qonic_trademark_gate": "BLOCKER_TRADEMARK_CLEARANCE_REQUIRED",
+    "current_classification": "HISTORICAL_EVIDENCE_FROM_SUPERSEDED_PUBLIC_RELEASE_PLAN"
   },
-  "owner_reported_gates": {
-    "real_desktop_acceptance": "PASS",
-    "real_media_workflow_acceptance": "PASS",
-    "clean_windows_other_machine_acceptance": "PASS"
-  },
-  "rights_and_licensing": {
-    "owned_source_and_project_documentation": "PENDING_OWNER_CONFIRMATION",
-    "owned_icon_assets": "PENDING_OWNER_CONFIRMATION",
-    "third_party_dependencies": "MANAGED_UNDER_RESPECTIVE_LICENSES",
-    "qonic_brand_name": {
-      "status": "BLOCKER_TRADEMARK_CLEARANCE_REQUIRED",
-      "owner_asserts_complete_public_release_rights": false,
-      "reason": "Same-name software companies and software-category trademark records were identified.",
-      "required_action": "Complete trademark clearance for every intended target market before closing this gate."
-    }
-  },
-  "version": {
-    "selected_public_version": "1.0.0",
-    "source_metadata_updated": false,
-    "final_1_0_0_candidate_built": false,
-    "final_archive_reviewed": false
-  },
-  "overall_status": "BLOCKED_BY_QONIC_TRADEMARK_CLEARANCE",
-  "next_action": "Resolve or replace the Qonic public brand, record owner confirmation for owned source, documentation and icons, then update version metadata and build a new controlled 1.0.0 candidate."
+  "internal_beta_effect": {
+    "trademark_is_blocker": false,
+    "company_is_required": false,
+    "commercial_signing_is_required": false,
+    "github_distribution_rule": "PRE_RELEASE_ONLY"
+  }
 }

@@ -3,7 +3,8 @@
 ## 测试包定位
 
 - 软件：Qonic Audio Converter & Editor
-- 版本：v5.0 Internal Test
+- 版本：5.0.0-beta.1
+- 发行渠道：Internal Beta / GitHub Pre-release（如发布）
 - 平台：Windows x64
 - 形式：免安装 `.7z` 便携测试包
 
@@ -61,7 +62,7 @@
 - Windows 版本、DPI、显示器数量和音频设备；
 - 操作步骤、预期结果和实际结果；
 - 完整错误文字与截图；
-- 解压目录下的 `logs/runtime.log`；
+- `%LOCALAPPDATA%\Qonic Audio\Logs\runtime.log`；
 - 发生问题的文件格式、大小和是否跨盘。
 
 不需要发送包含隐私或版权内容的原始音频。若问题只能由特定文件触发，可以先提供文件容器、编码、时长和脱敏后的日志。

@@ -3,8 +3,11 @@ import os
 import shutil
 import sys
 import tempfile
+import threading
+import logging
 
-from app_info import APP_DISPLAY_NAME, APP_VERSION
+from app_info import APP_DATA_DIR_NAME, APP_DISPLAY_NAME, APP_VERSION
+from app_paths import APP_PATHS
 from formats import DEFAULT_TARGET_FORMAT, normalize_target_format
 
 APP_NAME = APP_DISPLAY_NAME
@@ -12,17 +15,44 @@ THEME_MODE_OPTIONS = (
     "light",
     "dark",
     "system",
+    "black",
+    "purple",
 )
 
 # =========================
-# 程序基础目录
+# 程序与用户数据目录
 # =========================
-if getattr(sys, "frozen", False):
-    BASE_DIR = os.path.dirname(sys.executable)
-else:
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+IS_FROZEN = bool(getattr(sys, "frozen", False))
+APP_DIR = APP_PATHS.install_dir
 
-CONFIG_FILE = os.path.join(BASE_DIR, "config.json")
+# BASE_DIR is retained as the runtime-resource compatibility name used by
+# existing modules. Mutable installed data is rooted separately below.
+BASE_DIR = APP_DIR
+
+
+USER_DATA_DIR = APP_PATHS.user_data_dir
+CONFIG_DIR = APP_PATHS.user_config_dir
+CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
+CACHE_DIR = APP_PATHS.user_cache_dir
+LOG_DIR = APP_PATHS.user_log_dir
+TEMP_DIR = APP_PATHS.user_temp_dir
+
+# Both locations have existed in test/portable/early-installer builds.  They
+# remain read-only migration sources and are never deleted or modified.
+LEGACY_CONFIG_FILES = tuple(
+    dict.fromkeys(
+        (
+            os.path.join(USER_DATA_DIR, "config.json"),
+            os.path.join(APP_DIR, "config.json"),
+        )
+    )
+)
+LEGACY_CONFIG_FILE = LEGACY_CONFIG_FILES[-1]
+
+_CONFIG_LOCK = threading.RLock()
+_config_logger = logging.getLogger("AudioConverter.Config")
+_LAST_MIGRATION_EVENT = None
+
 
 
 def resolve_app_path(*parts):
@@ -39,9 +69,7 @@ def resolve_app_path(*parts):
     return direct_path
 
 
-TEMP_DIR = resolve_app_path("Temp")
 NCM_TEMP_DIR = os.path.join(TEMP_DIR, "NCM")
-CACHE_DIR = resolve_app_path("Cache")
 NCM_DECODE_TEMP_DIR = os.path.join(TEMP_DIR, "NCMDecode")
 PITCH_PREVIEW_TEMP_DIR = os.path.join(TEMP_DIR, "PitchPreview")
 EDITOR_TEMP_DIR = os.path.join(TEMP_DIR, "Editor")
@@ -50,13 +78,25 @@ WAVEFORM_CACHE_DIR = os.path.join(CACHE_DIR, "Waveform")
 COVER_THUMB_CACHE_DIR = os.path.join(CACHE_DIR, "CoverThumbs")
 METADATA_CACHE_DIR = os.path.join(CACHE_DIR, "Metadata")
 
+if IS_FROZEN:
+    DEFAULT_OUTPUT_ROOT = os.path.join(
+        os.path.expanduser("~"),
+        "Music",
+        APP_DATA_DIR_NAME,
+    )
+else:
+    DEFAULT_OUTPUT_ROOT = BASE_DIR
+
 # =========================
 # 默认配置
 # =========================
 DEFAULT_CONFIG = {
     "watch_folder": "C:/CloudMusic/VipSongsDownload",
-    "output_folder": os.path.join(BASE_DIR, "Music_Output"),
-    "editor_output_folder": os.path.join(BASE_DIR, "AudioEditor_Output"),
+    "output_folder": os.path.join(DEFAULT_OUTPUT_ROOT, "Music_Output"),
+    "editor_output_folder": os.path.join(
+        DEFAULT_OUTPUT_ROOT,
+        "AudioEditor_Output",
+    ),
     "editor_temp_folder": EDITOR_TEMP_DIR,
     "editor_browser_folder": "",
     "editor_project_folders": [],
@@ -78,6 +118,13 @@ DEFAULT_CONFIG = {
     "scan_existing_on_start": False,
     "theme_mode": "system",
     "first_launch_completed": False,
+    "window_state": {
+        "x": None,
+        "y": None,
+        "width": 1536,
+        "height": 982,
+        "maximized": False,
+    },
     # UI 预留字段：当前 Audio Editor Beta 只做前端占位。
     # 现有 converter.py / watcher.py 后端不得读取这些字段。
     "pitch_shift_enabled": False,
@@ -95,8 +142,51 @@ def _merge_with_default(config_data):
     if isinstance(config_data, dict):
         merged.update(config_data)
 
+    if IS_FROZEN:
+        # A portable build may leave absolute defaults beside the executable.
+        # Preserve every user-selected path, but migrate those exact legacy
+        # defaults so a Program Files installation remains writable.
+        legacy_defaults = {
+            "output_folder": os.path.join(APP_DIR, "Music_Output"),
+            "editor_output_folder": os.path.join(APP_DIR, "AudioEditor_Output"),
+            "editor_temp_folder": os.path.join(APP_DIR, "Temp", "Editor"),
+        }
+        installed_defaults = {
+            "output_folder": DEFAULT_CONFIG["output_folder"],
+            "editor_output_folder": DEFAULT_CONFIG["editor_output_folder"],
+            "editor_temp_folder": DEFAULT_CONFIG["editor_temp_folder"],
+        }
+        for key, legacy_path in legacy_defaults.items():
+            current_path = str(merged.get(key) or "")
+            if os.path.normcase(os.path.abspath(current_path)) == os.path.normcase(
+                os.path.abspath(legacy_path)
+            ):
+                merged[key] = installed_defaults[key]
+
     if merged.get("theme_mode") not in THEME_MODE_OPTIONS:
         merged["theme_mode"] = DEFAULT_CONFIG["theme_mode"]
+
+    default_window_state = DEFAULT_CONFIG["window_state"]
+    window_state = merged.get("window_state")
+    if not isinstance(window_state, dict):
+        window_state = {}
+    normalized_window_state = dict(default_window_state)
+    normalized_window_state.update(window_state)
+    for key in ("x", "y"):
+        try:
+            value = normalized_window_state.get(key)
+            normalized_window_state[key] = None if value is None else int(value)
+        except (TypeError, ValueError):
+            normalized_window_state[key] = None
+    for key, fallback in (("width", 1536), ("height", 982)):
+        try:
+            normalized_window_state[key] = max(1, int(normalized_window_state.get(key)))
+        except (TypeError, ValueError):
+            normalized_window_state[key] = fallback
+    normalized_window_state["maximized"] = _as_bool(
+        normalized_window_state.get("maximized"), False
+    )
+    merged["window_state"] = normalized_window_state
 
     if merged.get("editor_file_bar_mode") not in {"fixed", "floating"}:
         merged["editor_file_bar_mode"] = DEFAULT_CONFIG["editor_file_bar_mode"]
@@ -176,15 +266,128 @@ def _merge_with_default(config_data):
 # =========================
 # 读取配置
 # =========================
-def load_config():
+def _looks_like_existing_user_config(data):
+    if not isinstance(data, dict) or not data:
+        return False
+    durable_keys = {
+        "watch_folder",
+        "output_folder",
+        "editor_output_folder",
+        "target_format",
+        "theme_mode",
+        "audio_output_device_id",
+        "editor_project_folders",
+        "folder_browser_favorites",
+        "first_launch_completed",
+    }
+    return any(key in data for key in durable_keys)
+
+
+def _prepare_migrated_config(data):
+    migrated = _merge_with_default(data)
+    if _looks_like_existing_user_config(data):
+        # A legacy config proves that this profile already used an older build.
+        # Do not show the new-install prompt merely because the old schema did
+        # not yet have a durable first-run field (or left its legacy default).
+        migrated["first_launch_completed"] = True
+    return migrated
+
+
+def _write_config_atomic(config_data, destination=None):
+    target = os.fspath(destination or CONFIG_FILE)
+    config_dir = os.path.dirname(target) or "."
+    os.makedirs(config_dir, exist_ok=True)
+    descriptor, temp_path = tempfile.mkstemp(
+        prefix=".config.",
+        suffix=".tmp",
+        dir=config_dir,
+    )
     try:
-        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-
-        return _merge_with_default(data)
-
+        with os.fdopen(descriptor, "w", encoding="utf-8") as f:
+            descriptor = None
+            json.dump(config_data, f, indent=4, ensure_ascii=False)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(temp_path, target)
     except Exception:
-        return DEFAULT_CONFIG.copy()
+        if descriptor is not None:
+            os.close(descriptor)
+        raise
+    finally:
+        if os.path.exists(temp_path):
+            try:
+                os.remove(temp_path)
+            except OSError:
+                pass
+
+
+def _migrate_legacy_config_if_needed():
+    global _LAST_MIGRATION_EVENT
+    if os.path.exists(CONFIG_FILE):
+        return None
+
+    for legacy_path in LEGACY_CONFIG_FILES:
+        if os.path.normcase(os.path.abspath(legacy_path)) == os.path.normcase(
+            os.path.abspath(CONFIG_FILE)
+        ) or not os.path.isfile(legacy_path):
+            continue
+        try:
+            with open(legacy_path, "r", encoding="utf-8") as f:
+                legacy_data = json.load(f)
+            migrated = _prepare_migrated_config(legacy_data)
+            _write_config_atomic(migrated)
+            _config_logger.info(
+                "Legacy config migration succeeded: %s -> %s",
+                legacy_path,
+                CONFIG_FILE,
+            )
+            _LAST_MIGRATION_EVENT = {
+                "ok": True,
+                "source": legacy_path,
+                "destination": CONFIG_FILE,
+                "error": "",
+            }
+            return migrated
+        except Exception as exc:
+            _config_logger.exception(
+                "Legacy config migration failed: %s -> %s",
+                legacy_path,
+                CONFIG_FILE,
+            )
+            _LAST_MIGRATION_EVENT = {
+                "ok": False,
+                "source": legacy_path,
+                "destination": CONFIG_FILE,
+                "error": str(exc),
+            }
+            if "legacy_data" in locals():
+                return _prepare_migrated_config(legacy_data)
+    return None
+
+
+def get_last_config_migration_event():
+    return dict(_LAST_MIGRATION_EVENT) if _LAST_MIGRATION_EVENT else None
+
+
+def load_config():
+    with _CONFIG_LOCK:
+        migrated = _migrate_legacy_config_if_needed()
+        if migrated is not None:
+            return _merge_with_default(migrated)
+        try:
+            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return _merge_with_default(data)
+        except FileNotFoundError:
+            return _merge_with_default({})
+        except Exception:
+            _config_logger.exception("User config load failed: %s", CONFIG_FILE)
+            backup_path = CONFIG_FILE + ".bak"
+            try:
+                with open(backup_path, "r", encoding="utf-8") as f:
+                    return _merge_with_default(json.load(f))
+            except Exception:
+                return _merge_with_default({})
 
 
 # =========================
@@ -198,46 +401,27 @@ def save_config(config_data):
     temporary file and a single ``.bak`` copy have been written.  A failed
     write never truncates the previous configuration.
     """
-    merged = _merge_with_default(config_data)
+    with _CONFIG_LOCK:
+        merged = _merge_with_default(config_data)
+        backup_path = CONFIG_FILE + ".bak"
+        try:
+            if os.path.isfile(CONFIG_FILE):
+                shutil.copy2(CONFIG_FILE, backup_path)
+            _write_config_atomic(merged)
+            return merged
+        except Exception:
+            _config_logger.exception("User config save failed: %s", CONFIG_FILE)
+            raise
 
-    config_dir = os.path.dirname(CONFIG_FILE) or "."
-    os.makedirs(config_dir, exist_ok=True)
-    descriptor, temp_path = tempfile.mkstemp(
-        prefix=".config.",
-        suffix=".tmp",
-        dir=config_dir,
-    )
-    backup_path = CONFIG_FILE + ".bak"
-    try:
-        with os.fdopen(descriptor, "w", encoding="utf-8") as f:
-            descriptor = None
-            json.dump(
-                merged,
-                f,
-                indent=4,
-                ensure_ascii=False,
-            )
-            f.flush()
-            os.fsync(f.fileno())
 
-        # Keep one bounded recovery point.  If this copy fails we leave the
-        # live config untouched rather than replacing it without recovery.
-        if os.path.isfile(CONFIG_FILE):
-            shutil.copy2(CONFIG_FILE, backup_path)
-
-        os.replace(temp_path, CONFIG_FILE)
-    except Exception:
-        if descriptor is not None:
-            os.close(descriptor)
-        raise
-    finally:
-        if os.path.exists(temp_path):
-            try:
-                os.remove(temp_path)
-            except OSError:
-                pass
-
-    return merged
+def update_config(updates):
+    """Merge a partial update onto the newest config under one process lock."""
+    if not isinstance(updates, dict):
+        raise TypeError("updates must be a dict")
+    with _CONFIG_LOCK:
+        latest = load_config()
+        latest.update(updates)
+        return save_config(latest)
 
 
 def _as_bool(value, default=False):

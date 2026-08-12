@@ -8,6 +8,15 @@ from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtQuickControls2 import QQuickStyle
 from PySide6.QtWidgets import QApplication
 
+from config import (
+    CACHE_DIR,
+    CONFIG_FILE,
+    LOG_DIR,
+    get_last_config_migration_event,
+    load_config,
+)
+from logger import logger
+from ui.theme import resolve_theme_mode
 from ui_next.bridge.app_state_viewmodel import AppStateViewModel
 from ui_next.bridge.audio_player_viewmodel import AudioPlayerViewModel
 from ui_next.bridge.audio_processing_session import ProcessingSessionViewModel
@@ -17,6 +26,7 @@ from ui_next.bridge.cover_viewmodel import CoverViewModel
 from ui_next.bridge.edit_session import EditSessionViewModel
 from ui_next.bridge.editor_file_browser_viewmodel import EditorFileBrowserViewModel
 from ui_next.bridge.file_session_viewmodel import FileSessionViewModel
+from ui_next.bridge.first_run_viewmodel import FirstRunViewModel
 from ui_next.bridge.folder_browser_model import FolderBrowserModel
 from ui_next.bridge.lyrics_viewmodel import LyricsViewModel
 from ui_next.bridge.lyrics_sync_viewmodel import LyricsSyncViewModel
@@ -48,17 +58,6 @@ def main(argv: list[str] | None = None) -> int:
         _print_startup_error(str(exc))
         return 2
 
-    theme_environment_name = "QONIC_QML_THEME"
-    legacy_theme_environment_used = False
-    if theme_environment_name in os.environ:
-        requested_theme = os.environ.get(theme_environment_name, "dark")
-    else:
-        theme_environment_name = "CHERRYQ_QML_THEME"
-        requested_theme = os.environ.get(theme_environment_name, "dark")
-        legacy_theme_environment_used = theme_environment_name in os.environ
-    requested_theme = requested_theme.strip().lower()
-    supported_themes = {"dark", "light", "black", "purple"}
-    qml_theme_mode = requested_theme if requested_theme in supported_themes else "dark"
     capability_gate = runtime_config.create_capability_gate()
 
     QQuickStyle.setStyle("Basic")
@@ -66,6 +65,27 @@ def main(argv: list[str] | None = None) -> int:
     app.setApplicationName(APP_DISPLAY_NAME)
     app.setApplicationVersion(APP_VERSION)
     app.setOrganizationName("Qonic")
+
+    user_settings = load_config()
+    saved_theme = str(user_settings.get("theme_mode") or "system").strip().lower()
+    system_theme_mode = resolve_theme_mode("system")
+    theme_environment_name = "QONIC_QML_THEME"
+    legacy_theme_environment_used = False
+    theme_environment_override = theme_environment_name in os.environ
+    if theme_environment_override:
+        requested_theme = os.environ.get(theme_environment_name, saved_theme)
+    else:
+        theme_environment_name = "CHERRYQ_QML_THEME"
+        theme_environment_override = theme_environment_name in os.environ
+        requested_theme = os.environ.get(theme_environment_name, saved_theme)
+        legacy_theme_environment_used = theme_environment_override
+    requested_theme = requested_theme.strip().lower()
+    supported_themes = {"system", "dark", "light", "black", "purple"}
+    if requested_theme not in supported_themes:
+        requested_theme = "dark"
+    qml_theme_mode = (
+        system_theme_mode if requested_theme == "system" else requested_theme
+    )
 
     print(f"[Qonic QML UI] 当前模式：{capability_gate.modeLabel}")
     print(f"[Qonic QML UI] 可用功能：{capability_gate.enabledFeatureSummary}")
@@ -79,9 +99,12 @@ def main(argv: list[str] | None = None) -> int:
             f"[Qonic QML UI] 检测到旧环境变量 {legacy_names}；"
             "请迁移到对应的 QONIC_* 名称。"
         )
-    if requested_theme not in supported_themes:
+    raw_requested_theme = str(
+        os.environ.get(theme_environment_name, saved_theme)
+    ).strip().lower()
+    if raw_requested_theme not in supported_themes:
         print(
-            "[Qonic QML UI] QONIC_QML_THEME 仅支持 dark/light/black/purple；"
+            "[Qonic QML UI] QONIC_QML_THEME 仅支持 system/dark/light/black/purple；"
             "已回退深色主题。"
         )
     elif legacy_theme_environment_used:
@@ -89,7 +112,21 @@ def main(argv: list[str] | None = None) -> int:
             "[Qonic QML UI] 检测到旧环境变量 CHERRYQ_QML_THEME；"
             "请迁移到 QONIC_QML_THEME。"
         )
-    print(f"[Qonic QML UI] 会话主题：{qml_theme_mode}")
+    print(f"[Qonic QML UI] 已加载主题：{saved_theme} -> {qml_theme_mode}")
+    logger.info("User config path: %s", CONFIG_FILE)
+    logger.info("User cache path: %s", CACHE_DIR)
+    logger.info("User log path: %s", LOG_DIR)
+    logger.info("Loaded theme: %s (resolved: %s)", saved_theme, qml_theme_mode)
+    migration_event = get_last_config_migration_event()
+    if migration_event:
+        log_migration = logger.info if migration_event["ok"] else logger.error
+        log_migration(
+            "Legacy config migration: ok=%s source=%s destination=%s error=%s",
+            migration_event["ok"],
+            migration_event["source"],
+            migration_event["destination"],
+            migration_event["error"],
+        )
     if runtime_config.legacy_live_requested:
         print(
             "[Qonic QML UI] QONIC_QML_LIVE=1 不再自动开放真实能力；"
@@ -123,6 +160,10 @@ def main(argv: list[str] | None = None) -> int:
         app,
         icon_path=application_icon if application_icon.exists() else None,
         smoke_test=runtime_config.smoke_test,
+    )
+    first_run_view_model = FirstRunViewModel(
+        capability_gate=capability_gate,
+        enabled=not runtime_config.smoke_test,
     )
 
     app_state = AppStateViewModel(capability_gate=capability_gate)
@@ -310,12 +351,14 @@ def main(argv: list[str] | None = None) -> int:
     engine.rootContext().setContextProperty("settingsViewModel", settings_view_model)
     engine.rootContext().setContextProperty("logModel", log_model)
     engine.rootContext().setContextProperty("windowController", window_controller)
+    engine.rootContext().setContextProperty("firstRunViewModel", first_run_view_model)
     engine.rootContext().setContextProperty(
         "qmlApplicationIconUrl",
         QUrl.fromLocalFile(str(application_icon)) if application_icon.exists() else QUrl(),
     )
     engine.rootContext().setContextProperty("capabilityGate", capability_gate)
     engine.rootContext().setContextProperty("qmlThemeMode", qml_theme_mode)
+    engine.rootContext().setContextProperty("qmlSystemThemeMode", system_theme_mode)
     engine.rootContext().setContextProperty(
         "qmlPreviewMode",
         capability_gate.previewMode,

@@ -2,9 +2,8 @@
 import logging
 import os
 
-from config import BASE_DIR
+from config import LOG_DIR
 
-LOG_DIR = os.path.join(BASE_DIR, "logs")
 LOG_FILE = os.path.join(LOG_DIR, "runtime.log")
 LOG_FORMAT = "%(asctime)s [%(levelname)s] %(message)s"
 

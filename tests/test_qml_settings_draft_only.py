@@ -32,7 +32,7 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
                 "ui_next.bridge.settings_viewmodel.load_config",
                 return_value=dict(self.real_config),
             ),
-            patch("ui_next.bridge.settings_viewmodel.save_config") as mock_save,
+            patch("ui_next.bridge.settings_viewmodel.update_config") as mock_save,
         ):
             view_model = SettingsViewModel()
             view_model.updatePendingValue("embed_lyrics_after_convert", False)
@@ -127,9 +127,10 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
         )
         saved_config = {}
 
-        def save_config(config_data):
+        def update_config(config_data):
+            saved_config.update(self.real_config)
             saved_config.update(config_data)
-            return dict(config_data)
+            return dict(saved_config)
 
         with (
             patch(
@@ -137,8 +138,8 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
                 return_value=dict(self.real_config),
             ),
             patch(
-                "ui_next.bridge.settings_viewmodel.save_config",
-                side_effect=save_config,
+                "ui_next.bridge.settings_viewmodel.update_config",
+                side_effect=update_config,
             ),
             patch.object(
                 SettingsViewModel,
@@ -161,18 +162,19 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
         latest_config["theme_mode"] = "dark"
         saved_config = {}
 
-        def save_config(config_data):
+        def update_config(config_data):
+            saved_config.update(latest_config)
             saved_config.update(config_data)
-            return dict(config_data)
+            return dict(saved_config)
 
         with (
             patch(
                 "ui_next.bridge.settings_viewmodel.load_config",
-                side_effect=[dict(self.real_config), latest_config],
+                return_value=dict(self.real_config),
             ),
             patch(
-                "ui_next.bridge.settings_viewmodel.save_config",
-                side_effect=save_config,
+                "ui_next.bridge.settings_viewmodel.update_config",
+                side_effect=update_config,
             ),
             patch.object(SettingsViewModel, "_confirm_live_save", return_value=True),
         ):
@@ -230,7 +232,7 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
                 "ui_next.bridge.settings_viewmodel.load_config",
                 return_value=dict(self.real_config),
             ),
-            patch("ui_next.bridge.settings_viewmodel.save_config") as mock_save,
+            patch("ui_next.bridge.settings_viewmodel.update_config") as mock_save,
             patch.object(SettingsViewModel, "_confirm_live_save") as confirm,
         ):
             view_model = SettingsViewModel(capability_gate=gate)
@@ -274,7 +276,7 @@ class SettingsViewModelDraftOnlyTests(unittest.TestCase):
                 return_value=dict(self.real_config),
             ),
             patch(
-                "ui_next.bridge.settings_viewmodel.save_config",
+                "ui_next.bridge.settings_viewmodel.update_config",
                 return_value=dict(self.real_config),
             ) as mock_save,
             patch.object(SettingsViewModel, "_confirm_live_save") as confirm,

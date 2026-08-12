@@ -1,4 +1,4 @@
-Qonic Audio v5.0 Internal Test
+Qonic Audio 5.0.0-beta.1 Internal Beta
 ============================
 
 本文件仅作为历史兼容保留。
