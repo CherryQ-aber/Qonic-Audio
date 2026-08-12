@@ -1,0 +1,148 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-12T08:41:26.259889+00:00",
+  "candidate_root": "<candidate_root>",
+  "manifest_status": "NOT_FOR_PUBLIC_RELEASE_UNTIL_OWNER_GATES_CLOSED",
+  "source_commit": "24b407956b8b6f945c9018c5b3b55b28a7c00c6b",
+  "required_missing": [],
+  "gpl_only_qt_files": {},
+  "static_tree_sha256": {
+    "expected": "03F840AD1942052E4DCA35387EE1C76188622E2D021289682D5F202981D371B7",
+    "actual": "03F840AD1942052E4DCA35387EE1C76188622E2D021289682D5F202981D371B7",
+    "passed": true
+  },
+  "source_hashes": {
+    "ffmpeg_source": {
+      "file": "Corresponding_Source\\qonic-ffmpeg-complete-corresponding-source.tar.gz",
+      "actual": "2B3A9A878B46050CACA71253C1E43F6239DE91C5C5C59DC72F8F2E0306A5C35A",
+      "expected": "2B3A9A878B46050CACA71253C1E43F6239DE91C5C5C59DC72F8F2E0306A5C35A"
+    },
+    "application_source": {
+      "file": "Corresponding_Source\\qonic-audio-source-24b407956b8b.tar.gz",
+      "actual": "7D9CD5AD2CB341C6B18E847F43047E729B68E17BBB81B83D29F05D178607C690",
+      "expected": "7D9CD5AD2CB341C6B18E847F43047E729B68E17BBB81B83D29F05D178607C690"
+    }
+  },
+  "dynamic_linkage": {
+    "method": "PE import-table inspection of shipped PySide6 binding modules",
+    "records": [
+      {
+        "file": "_internal\\PySide6\\QtCore.pyd",
+        "exists": true,
+        "imports": [
+          "Qt6Core.dll",
+          "pyside6.abi3.dll",
+          "python3.dll",
+          "shiboken6.abi3.dll"
+        ],
+        "qt_shared_library_imports": [
+          "Qt6Core.dll"
+        ]
+      },
+      {
+        "file": "_internal\\PySide6\\QtGui.pyd",
+        "exists": true,
+        "imports": [
+          "Qt6Gui.dll",
+          "pyside6.abi3.dll"
+        ],
+        "qt_shared_library_imports": [
+          "Qt6Gui.dll"
+        ]
+      },
+      {
+        "file": "_internal\\PySide6\\QtMultimedia.pyd",
+        "exists": true,
+        "imports": [
+          "KERNEL32.dll",
+          "MSVCP140.dll",
+          "Qt6Core.dll",
+          "Qt6Gui.dll",
+          "Qt6Multimedia.dll",
+          "VCRUNTIME140.dll",
+          "VCRUNTIME140_1.dll",
+          "api-ms-win-crt-heap-l1-1-0.dll",
+          "api-ms-win-crt-runtime-l1-1-0.dll",
+          "api-ms-win-crt-string-l1-1-0.dll",
+          "pyside6.abi3.dll",
+          "python3.dll",
+          "shiboken6.abi3.dll"
+        ],
+        "qt_shared_library_imports": [
+          "Qt6Core.dll",
+          "Qt6Gui.dll",
+          "Qt6Multimedia.dll"
+        ]
+      },
+      {
+        "file": "_internal\\PySide6\\QtQml.pyd",
+        "exists": true,
+        "imports": [
+          "KERNEL32.dll",
+          "MSVCP140.dll",
+          "Qt6Core.dll",
+          "Qt6Qml.dll",
+          "VCRUNTIME140.dll",
+          "VCRUNTIME140_1.dll",
+          "api-ms-win-crt-heap-l1-1-0.dll",
+          "api-ms-win-crt-math-l1-1-0.dll",
+          "api-ms-win-crt-runtime-l1-1-0.dll",
+          "api-ms-win-crt-string-l1-1-0.dll",
+          "pyside6.abi3.dll",
+          "pyside6qml.abi3.dll",
+          "python3.dll",
+          "shiboken6.abi3.dll"
+        ],
+        "qt_shared_library_imports": [
+          "Qt6Core.dll",
+          "Qt6Qml.dll"
+        ]
+      },
+      {
+        "file": "_internal\\PySide6\\QtQuick.pyd",
+        "exists": true,
+        "imports": [
+          "KERNEL32.dll",
+          "MSVCP140.dll",
+          "Qt6Core.dll",
+          "Qt6Gui.dll",
+          "Qt6Qml.dll",
+          "Qt6Quick.dll",
+          "VCRUNTIME140.dll",
+          "VCRUNTIME140_1.dll",
+          "api-ms-win-crt-heap-l1-1-0.dll",
+          "api-ms-win-crt-runtime-l1-1-0.dll",
+          "api-ms-win-crt-string-l1-1-0.dll",
+          "pyside6.abi3.dll",
+          "pyside6qml.abi3.dll",
+          "python3.dll",
+          "shiboken6.abi3.dll"
+        ],
+        "qt_shared_library_imports": [
+          "Qt6Core.dll",
+          "Qt6Gui.dll",
+          "Qt6Qml.dll",
+          "Qt6Quick.dll"
+        ]
+      },
+      {
+        "file": "_internal\\PySide6\\QtWidgets.pyd",
+        "exists": true,
+        "imports": [
+          "Qt6Widgets.dll",
+          "pyside6.abi3.dll"
+        ],
+        "qt_shared_library_imports": [
+          "Qt6Widgets.dll"
+        ]
+      }
+    ],
+    "dynamic_qt_imports_present": true
+  },
+  "qml_smokes": [],
+  "forbidden_paths": [],
+  "archive": {
+    "requested": false
+  },
+  "passed": true
+}

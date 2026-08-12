@@ -70,7 +70,7 @@ def test_archive(seven_zip: Path, archive: Path) -> dict[str, Any]:
     unwanted = [token for token in ("codex_memory", "config.json", "cookie.txt", "logs/runtime.log") if token in text]
     return {
         "requested": True,
-        "path": str(archive),
+        "path": archive.name,
         "sha256": sha256(archive),
         "test_exit_code": completed.returncode,
         "listing_exit_code": listing.returncode,
@@ -119,6 +119,23 @@ def verify(root: Path, timeout: int, run_smokes: bool, seven_zip: Path | None, a
     return result
 
 
+def redact_local_paths(value: Any, candidate_root: Path, archive: Path | None) -> Any:
+    """Keep committed evidence portable and avoid persisting workstation paths."""
+
+    replacements = [(str(candidate_root), "<candidate_root>")]
+    if archive:
+        replacements.append((str(archive.resolve()), "<archive>"))
+    if isinstance(value, str):
+        for source, replacement in replacements:
+            value = value.replace(source, replacement)
+        return value
+    if isinstance(value, list):
+        return [redact_local_paths(item, candidate_root, archive) for item in value]
+    if isinstance(value, dict):
+        return {key: redact_local_paths(item, candidate_root, archive) for key, item in value.items()}
+    return value
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candidate-root", type=Path, required=True)
@@ -134,6 +151,7 @@ def main() -> int:
     except (FileNotFoundError, KeyError, ValueError, json.JSONDecodeError, subprocess.SubprocessError) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 2
+    result = redact_local_paths(result, root, args.archive)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print("PASS" if result["passed"] else "FAIL", args.output)
