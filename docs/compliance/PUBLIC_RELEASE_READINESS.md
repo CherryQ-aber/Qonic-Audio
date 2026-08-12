@@ -1,4 +1,4 @@
-# Public Release Readiness — Qonic Audio v5.0
+# Public Release Readiness — Qonic Audio
 
 ## Scope and authority
 
@@ -41,3 +41,22 @@ of them as passed:
 
 When those records are complete, create a final archive only from the verified
 candidate tree.  Do not retrofit the historical frozen archive.
+
+## Owner status recorded 2026-08-12
+
+| Gate | Status | Evidence / remaining action |
+| --- | --- | --- |
+| 1. Real desktop acceptance | OWNER_REPORTED_PASS | The project owner reports the native desktop acceptance passed. |
+| 2. Real-media workflow acceptance | OWNER_REPORTED_PASS | The project owner reports the real-media workflow acceptance passed. |
+| 3. Clean-Windows / other-machine acceptance | OWNER_REPORTED_PASS | The project owner reports the other-machine test passed without relying on the development environment. |
+| 4a. Qonic-owned source and project documentation | PENDING_OWNER_CONFIRMATION | The rights basis may enter owner confirmation; no automated record signs this statement for the owner. |
+| 4b. Qonic-owned icon assets | PENDING_OWNER_CONFIRMATION | The rights basis may enter owner confirmation; no automated record signs this statement for the owner. |
+| 4c. Third-party dependencies | LICENSE_MANAGED | Third-party components remain governed by their own licences and existing closed compliance evidence. |
+| 4d. Qonic brand/name | BLOCKER_TRADEMARK_CLEARANCE_REQUIRED | The owner does not currently assert complete public-release rights. Same-name software companies and software-category trademark records have been identified; target-market clearance is required. |
+| 5a. Public version | SELECTED_1.0.0 | The owner selected 1.0.0 as the public version. |
+| 5b. Final build and archive decision | PENDING | The current r4 binary still identifies itself as v5.0 Internal Test. Build and verify a new 1.0.0 candidate only after the brand blocker is resolved. |
+
+Overall status: BLOCKED_BY_QONIC_TRADEMARK_CLEARANCE.
+
+The r4 archive remains technical and compliance evidence only. Renaming that
+archive or editing its metadata would not create a valid 1.0.0 release.

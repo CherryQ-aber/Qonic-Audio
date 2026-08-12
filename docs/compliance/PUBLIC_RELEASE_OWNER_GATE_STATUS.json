@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "recorded_at": "2026-08-12",
+  "candidate": {
+    "name": "r4 LGPL publication candidate",
+    "archive_sha256": "CC51CB7B7553821DE644D92C6AD3430F30C404A3F976B19CB6E02028771C2FFE",
+    "embedded_version": "5.0 Internal Test",
+    "release_eligible": false
+  },
+  "owner_reported_gates": {
+    "real_desktop_acceptance": "PASS",
+    "real_media_workflow_acceptance": "PASS",
+    "clean_windows_other_machine_acceptance": "PASS"
+  },
+  "rights_and_licensing": {
+    "owned_source_and_project_documentation": "PENDING_OWNER_CONFIRMATION",
+    "owned_icon_assets": "PENDING_OWNER_CONFIRMATION",
+    "third_party_dependencies": "MANAGED_UNDER_RESPECTIVE_LICENSES",
+    "qonic_brand_name": {
+      "status": "BLOCKER_TRADEMARK_CLEARANCE_REQUIRED",
+      "owner_asserts_complete_public_release_rights": false,
+      "reason": "Same-name software companies and software-category trademark records were identified.",
+      "required_action": "Complete trademark clearance for every intended target market before closing this gate."
+    }
+  },
+  "version": {
+    "selected_public_version": "1.0.0",
+    "source_metadata_updated": false,
+    "final_1_0_0_candidate_built": false,
+    "final_archive_reviewed": false
+  },
+  "overall_status": "BLOCKED_BY_QONIC_TRADEMARK_CLEARANCE",
+  "next_action": "Resolve or replace the Qonic public brand, record owner confirmation for owned source, documentation and icons, then update version metadata and build a new controlled 1.0.0 candidate."
+}

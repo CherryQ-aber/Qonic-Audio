@@ -48,8 +48,19 @@ be represented as a clean strict result.
 
 ## Remaining release gates
 
-Before changing the candidate status or publishing it, the project owner must
-complete and record the five owner-controlled gates in
-PUBLIC_RELEASE_READINESS.md: real desktop acceptance; real-media workflow
-acceptance; clean-Windows acceptance; ownership of code/documentation/name/icon
-assets; and final public version/name plus archive review decision.
+The owner subsequently reported the real desktop, real-media and clean-Windows
+/ other-machine gates as passed. The public version was selected as 1.0.0.
+
+The release remains blocked:
+
+- rights in Qonic-owned source, project documentation and icon assets remain
+  PENDING_OWNER_CONFIRMATION;
+- third-party dependencies remain managed under their respective licences;
+- the owner does not assert complete public-release rights in the Qonic brand.
+  Same-name software companies and software-category trademark records require
+  target-market trademark clearance;
+- r4 still embeds 5.0 Internal Test, so it is evidence only and cannot be
+  renamed into a valid 1.0.0 release.
+
+Current overall status:
+BLOCKED_BY_QONIC_TRADEMARK_CLEARANCE.
