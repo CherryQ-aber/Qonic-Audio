@@ -19,6 +19,7 @@ jobs:
       QT_QPA_PLATFORM: offscreen
       QT_QUICK_BACKEND: software
       PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUTF8: "1"
 
     steps:
       - name: Check out source
