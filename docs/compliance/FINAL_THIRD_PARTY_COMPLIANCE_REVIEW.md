@@ -1,6 +1,6 @@
 # Final Third-Party Compliance Review
 
-Scope: the sole owner-authoritative Qonic Audio v5.0 Internal Test onedir archive and its corresponding expanded directory.
+Scope: the sole owner-authoritative Qonic Audio v5.0 Internal Test onedir archive and its corresponding expanded directory, plus the separately identified Qt LGPL integration-candidate evidence recorded in this inventory.
 
 - Archive SHA-256: `BB0967E85AF2857C23587F3CEF37C37D14ED4E4106B7261F21E2F247B47F42F4`
 - Native third-party files without an inventory owner: `0`
@@ -14,6 +14,9 @@ Scope: the sole owner-authoritative Qonic Audio v5.0 Internal Test onedir archiv
 - **charset-normalizer 3.4.7** — Evidence chain recorded in inventory.
 - **Mutagen 1.47.0** — Evidence chain recorded in inventory.
 - **watchdog 6.0.0** — Evidence chain recorded in inventory.
+- **PySide6 6.11.1** — LGPL route technical staging completed. The r2 LGPL integration candidate has passed automatic and owner-confirmed visible Windows acceptance; the frozen package remains an unchanged historical GPL baseline.
+- **shiboken6 6.11.1** — LGPL route technical staging completed. The r2 LGPL integration candidate has passed automatic and owner-confirmed visible Windows acceptance; the frozen package remains an unchanged historical GPL baseline.
+- **Qt Runtime 6.11.1** — The r2 candidate removes the verified GPL-only groups. The r2 LGPL integration candidate has passed automatic and owner-confirmed visible Windows acceptance; the frozen package remains an unchanged historical GPL baseline.
 - **Qt Multimedia FFmpeg 7.1.3** — Evidence chain recorded in inventory.
 - **FFmpeg Audio Runtime 8.1.1** — Binary hashes, configuration and corresponding-source bundle match the closed B5 evidence.
 - **ncmdump 1.5.1** — Evidence chain recorded in inventory.
@@ -23,9 +26,6 @@ Scope: the sole owner-authoritative Qonic Audio v5.0 Internal Test onedir archiv
 
 - **libffi ABI 8 (source version not embedded)** — The ABI is identified as 8, but the exact libffi source-release version is not embedded in the frozen DLL.
 - **PyInstaller bootloader not embedded in frozen artifact** — The frozen executable's CArchive identifies the PyInstaller bootloader. The current build executable differs, so its version is not used as frozen-artifact proof; the exact build-time PyInstaller version is not embedded.
-- **PySide6 6.11.1** — LGPL route technical staging and the r2 candidate automatic Windows checks have passed; visible native Windows interaction acceptance remains pending.
-- **shiboken6 6.11.1** — LGPL route technical staging and the r2 candidate automatic Windows checks have passed; visible native Windows interaction acceptance remains pending.
-- **Qt Runtime 6.11.1** — The r2 candidate removes the verified GPL-only groups and passes automatic Windows checks. Visible native Windows interaction acceptance remains pending.
 
 ## C. BLOCKER
 
@@ -38,10 +38,6 @@ None.
 ## E. NOT APPLICABLE
 
 None.
-
-## F. REMAINING OWNER ACTION
-
-- Required owner action `QT_LICENSE_ROUTE`: Owner confirmation is recorded and the r2 LGPL integration candidate carries the staged notices/source-availability material. Before public release, record visible native Windows interaction acceptance for that candidate. This does not reopen the CLOSED Microsoft VC Runtime item.
 
 ## Release boundary
 

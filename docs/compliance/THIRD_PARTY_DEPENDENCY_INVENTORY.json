@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_on": "2026-08-09",
+  "generated_on": "2026-08-12",
   "identity_algorithm": "SHA-256",
   "authoritative_release": {
     "authority_file": "Release/External_Test/2026-07-30_audio-validation-fix/RELEASE_AUTHORITY.json",
@@ -467,9 +467,9 @@
       "redistribution_requirement": "The selected route is LGPL-3.0; retain the applicable licence text, notices, source-availability information and dynamic-library replacement conditions.",
       "notice_requirement": "Provide PySide6/Qt licence text and Qt attribution material.",
       "source_code_availability": "docs/compliance/QT_SOURCE_AVAILABILITY.md",
-      "compliance_status": "WARNING",
+      "compliance_status": "CLOSED",
       "notes": [
-        "LGPL route technical staging and the r2 candidate automatic Windows checks have passed; visible native Windows interaction acceptance remains pending."
+        "LGPL route technical staging completed. The r2 LGPL integration candidate has passed automatic and owner-confirmed visible Windows acceptance; the frozen package remains an unchanged historical GPL baseline."
       ]
     },
     {
@@ -503,9 +503,9 @@
       "redistribution_requirement": "Use under the selected LGPL-3.0 route and its distribution conditions.",
       "notice_requirement": "Provide applicable Qt licence text and attribution.",
       "source_code_availability": "docs/compliance/QT_SOURCE_AVAILABILITY.md",
-      "compliance_status": "WARNING",
+      "compliance_status": "CLOSED",
       "notes": [
-        "LGPL route technical staging and the r2 candidate automatic Windows checks have passed; visible native Windows interaction acceptance remains pending."
+        "LGPL route technical staging completed. The r2 LGPL integration candidate has passed automatic and owner-confirmed visible Windows acceptance; the frozen package remains an unchanged historical GPL baseline."
       ]
     },
     {
@@ -6204,9 +6204,9 @@
       "redistribution_requirement": "The selected LGPL-3.0 dynamic-linking route requires applicable licence text, attribution, source-obtaining information, and ability to replace the libraries; GPL-only module groups must remain absent from the integration candidate.",
       "notice_requirement": "Provide Qt licensing, third-party-code and SBOM/attribution material.",
       "source_code_availability": "docs/compliance/QT_SOURCE_AVAILABILITY.md",
-      "compliance_status": "WARNING",
+      "compliance_status": "CLOSED",
       "notes": [
-        "The r2 candidate removes the verified GPL-only groups and passes automatic Windows checks. Visible native Windows interaction acceptance remains pending."
+        "The r2 candidate removes the verified GPL-only groups. The r2 LGPL integration candidate has passed automatic and owner-confirmed visible Windows acceptance; the frozen package remains an unchanged historical GPL baseline."
       ]
     },
     {
@@ -6716,24 +6716,20 @@
       "watchdog": 22
     }
   },
-  "owner_actions": [
-    {
-      "id": "QT_LICENSE_ROUTE",
-      "affects": [
-        "PySide6",
-        "shiboken6",
-        "Qt Runtime"
-      ],
-      "action": "Owner confirmation is recorded and the r2 LGPL integration candidate carries the staged notices/source-availability material. Before public release, record visible native Windows interaction acceptance for that candidate. This does not reopen the CLOSED Microsoft VC Runtime item."
-    }
-  ],
+  "qt_lgpl_integration_candidate": {
+    "evidence": "docs/compliance/QT_WINDOWS_NATIVE_ACCEPTANCE.json",
+    "status": "CLOSED",
+    "applies_to": "Release/Integration_Candidates/2026-08-09_lgpl-qt-r2/Qonic_Audio_v5.0_internal_test",
+    "frozen_authoritative_archive_modified": false
+  },
+  "owner_actions": [],
   "summary": {
     "component_count": 16,
     "status_counts": {
-      "CLOSED": 11,
-      "WARNING": 5
+      "CLOSED": 14,
+      "WARNING": 2
     },
-    "owner_action_count": 1,
+    "owner_action_count": 0,
     "unknown_third_party_native_blocker_count": 0
   }
 }

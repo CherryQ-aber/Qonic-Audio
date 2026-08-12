@@ -61,7 +61,14 @@ def _smoke(candidate: Path, executable_name: str, module: str | None, timeout: i
     }
 
 
-def run_acceptance(candidate: Path, executable_name: str, timeout: int) -> dict[str, Any]:
+def run_acceptance(
+    candidate: Path,
+    executable_name: str,
+    timeout: int,
+    *,
+    owner_confirmed: bool = False,
+    confirmation_record: str = "",
+) -> dict[str, Any]:
     candidate = candidate.resolve()
     manifest_path = candidate / "COMPLIANCE_INTEGRATION_CANDIDATE.json"
     if not manifest_path.is_file():
@@ -101,7 +108,8 @@ def run_acceptance(candidate: Path, executable_name: str, timeout: int) -> dict[
         "required_files": required_files,
         "remaining_gpl_only_group_files": removed_groups,
         "automatic_status": "PASS" if automatic_passed else "FAIL",
-        "human_interaction_status": "PENDING",
+        "human_interaction_status": "PASS" if owner_confirmed else "PENDING",
+        "human_interaction_confirmation": confirmation_record if owner_confirmed else None,
         "human_interaction_required": [
             "Use the candidate's visible Windows desktop window to choose an audio file with the native file picker.",
             "Play a known-good local audio file and confirm audible Qt Multimedia playback, pause, seek and stop.",
@@ -118,10 +126,20 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--executable", default="Qonic_Audio_v5.0_internal_test.exe")
     parser.add_argument("--timeout", type=int, default=30)
+    parser.add_argument("--owner-confirmed", action="store_true")
+    parser.add_argument("--confirmation-record", default="")
     args = parser.parse_args()
     try:
-        result = run_acceptance(args.candidate, args.executable, args.timeout)
-    except (FileNotFoundError, KeyError, subprocess.TimeoutExpired) as error:
+        if args.owner_confirmed and not args.confirmation_record.strip():
+            raise ValueError("--owner-confirmed requires --confirmation-record")
+        result = run_acceptance(
+            args.candidate,
+            args.executable,
+            args.timeout,
+            owner_confirmed=args.owner_confirmed,
+            confirmation_record=args.confirmation_record.strip(),
+        )
+    except (FileNotFoundError, KeyError, ValueError, subprocess.TimeoutExpired) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 3
     args.output.parent.mkdir(parents=True, exist_ok=True)

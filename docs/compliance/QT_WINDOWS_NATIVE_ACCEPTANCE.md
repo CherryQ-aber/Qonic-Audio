@@ -1,6 +1,6 @@
 # Qt LGPL Integration Candidate — Windows Native Acceptance
 
-Status: **AUTOMATIC PASS — HUMAN INTERACTION ACCEPTANCE PENDING**
+Status: **PASS — OWNER-CONFIRMED WINDOWS NATIVE ACCEPTANCE**
 
 ## Candidate identity
 
@@ -35,10 +35,12 @@ materials, and the exact source-availability record. No file from any of the
 four removed GPL-only groups remains. The machine-readable command output and
 checks are in [QT_WINDOWS_NATIVE_ACCEPTANCE.json](QT_WINDOWS_NATIVE_ACCEPTANCE.json).
 
-## Human interaction acceptance required
+## Owner-confirmed human interaction acceptance
 
-The automatic smoke is not a substitute for visible desktop interaction. On
-the r2 candidate, complete and record all of the following:
+On 2026-08-12 (Asia/Shanghai), the project owner confirmed in the Qonic Audio
+project task: `r2 Windows 原生验收五项均通过`.
+
+The following visible desktop checks are therefore recorded as passed for r2:
 
 1. Open a known-good audio file through the native Windows file picker.
 2. Confirm Qt Multimedia playback is audible; test pause, seek and stop.
@@ -46,6 +48,6 @@ the r2 candidate, complete and record all of the following:
 4. Confirm system-tray visibility and hide/restore or close-to-tray behavior.
 5. Confirm the available Widgets/native fallback path behaves normally.
 
-After these five checks are recorded as passed, update this document and
-`QT_LICENSE_ROUTE_CONFIRMATION.md`; only then can this Qt LGPL route move from
-integration acceptance pending to CLOSED for this candidate.
+Together with the automatic evidence above, this closes the Qt LGPL route for
+the identified r2 integration candidate. It does not alter or reclassify the
+frozen authoritative GPL baseline archive.

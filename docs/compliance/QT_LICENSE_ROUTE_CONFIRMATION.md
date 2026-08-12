@@ -1,6 +1,6 @@
 # Qt / PySide6 LGPL Route Confirmation
 
-Status: **OWNER CONFIRMATION RECORDED — HUMAN WINDOWS ACCEPTANCE PENDING**
+Status: **CLOSED FOR r2 LGPL INTEGRATION CANDIDATE**
 
 | Field | Value |
 | --- | --- |
@@ -45,11 +45,16 @@ confirmation in the Qonic Audio project task:
 This record captures the owner's project-direction statement. It is not an
 agent-issued legal opinion or an automatic release acceptance.
 
-## Remaining release-close gate
+## Candidate closeout and future-release boundary
 
-The LGPL-3.0 public-release route is not yet CLOSED. The r2 integration
-candidate has been created, identified and automatically checked, but the
-visible native Windows interaction acceptance listed in
-`QT_WINDOWS_NATIVE_ACCEPTANCE.md` remains to be recorded. The frozen
-authoritative package remains unchanged and is not this future integration
-candidate.
+On 2026-08-12, the project owner confirmed that all five visible Windows
+native acceptance checks for r2 passed. The LGPL-3.0 route is therefore CLOSED
+for the identified r2 integration candidate, including its verified GPL-only
+module removal, dynamic-link evidence, LGPLv3/attribution/source material and
+Windows acceptance record.
+
+This closure does not modify or reclassify the frozen authoritative package:
+that archive remains the unchanged historical GPL baseline. A future public
+artifact may use this closure only if it is built from the r2 candidate without
+reintroducing Qt modules, retains the listed recipient-facing materials, and
+records its own final artifact identity.

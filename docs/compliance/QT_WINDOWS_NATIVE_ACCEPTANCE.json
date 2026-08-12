@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-08-09T13:19:33.064478+00:00",
+  "generated_at": "2026-08-12T08:04:38.695750+00:00",
   "candidate": "D:\\CherryQ_Studio\\Audio_Tools\\AudioConverterApp\\Release\\Integration_Candidates\\2026-08-09_lgpl-qt-r2\\Qonic_Audio_v5.0_internal_test",
   "candidate_manifest": "COMPLIANCE_INTEGRATION_CANDIDATE.json",
   "candidate_tree_sha256": "E9F2C2CEC4328C97280B4F6CCDAFB4262308BA60B3857434A096E35B81BDF8B9",
@@ -87,7 +87,8 @@
     "qtvirtualkeyboard": []
   },
   "automatic_status": "PASS",
-  "human_interaction_status": "PENDING",
+  "human_interaction_status": "PASS",
+  "human_interaction_confirmation": "2026-08-12 (Asia/Shanghai): 项目所有者确认 r2 Windows 原生验收五项均通过。",
   "human_interaction_required": [
     "Use the candidate's visible Windows desktop window to choose an audio file with the native file picker.",
     "Play a known-good local audio file and confirm audible Qt Multimedia playback, pause, seek and stop.",

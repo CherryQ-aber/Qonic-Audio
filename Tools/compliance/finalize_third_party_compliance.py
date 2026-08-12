@@ -496,7 +496,7 @@ def _final_review(inventory: dict[str, Any]) -> str:
     lines = [
         "# Final Third-Party Compliance Review",
         "",
-        "Scope: the sole owner-authoritative Qonic Audio v5.0 Internal Test onedir archive and its corresponding expanded directory.",
+        "Scope: the sole owner-authoritative Qonic Audio v5.0 Internal Test onedir archive and its corresponding expanded directory, plus the separately identified Qt LGPL integration-candidate evidence recorded in this inventory.",
         "",
         f"- Archive SHA-256: `{inventory['authoritative_release']['archive_sha256']}`",
         f"- Native third-party files without an inventory owner: `{len(inventory['native_file_ownership']['unassigned_native_files'])}`",
@@ -549,6 +549,25 @@ def generate(project_root: Path) -> dict[str, Any]:
     archive_hash = sha256_file(archive)
     if archive_hash != authority["archive_sha256"]:
         raise ValueError("权威归档 SHA-256 与 RELEASE_AUTHORITY.json 不一致")
+
+    native_acceptance_path = project_root / "docs" / "compliance" / "QT_WINDOWS_NATIVE_ACCEPTANCE.json"
+    native_acceptance = (
+        json.loads(native_acceptance_path.read_text(encoding="utf-8"))
+        if native_acceptance_path.is_file()
+        else {}
+    )
+    qt_lgpl_candidate_closed = (
+        native_acceptance.get("automatic_status") == "PASS"
+        and native_acceptance.get("human_interaction_status") == "PASS"
+        and native_acceptance.get("candidate_manifest_matches") is True
+    )
+    qt_route_status = "CLOSED" if qt_lgpl_candidate_closed else "WARNING"
+    qt_route_suffix = (
+        "The r2 LGPL integration candidate has passed automatic and owner-confirmed visible Windows acceptance; "
+        "the frozen package remains an unchanged historical GPL baseline."
+        if qt_lgpl_candidate_closed
+        else "Visible native Windows interaction acceptance remains pending."
+    )
 
     staging = _stage_materials(project_root)
     all_files = [path for path in dist.rglob("*") if path.is_file()]
@@ -626,11 +645,20 @@ def generate(project_root: Path) -> dict[str, Any]:
     files, hashes = group("PyInstaller bootloader")
     components.append(_component("PyInstaller bootloader", "packager-runtime", "not embedded in frozen artifact", source_package="PyInstaller build output", upstream_project="PyInstaller Development Team", provenance={"matching_build_executable": build_match, "current_build_environment_pyinstaller": "6.20.0", "limitation": "the bootloader does not carry a build-time PyInstaller version"}, files=files, hashes=hashes, license_name="GPL-2.0-or-later WITH PyInstaller bootloader exception", license_files=staging["PyInstaller bootloader"], redistribution_requirement="Comply with the PyInstaller bootloader exception.", notice_requirement="Include bootloader exception text.", source_availability="https://github.com/pyinstaller/pyinstaller", status="WARNING", notes=["The frozen executable's CArchive identifies the PyInstaller bootloader. The current build executable differs, so its version is not used as frozen-artifact proof; the exact build-time PyInstaller version is not embedded."]))
     files, hashes = group("PySide6")
-    components.append(_component("PySide6", "python-bindings", "6.11.1", source_package="pyside6-6.11.1-cp310-abi3-win_amd64.whl", upstream_project="Qt for Python / The Qt Company", provenance={"exact_wheels_verified": True, "wheel_evidence": "compliance/report/qt/qt-wheel-verification.json", "source_archive": "third_party/source-archives/qt/pyside-setup-everywhere-src-6.11.1.tar.xz", "lgpl_route_evidence": "docs/compliance/QT_LGPL_ROUTE_VERIFICATION.json", "integration_candidate": "docs/compliance/QT_LGPL_INTEGRATION_CANDIDATE.json"}, files=files, hashes=hashes, license_name="LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only", license_files=staging["PySide6"], redistribution_requirement="The selected route is LGPL-3.0; retain the applicable licence text, notices, source-availability information and dynamic-library replacement conditions.", notice_requirement="Provide PySide6/Qt licence text and Qt attribution material.", source_availability="docs/compliance/QT_SOURCE_AVAILABILITY.md", status="WARNING", notes=["LGPL route technical staging and the r2 candidate automatic Windows checks have passed; visible native Windows interaction acceptance remains pending."]))
+    components.append(_component("PySide6", "python-bindings", "6.11.1", source_package="pyside6-6.11.1-cp310-abi3-win_amd64.whl", upstream_project="Qt for Python / The Qt Company", provenance={"exact_wheels_verified": True, "wheel_evidence": "compliance/report/qt/qt-wheel-verification.json", "source_archive": "third_party/source-archives/qt/pyside-setup-everywhere-src-6.11.1.tar.xz", "lgpl_route_evidence": "docs/compliance/QT_LGPL_ROUTE_VERIFICATION.json", "integration_candidate": "docs/compliance/QT_LGPL_INTEGRATION_CANDIDATE.json"}, files=files, hashes=hashes, license_name="LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only", license_files=staging["PySide6"], redistribution_requirement="The selected route is LGPL-3.0; retain the applicable licence text, notices, source-availability information and dynamic-library replacement conditions.", notice_requirement="Provide PySide6/Qt licence text and Qt attribution material.", source_availability="docs/compliance/QT_SOURCE_AVAILABILITY.md", status=qt_route_status, notes=["LGPL route technical staging completed. " + qt_route_suffix]))
     files, hashes = group("shiboken6")
-    components.append(_component("shiboken6", "python-bindings", "6.11.1", source_package="shiboken6-6.11.1-cp310-abi3-win_amd64.whl", upstream_project="Qt for Python / The Qt Company", provenance={"exact_wheels_verified": True, "wheel_evidence": "compliance/report/qt/qt-wheel-verification.json", "lgpl_route_evidence": "docs/compliance/QT_LGPL_ROUTE_VERIFICATION.json", "integration_candidate": "docs/compliance/QT_LGPL_INTEGRATION_CANDIDATE.json"}, files=files, hashes=hashes, license_name="LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only", license_files=staging["shiboken6"], redistribution_requirement="Use under the selected LGPL-3.0 route and its distribution conditions.", notice_requirement="Provide applicable Qt licence text and attribution.", source_availability="docs/compliance/QT_SOURCE_AVAILABILITY.md", status="WARNING", notes=["LGPL route technical staging and the r2 candidate automatic Windows checks have passed; visible native Windows interaction acceptance remains pending."]))
+    components.append(_component("shiboken6", "python-bindings", "6.11.1", source_package="shiboken6-6.11.1-cp310-abi3-win_amd64.whl", upstream_project="Qt for Python / The Qt Company", provenance={"exact_wheels_verified": True, "wheel_evidence": "compliance/report/qt/qt-wheel-verification.json", "lgpl_route_evidence": "docs/compliance/QT_LGPL_ROUTE_VERIFICATION.json", "integration_candidate": "docs/compliance/QT_LGPL_INTEGRATION_CANDIDATE.json"}, files=files, hashes=hashes, license_name="LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only", license_files=staging["shiboken6"], redistribution_requirement="Use under the selected LGPL-3.0 route and its distribution conditions.", notice_requirement="Provide applicable Qt licence text and attribution.", source_availability="docs/compliance/QT_SOURCE_AVAILABILITY.md", status=qt_route_status, notes=["LGPL route technical staging completed. " + qt_route_suffix]))
     files, hashes = group("Qt Runtime")
     components.append(_component("Qt Runtime", "framework/plugins/qml", "6.11.1", source_package="pyside6_essentials-6.11.1 and pyside6_addons-6.11.1 exact wheels", upstream_project="The Qt Company", provenance={"exact_wheels_verified": True, "wheel_evidence": "compliance/report/qt/qt-wheel-verification.json", "module_inventory": "docs/compliance/QT_MODULE_MINIMIZATION_REVIEW.json", "lgpl_route_evidence": "docs/compliance/QT_LGPL_ROUTE_VERIFICATION.json", "integration_candidate": "docs/compliance/QT_LGPL_INTEGRATION_CANDIDATE.json", "native_windows_acceptance": "docs/compliance/QT_WINDOWS_NATIVE_ACCEPTANCE.json", "source_archives": "third_party/source-archives/qt/"}, files=files, hashes=hashes, license_name="LGPL-3.0-only OR GPL-3.0-only, module-dependent", license_files=staging["Qt Runtime"], redistribution_requirement="The selected LGPL-3.0 dynamic-linking route requires applicable licence text, attribution, source-obtaining information, and ability to replace the libraries; GPL-only module groups must remain absent from the integration candidate.", notice_requirement="Provide Qt licensing, third-party-code and SBOM/attribution material.", source_availability="docs/compliance/QT_SOURCE_AVAILABILITY.md", status="WARNING", notes=["The r2 candidate removes the verified GPL-only groups and passes automatic Windows checks. Visible native Windows interaction acceptance remains pending."]))
+    if qt_lgpl_candidate_closed:
+        for component in components:
+            if component["component"] in {"PySide6", "shiboken6", "Qt Runtime"}:
+                component["compliance_status"] = qt_route_status
+                component["notes"] = [
+                    "LGPL route technical staging completed. " + qt_route_suffix
+                    if component["component"] != "Qt Runtime"
+                    else "The r2 candidate removes the verified GPL-only groups. " + qt_route_suffix
+                ]
     files, hashes = group("Qt Multimedia FFmpeg")
     components.append(_component("Qt Multimedia FFmpeg", "native-library", "7.1.3", source_package="PySide6 6.11.1 Addons wheel", upstream_project="FFmpeg developers / Qt Multimedia", provenance={"exact_wheel_hashes": "compliance/report/qt/qt-wheel-verification.json", "commit": "f46e514491172d15bd74b4abb1814cd2f05a763e", "source_archive": "third_party/source-archives/qt/ffmpeg-f46e514491172d15bd74b4abb1814cd2f05a763e.tar.gz"}, files=files, hashes=hashes, license_name="LGPL-2.1-or-later AND BSD-3-Clause AND BSD-2-Clause AND BSD-Source-Code AND ISC AND MIT AND MPL-2.0", license_files=staging["Qt Multimedia FFmpeg"], redistribution_requirement="Preserve Qt Multimedia FFmpeg attribution and applicable LGPL obligations.", notice_requirement="Include LGPL text and Qt third-party attribution.", source_availability="third_party/source-archives/qt/ffmpeg-f46e514491172d15bd74b4abb1814cd2f05a763e.tar.gz", status="CLOSED"))
     files, hashes = group("FFmpeg Audio Runtime")
@@ -663,17 +691,23 @@ def generate(project_root: Path) -> dict[str, Any]:
             "embedded_module_evidence": module_evidence,
             "embedded_component_module_counts": {key: len(value) for key, value in embedded.items()},
         },
-        "owner_actions": [
+        "qt_lgpl_integration_candidate": {
+            "evidence": "docs/compliance/QT_WINDOWS_NATIVE_ACCEPTANCE.json",
+            "status": "CLOSED" if qt_lgpl_candidate_closed else "PENDING_OWNER_WINDOWS_ACCEPTANCE",
+            "applies_to": "Release/Integration_Candidates/2026-08-09_lgpl-qt-r2/Qonic_Audio_v5.0_internal_test",
+            "frozen_authoritative_archive_modified": False,
+        },
+        "owner_actions": ([] if qt_lgpl_candidate_closed else [
             {
                 "id": "QT_LICENSE_ROUTE",
                 "affects": ["PySide6", "shiboken6", "Qt Runtime"],
                 "action": "Owner confirmation is recorded and the r2 LGPL integration candidate carries the staged notices/source-availability material. Before public release, record visible native Windows interaction acceptance for that candidate. This does not reopen the CLOSED Microsoft VC Runtime item.",
             }
-        ],
+        ]),
         "summary": {
             "component_count": len(components),
             "status_counts": dict(sorted(Counter(item["compliance_status"] for item in components).items())),
-            "owner_action_count": 1,
+            "owner_action_count": 0 if qt_lgpl_candidate_closed else 1,
             "unknown_third_party_native_blocker_count": len(unassigned),
         },
     }
