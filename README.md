@@ -15,6 +15,7 @@
 - Qonic Audio 项目自有代码采用 `GPL-3.0-or-later`，完整条款见 `LICENSE`。
 - 第三方组件继续遵循各自许可证，来源和审核材料见 `LICENSES/`。
 - 当前主发行渠道为 Internal Beta；GitHub 二进制构建如发布，必须标记为 **Pre-release**。
+- 当前 `v5.0.0-beta.1` 安装器已经作为 GitHub **Pre-release** 发布；这不改变 Internal Beta 定位。
 - 安装器继续作为核心工程能力；便携版 `.7z` 可作为受控测试工件。
 - 数字签名、自动更新与文件关联属于可选增强，不阻塞当前 Internal Beta。
 - Qonic 仅是 working/project name；Public commercial brand 为 `NOT FROZEN`，Qonance 未采用，正式商标清查延后到未来明确规划 Official Public Release 时。
@@ -26,6 +27,13 @@
 - 保持 `CapabilityGate`、no-clobber 发布、源文件保护和显式写入确认；`QONIC_QML_LIVE=1` 不能自行授予真实能力。
 - Internal Beta 不限制后续功能迭代，但不承担 Stable Public Release、商业品牌或大规模用户支持承诺。
 - 完整范围和当前人工验收结论见 `docs/UI_REFACTOR_CHANGE_SUMMARY.md`、`docs/PHASE_5_7_CLOSEOUT.md` 与 `Known_Issues.md`。
+
+## 仓库主线与验证
+
+- `main` 是长期 canonical development branch，承接已验收的 `codex/v5_P1` 开发历史；`codex/v5_P1` 暂时保留为历史开发分支。
+- 校正前的旧 `main` 由远程分支 `archive/main-pre-v5-realignment` 保留，不通过 unrelated-histories merge 拼接两套历史。
+- `.github/workflows/ci.yml` 在 Windows 上验证 post-install 用户状态、设置存储、运行模式、能力门、主题和窗口逻辑；触发范围为对 `main` 的 push 和 pull request。
+- `compliance.yml`、`ffmpeg-build.yml` 与 `ffmpeg-compliance.yml` 继续承担重量级依赖合规及 FFmpeg 验证，不并入普通 push 的快速测试。
 
 ## 主要功能
 
@@ -107,6 +115,7 @@ python -m unittest discover -v
 ```
 
 人工回归清单见 `TEST_CHECKLIST.md`。
+安装态用户状态验收记录见 `docs/POST_INSTALL_USER_STATE_ACCEPTANCE.md`。
 异机便携包的使用和反馈格式见 `EXTERNAL_TEST_GUIDE.md`。
 当前未解决事项见 `Known_Issues.md`。
 

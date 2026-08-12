@@ -13,7 +13,7 @@ Qonic Audio is a long-lived **Personal Software Project / Internal Beta** for th
 | Current version | `5.0.0-beta.1` |
 | Release channel | `Internal Beta` |
 | Project classification | `Personal Software Project` |
-| Distribution | Personal devices, limited testers, optional GitHub Pre-release |
+| Distribution | Personal devices, limited testers, current GitHub Pre-release |
 | Stable Public Release | Does not currently exist |
 | Public commercial brand | NOT FROZEN |
 | Qonance | NOT ADOPTED |
@@ -31,6 +31,13 @@ Qonic Audio is a long-lived **Personal Software Project / Internal Beta** for th
 - Current known problems: `Known_Issues.md`.
 
 Historical r3/r4 publication-candidate reports remain evidence from the former public-release plan. They do not override this current policy.
+
+## Repository baseline
+
+- Canonical development branch: `main`, realigned from the verified `codex/v5_P1` lineage.
+- Verified functional baseline: commit `a7364cdce796a74ed4b0cc6cdf8770a8d646e716` (`fix: persist installed user state` / 安装态用户状态修复).
+- Previous unrelated `main`: preserved unchanged at `archive/main-pre-v5-realignment`, commit `9517c3bddcc6a5ac9445d8db3c196d3c6b5a8709`.
+- Routine verification: Windows/Python 3.12 core CI on pushes and pull requests targeting `main`; compliance and FFmpeg workflows remain separate.
 
 ## Distribution policy
 
@@ -64,7 +71,7 @@ The final third-party review currently records:
 - Failed complete automated regression or packaged QML smoke for a candidate.
 - Missing required licences/notices/source-availability material in a distributed candidate.
 - A candidate that depends on user-installed Python, FFmpeg, ncmdump, or development tools.
-- Installer compilation is PASS for `5.0.0-beta.1`. Actual install, launch, upgrade data-preservation, uninstall, and clean-machine acceptance remain NOT RUN.
+- Installer compilation is PASS for `5.0.0-beta.1`. The owner has accepted the installed user-state baseline for theme persistence, normal/maximized window restoration, First Run state, and migration to the per-user configuration directory. This does not claim that uninstall, every installer-language path, or a complete clean-machine release gate has passed.
 
 ## Deferred Public-Release items
 
@@ -86,7 +93,7 @@ Current portable candidate:
 
 - `Release/Internal_Beta_Candidates/2026-08-13_5.0.0-beta.1/Qonic_Audio_v5.0.0-beta.1_Internal_Beta_LGPL.7z`
 - SHA-256 `6408218ECBC710160A6008CB7999BBD70C8AF0C5A29BDC38119F4807241C8A15`
-- Candidate status: build verified; not yet a GitHub Pre-release; manual installed-machine tests remain pending.
+- Candidate status: portable build verified; it is not attached to the current GitHub Pre-release. The published Pre-release currently carries the installer and checksum assets.
 
 Current installer candidate:
 
@@ -96,7 +103,14 @@ Current installer candidate:
 - Language policy: Windows UI language auto-detection with no extra selector; `zh-CN` uses Simplified Chinese and other unsupported UI languages fall back to English. Previous installer language is not reused on upgrade.
 - Installer compliance material: the Inno Setup licence is included under the installed `LICENSES` directory; the pinned Simplified Chinese message source retains its upstream provenance and licence reference.
 - Signature status: WARNING (`NotSigned`); signing remains an optional Internal Beta enhancement.
-- Installed-machine acceptance: NOT RUN.
+- Installed user-state acceptance: PASS for theme persistence, window state restoration, First Run state, and per-user configuration migration. Broader installer/uninstall/clean-machine release acceptance is not claimed by this result.
+
+GitHub Pre-release:
+
+- `v5.0.0-beta.1` / `Qonic Audio 5.0.0-beta.1 — Internal Beta`
+- Tag baseline: `a7364cdce796a74ed4b0cc6cdf8770a8d646e716`
+- Installer asset SHA-256: `544F9762D07B3BEB3FD8C271D4558E6CD084BD3655C4FC631F605BBB97EE225C`
+- Release classification: Pre-release; not Stable, Official Public, Production, or Commercial Release Ready.
 
 The first English-only installer candidate is preserved under `Release/Non_Authoritative/2026-08-12_5.0.0-beta.1_english-installer-baseline/` with status `NOT FOR RELEASE`.
 

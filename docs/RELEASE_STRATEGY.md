@@ -56,6 +56,14 @@ Required release-note statement:
 
 Internal Beta releases must not use `Latest Stable`, `Official Stable`, `Production Release`, or `Public Stable Release` labels.
 
+## GitHub development baseline and verification
+
+- `main` is the canonical development branch and follows the verified `codex/v5_P1` lineage.
+- The former unrelated `main` history remains available unchanged at `archive/main-pre-v5-realignment`.
+- Daily CI runs a stable Windows/Python 3.12 core test subset for pushes and pull requests targeting `main`.
+- Third-party compliance and FFmpeg build/compliance workflows remain separate, heavier gates and are not replaced by daily CI.
+- The `v5.0.0-beta.1` GitHub release is a Pre-release. Its existence does not activate the deferred Public Stable gate.
+
 ## Installer policy
 
 The installer is retained as core infrastructure because the application is a long-lived desktop tool. The existing PyInstaller `onedir` remains the application runtime; the installer only installs that verified tree.
@@ -98,7 +106,7 @@ None of these items blocks Internal Beta development or limited distribution.
 
 ## Optional enhancements
 
-Automatic updates, crash reporting, release automation, GitHub Actions builds, signing, file associations, and incremental updates may be developed later. They are not current Internal Beta blockers unless a candidate explicitly depends on them.
+Automatic updates, crash reporting, release automation, automated binary builds, signing, file associations, and incremental updates may be developed later. The repository already has source-validation GitHub Actions; those checks do not themselves certify an installable release. Optional enhancements are not current Internal Beta blockers unless a candidate explicitly depends on them.
 
 ## Historical evidence
 

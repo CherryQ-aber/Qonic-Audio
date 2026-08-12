@@ -1,5 +1,16 @@
 # Qonic Audio Post-Install User State Acceptance
 
+## 当前记录状态（2026-08-13）
+
+项目所有者已人工验收并接受以下安装态用户状态作为当前工作基线：
+
+- 主题选择持久化；
+- 普通窗口位置/尺寸与最大化状态恢复；
+- 首次启动接受或跳过状态持久化；
+- 用户配置写入 `%LOCALAPPDATA%\Qonic Audio\Config`，并对旧便携配置执行一次性、非破坏迁移。
+
+这些结果确认现有实现可继续作为 Internal Beta 开发基线，不授权重新设计相关功能，也不等同于完整卸载、所有安装器语言路径、正式 Public Stable 或商业发布验收。
+
 ## 数据位置
 
 - 配置：`%LOCALAPPDATA%\Qonic Audio\Config\config.json`
