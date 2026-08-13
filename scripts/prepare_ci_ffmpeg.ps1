@@ -64,8 +64,16 @@ New-Item -ItemType Directory -Path $destinationPath -Force | Out-Null
 Copy-Item -LiteralPath $installedFfmpeg -Destination (Join-Path $destinationPath "ffmpeg.exe")
 Copy-Item -LiteralPath $installedFfprobe -Destination (Join-Path $destinationPath "ffprobe.exe")
 
-& (Join-Path $destinationPath "ffmpeg.exe") -version | Select-Object -First 1
-if ($LASTEXITCODE -ne 0) {
+$ffmpegVersion = & (Join-Path $destinationPath "ffmpeg.exe") -version 2>&1
+$ffmpegExitCode = $LASTEXITCODE
+if ($ffmpegExitCode -ne 0) {
     throw "Pinned FFmpeg runtime could not execute."
 }
+$ffprobeVersion = & (Join-Path $destinationPath "ffprobe.exe") -version 2>&1
+$ffprobeExitCode = $LASTEXITCODE
+if ($ffprobeExitCode -ne 0) {
+    throw "Pinned FFprobe runtime could not execute."
+}
+Write-Output ($ffmpegVersion | Select-Object -First 1)
+Write-Output ($ffprobeVersion | Select-Object -First 1)
 Write-Output "Pinned FFmpeg test runtime prepared from the verified Internal Beta installer."
