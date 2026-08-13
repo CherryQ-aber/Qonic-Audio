@@ -35,13 +35,15 @@ Historical r3/r4 publication-candidate reports remain evidence from the former p
 ## Repository baseline
 
 - Canonical development branch: `main`, realigned from the verified `codex/v5_P1` lineage.
-- Verified functional baseline: commit `a7364cdce796a74ed4b0cc6cdf8770a8d646e716` (`fix: persist installed user state` / 安装态用户状态修复).
-- Previous unrelated `main`: preserved unchanged at `archive/main-pre-v5-realignment`, commit `9517c3bddcc6a5ac9445d8db3c196d3c6b5a8709`.
-- Routine verification: Windows/Python 3.12 core CI on pushes and pull requests targeting `main`; compliance and FFmpeg workflows remain separate.
+- Current privacy-safe canonical baseline before this hygiene closeout: commit `3c0a7ba4d6b7b4e9831cb7785a2644204c3b9916`.
+- Previous unrelated `main`: preserved at `archive/main-pre-v5-realignment`, privacy-rewritten commit `979936e545dd0a20d3dfc3c14f5cc409a64aef29`; it is not merged into the canonical history.
+- Routine verification: Windows/Python 3.12 Core CI runs the repository hygiene guard and complete automated pytest regression on pushes and pull requests targeting `main`; compliance and FFmpeg workflows remain separate.
+- Public tracking rules: `docs/REPOSITORY_HYGIENE_POLICY.md` is the source of truth. The public repository intentionally excludes local Codex/Agent records, configuration, media, logs, caches, review packages, and build workspaces.
 
 ## Distribution policy
 
-- Internal Beta installers and optional portable builds may be used on the owner's Windows devices and shared with named/limited testers.
+- The Windows installer is the primary long-term Internal Beta installation and distribution method. Portable `.7z` builds are optional controlled testing or diagnostic artifacts.
+- Internal Beta installers and optional portable test builds may be used on the owner's Windows devices and shared with named/limited testers.
 - GitHub releases, if used, must be marked **Pre-release**.
 - Release notes must say that the build belongs to an ongoing personal software project and is not an Official Stable Public Release.
 - No build may be described as Latest Stable, Production Release, Official Release, or Public Stable Release.
@@ -87,7 +89,7 @@ Formal trademark clearance: DEFERRED
 
 ## Testing status
 
-The current source passed `636 passed, 2 warnings, 76 subtests`, five source QML smokes, syntax/import checks, and metadata/storage/installer-contract tests. The raw PyInstaller onedir and archive built successfully. The existing Qt LGPL route removed all 687 verified GPL-only files from an independent candidate and passed five packaged smokes.
+The current source passed `642 passed, 2 warnings`, including repository-hygiene, post-install state, QML, storage, runtime-mode, and installer-contract coverage. Five source QML smokes, syntax/import checks, and the previously recorded 76 subtests also passed. The raw PyInstaller onedir and archive built successfully. The existing Qt LGPL route removed all 687 verified GPL-only files from an independent candidate and passed five packaged smokes.
 
 Current portable candidate:
 
@@ -108,7 +110,7 @@ Current installer candidate:
 GitHub Pre-release:
 
 - `v5.0.0-beta.1` / `Qonic Audio 5.0.0-beta.1 — Internal Beta`
-- Tag baseline: `a7364cdce796a74ed4b0cc6cdf8770a8d646e716`
+- Tag baseline: `e65048ff8d7a572f9c7f18e49622fec35ec22647` (metadata/privacy rewritten equivalent; application tree unchanged).
 - Installer asset SHA-256: `544F9762D07B3BEB3FD8C271D4558E6CD084BD3655C4FC631F605BBB97EE225C`
 - Release classification: Pre-release; not Stable, Official Public, Production, or Commercial Release Ready.
 

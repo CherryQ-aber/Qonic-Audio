@@ -16,7 +16,7 @@
 - 第三方组件继续遵循各自许可证，来源和审核材料见 `LICENSES/`。
 - 当前主发行渠道为 Internal Beta；GitHub 二进制构建如发布，必须标记为 **Pre-release**。
 - 当前 `v5.0.0-beta.1` 安装器已经作为 GitHub **Pre-release** 发布；这不改变 Internal Beta 定位。
-- 安装器继续作为核心工程能力；便携版 `.7z` 可作为受控测试工件。
+- Windows 安装器是长期 Internal Beta 的主要安装与分发方式；便携版 `.7z` 仅作为可选的受控测试或诊断工件。
 - 数字签名、自动更新与文件关联属于可选增强，不阻塞当前 Internal Beta。
 - Qonic 仅是 working/project name；Public commercial brand 为 `NOT FROZEN`，Qonance 未采用，正式商标清查延后到未来明确规划 Official Public Release 时。
 - 当前状态与发行规则分别以 `docs/PROJECT_STATUS.md` 和 `docs/RELEASE_STRATEGY.md` 为准。
@@ -32,8 +32,10 @@
 
 - `main` 是长期 canonical development branch，承接已验收的 `codex/v5_P1` 开发历史；`codex/v5_P1` 暂时保留为历史开发分支。
 - 校正前的旧 `main` 由远程分支 `archive/main-pre-v5-realignment` 保留，不通过 unrelated-histories merge 拼接两套历史。
-- `.github/workflows/ci.yml` 在 Windows 上验证 post-install 用户状态、设置存储、运行模式、能力门、主题和窗口逻辑；触发范围为对 `main` 的 push 和 pull request。
+- `.github/workflows/ci.yml` 在 Windows 上运行公开仓库卫生检查和完整自动化回归；触发范围为对 `main` 的 push 和 pull request。
 - `compliance.yml`、`ffmpeg-build.yml` 与 `ffmpeg-compliance.yml` 继续承担重量级依赖合规及 FFmpeg 验证，不并入普通 push 的快速测试。
+
+这是经过筛选的公开源码仓库，不是本地工作区备份。Codex/Agent 记录、本地配置、测试媒体、日志、缓存、审查包和构建工作区只保留本机；详细规则见 `docs/REPOSITORY_HYGIENE_POLICY.md`。Git commit 的 noreply 身份不作为公开联系邮箱；当前项目没有指定公开 Contact email。
 
 ## 主要功能
 
@@ -131,7 +133,7 @@ powershell -ExecutionPolicy Bypass -File .\build_release.ps1
 - `Release/Qonic_Audio_v5.0.0-beta.1.7z`
 - `Release/Qonic_Audio_v5.0.0-beta.1-SHA256SUMS.txt`
 
-`.7z` 是当前默认和主分发工件。如需内部验证 7z SFX，可显式执行：
+Windows 安装器是长期 Internal Beta 的主要安装与分发工件。上述 `.7z` 是可选的受控测试或诊断工件；如需内部验证 7z SFX，可显式执行：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\build_release.ps1 -IncludeSfx

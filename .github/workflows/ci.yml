@@ -46,16 +46,10 @@ jobs:
           }
           Copy-Item -LiteralPath "config.example.json" -Destination "config.json"
 
-      - name: Run stable Windows core tests
+      - name: Check public repository hygiene
         shell: pwsh
-        run: |
-          $tests = @(
-            "tests/test_post_install_user_state.py",
-            "tests/test_qml_settings_storage.py",
-            "tests/test_qml_runtime_modes.py",
-            "tests/test_internal_beta_governance.py",
-            "tests/test_qml_capabilities.py",
-            "tests/test_qml_theme_tokens.py",
-            "tests/test_qml_window_chrome.py"
-          )
-          python -m pytest -q @tests
+        run: python scripts/check_repository_hygiene.py
+
+      - name: Run complete automated regression
+        shell: pwsh
+        run: python -m pytest -q

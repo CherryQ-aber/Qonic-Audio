@@ -13,6 +13,7 @@ import hashlib
 import json
 import shutil
 import subprocess
+import sys
 import tarfile
 import zipfile
 from collections import Counter
@@ -58,6 +59,7 @@ PYTHON_RUNTIME_NAMES = {
     "select.pyd",
     "unicodedata.pyd",
 }
+EXPECTED_CPYTHON_VERSION = "3.12.1"
 
 
 def sha256_file(path: Path) -> str:
@@ -277,18 +279,113 @@ def _classify_native(path: Path, root: Path) -> str | None:
     return None
 
 
-def _stage_materials(project_root: Path) -> dict[str, list[str]]:
+def _runtime_root_candidates() -> list[Path]:
+    """Return portable CPython-root candidates from the active interpreter."""
+
+    candidates = [
+        Path(sys.base_prefix),
+        Path(sys.prefix),
+        Path(sys.executable).resolve().parent,
+    ]
+    unique: list[Path] = []
+    for candidate in candidates:
+        resolved = candidate.resolve()
+        if resolved not in unique:
+            unique.append(resolved)
+    return unique
+
+
+def _runtime_python_executable(runtime_root: Path) -> Path:
+    candidates = (
+        runtime_root / "python.exe",
+        runtime_root / "python",
+        runtime_root / "Scripts" / "python.exe",
+        runtime_root / "bin" / "python3",
+        runtime_root / "bin" / "python",
+    )
+    executable = next((path for path in candidates if path.is_file()), None)
+    if executable is None:
+        raise FileNotFoundError(f"CPython runtime root 缺少 Python executable: {runtime_root}")
+    return executable
+
+
+def _read_runtime_identity(executable: Path) -> tuple[str, str]:
+    probe = (
+        "import json, platform; "
+        "print(json.dumps({'implementation': platform.python_implementation(), "
+        "'version': platform.python_version()}))"
+    )
+    result = subprocess.run(
+        [str(executable), "-I", "-c", probe],
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=15,
+    )
+    if result.returncode != 0:
+        raise ValueError(
+            f"无法验证 CPython runtime {executable}: exit {result.returncode}"
+        )
+    try:
+        payload = json.loads(result.stdout.strip())
+        return str(payload["implementation"]), str(payload["version"])
+    except (json.JSONDecodeError, KeyError, TypeError) as exc:
+        raise ValueError(f"CPython runtime identity 输出无效: {executable}") from exc
+
+
+def validate_python_runtime_root(runtime_root: Path) -> Path:
+    """Validate the exact CPython runtime used by the frozen baseline."""
+
+    root = runtime_root.expanduser().resolve()
+    license_path = root / "LICENSE.txt"
+    if not license_path.is_file():
+        raise FileNotFoundError(f"CPython runtime root 缺少 LICENSE.txt: {root}")
+    executable = _runtime_python_executable(root)
+    implementation, version = _read_runtime_identity(executable)
+    if implementation != "CPython":
+        raise ValueError(f"需要 CPython runtime，实际为 {implementation}: {root}")
+    if version != EXPECTED_CPYTHON_VERSION:
+        raise ValueError(
+            f"冻结基线需要 CPython {EXPECTED_CPYTHON_VERSION}，实际为 {version}: {root}"
+        )
+    return root
+
+
+def resolve_python_runtime_root(explicit_root: Path | None = None) -> Path:
+    """Resolve an explicit root or safely probe the active CPython environment."""
+
+    if explicit_root is not None:
+        return validate_python_runtime_root(explicit_root)
+
+    failures: list[str] = []
+    for candidate in _runtime_root_candidates():
+        try:
+            return validate_python_runtime_root(candidate)
+        except (FileNotFoundError, ValueError, subprocess.SubprocessError) as exc:
+            failures.append(f"{candidate}: {exc}")
+    detail = "; ".join(failures) if failures else "no candidates"
+    raise FileNotFoundError(
+        "无法从当前 CPython 环境定位匹配的 3.12.1 runtime root；"
+        "请使用 --python-runtime-root 显式指定。"
+        f" Checked: {detail}"
+    )
+
+
+def _stage_materials(
+    project_root: Path,
+    python_runtime_root: Path | None = None,
+) -> dict[str, list[str]]:
     """Build the publication staging tree from exact local materials only."""
 
     staging = project_root / "docs" / "compliance" / "staging" / "licenses"
     artifacts = project_root / "docs" / "compliance" / "staging" / "artifacts"
     wheels = artifacts / "wheels"
-    site = Path.home() / "AppData" / "Local" / "Programs" / "Python" / "Python312"
-    if not site.is_dir():
-        raise FileNotFoundError("未找到用于该冻结包的 CPython 3.12.1 本机安装")
+    runtime_root = resolve_python_runtime_root(python_runtime_root)
     output: dict[str, list[str]] = {}
 
-    _copy(site / "LICENSE.txt", staging / "Python" / "LICENSE.txt")
+    _copy(runtime_root / "LICENSE.txt", staging / "Python" / "LICENSE.txt")
     output["CPython Runtime"] = ["docs/compliance/staging/licenses/Python/LICENSE.txt"]
 
     exact_wheels = {
@@ -535,7 +632,10 @@ def _final_review(inventory: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def generate(project_root: Path) -> dict[str, Any]:
+def generate(
+    project_root: Path,
+    python_runtime_root: Path | None = None,
+) -> dict[str, Any]:
     """Generate all final-closure artifacts and return the machine inventory."""
 
     project_root = project_root.resolve()
@@ -569,7 +669,7 @@ def generate(project_root: Path) -> dict[str, Any]:
         else "Visible native Windows interaction acceptance remains pending."
     )
 
-    staging = _stage_materials(project_root)
+    staging = _stage_materials(project_root, python_runtime_root)
     all_files = [path for path in dist.rglob("*") if path.is_file()]
     native = [path for path in all_files if path.suffix.lower() in NATIVE_EXTENSIONS]
     native_ownership: dict[str, str] = {}
@@ -724,8 +824,16 @@ def generate(project_root: Path) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project-root", type=Path, default=Path("."))
+    parser.add_argument(
+        "--python-runtime-root",
+        type=Path,
+        help=(
+            "CPython 3.12.1 installation root containing python.exe and LICENSE.txt; "
+            "defaults to safe discovery from the active CPython environment"
+        ),
+    )
     args = parser.parse_args()
-    inventory = generate(args.project_root)
+    inventory = generate(args.project_root, args.python_runtime_root)
     print(json.dumps(inventory["summary"], ensure_ascii=False))
     return 2 if inventory["native_file_ownership"]["unassigned_native_files"] else 0
 

@@ -26,14 +26,17 @@ This build is part of an ongoing personal software project. It is primarily main
 | 维度 | 结论 |
 | --- | --- |
 | 工程功能 | 历史基线已通过；`5.0.0-beta.1` 候选必须以本轮真实验证结果为准。 |
-| 数据安全 | CapabilityGate、no-clobber、源文件保护和显式确认保存保持不变；新 installed-data 路径需验证。 |
-| 用户体验 | Internal Beta 候选仍需真实安装、媒体、DPI、双屏、窗口/托盘验收。 |
+| 数据安全 | CapabilityGate、no-clobber、源文件保护和显式确认保存保持不变；per-user 配置目录迁移的安装态验收为 PASS。 |
+| 安装态用户状态 | PASS：主题持久化、窗口位置/大小/最大化状态恢复、First Run 状态、per-user 配置迁移。 |
+| 用户体验 | 上述安装态项目已通过人工验收；完整卸载、全部安装器语言路径与完整 clean-machine release gate 尚未完全覆盖，媒体、DPI、双屏及窗口/托盘仍按后续候选复验。 |
 | 发行策略 | Personal Software Project / Internal Beta；GitHub 仅允许 Pre-release。 |
 | Stable 状态 | 当前不存在；Public Stable Gate 已延后，不阻塞 Internal Beta。 |
 
 详细工作区合同见 `docs/PHASE_5_9_5_WORKSPACE_INTEGRATION_CONTRACT.md`；UI 重构全量总结见 `docs/UI_REFACTOR_CHANGE_SUMMARY.md`。
 
 当前 Internal Beta Gate 与未来延后的 Public Stable Gate 见 `docs/RELEASE_STRATEGY.md` 和 `TEST_CHECKLIST.md`。版本号达到 1.x 或更高也不会自动变成 Stable。
+
+当前源码完整自动化回归为 `642 passed, 2 warnings`；Core CI 同时执行公开仓库卫生扫描。该结果不替代尚未完全覆盖的完整卸载、所有安装器语言路径或完整 clean-machine release gate。
 
 ## 未包含的承诺
 

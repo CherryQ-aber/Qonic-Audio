@@ -1,6 +1,12 @@
 # Python
 __pycache__/
 *.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
 .venv/
 venv/
 
@@ -9,15 +15,21 @@ config.json
 config.json.bak
 logs/
 Temp/
+Cache/
 Music_input/
 Music_Output/
 *.log
+.env
+.env.*
+/Screenshots/
+/Recordings/
 
 # Internal planning and review artifacts
 Codex_memory/
 Codex执行记录/
 Code_Review_Packages/
 .reasonix/
+.codex/
 v3大版本总结_v4启动引用.md
 
 # Build and release output

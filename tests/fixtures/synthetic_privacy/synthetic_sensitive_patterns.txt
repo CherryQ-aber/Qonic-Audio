@@ -1,0 +1,6 @@
+Synthetic privacy-scanner fixture. These values are fake and non-operational.
+
+Windows path: C:\Users\Synthetic User\Qonic Audio\config.json
+AWS example: AKIAIOSFODNN7EXAMPLE
+GitHub example: ghp_abcdefghijklmnopqrstuvwxyz1234567890
+password = "synthetic-test-only"

@@ -59,6 +59,18 @@ python Tools/compliance/validate_compliance.py `
 python Tools/compliance/finalize_third_party_compliance.py --project-root .
 ```
 
+The finalizer first checks the active CPython environment for the exact
+CPython 3.12.1 runtime root used by the frozen baseline. The selected root must
+contain a runnable CPython executable and `LICENSE.txt`. When automatic
+discovery is not appropriate, specify it explicitly without relying on a
+Windows user-profile path:
+
+```powershell
+python Tools/compliance/finalize_third_party_compliance.py `
+  --project-root . `
+  --python-runtime-root "D:\Toolchains\CPython-3.12.1"
+```
+
 ## Qt LGPLv3 staging 验证
 
 该命令创建一个临时 onedir 副本，按 `Qt Graphs`、`Qt Quick 3D`、

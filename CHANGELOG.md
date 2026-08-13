@@ -4,6 +4,10 @@
 
 ### Changed
 
+- 建立公开仓库卫生政策、tracked/candidate-file scanner 与 Core CI 门禁；本地 Codex/Agent 记录、配置、媒体、日志、缓存、审查包和构建工作区不进入 GitHub。
+- Core CI 从稳定子集升级为完整 pytest 回归，并保留独立的重量级 Compliance / FFmpeg workflows。
+- 第三方合规收尾工具支持显式 `--python-runtime-root`，或从当前 CPython 环境安全探测 runtime root；使用前验证 CPython 3.12.1、可执行文件与 `LICENSE.txt`，不再依赖固定 Windows 用户安装路径。
+- Windows 安装器确立为长期 Internal Beta 的主要安装与分发方式；便携 `.7z` 仅作为可选受控测试或诊断工件。
 - 建立统一 App Paths：配置、缓存、日志分别使用 `%LOCALAPPDATA%\Qonic Audio\Config`、`Cache` 与 `Logs`；源码运行可用 `QONIC_USER_DATA_ROOT` 隔离测试配置。
 - 旧 EXE/项目同目录配置与早期 LocalAppData 根配置改为一次性只读迁移；迁移保留未知字段、不删除旧文件，并避免升级用户被误判为 First Run。
 - QML 主题改为即时原子保存并跨重启恢复；窗口保存 normal geometry 与 maximized 状态，首次居中并在显示器移除/分辨率变化时回到有效区域。
