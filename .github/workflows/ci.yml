@@ -50,6 +50,10 @@ jobs:
         shell: pwsh
         run: python scripts/check_repository_hygiene.py
 
+      - name: Prepare pinned FFmpeg test runtime
+        shell: pwsh
+        run: ./scripts/prepare_ci_ffmpeg.ps1
+
       - name: Run complete automated regression
         shell: pwsh
         run: python -m pytest -q

@@ -37,7 +37,7 @@ Historical r3/r4 publication-candidate reports remain evidence from the former p
 - Canonical development branch: `main`, realigned from the verified `codex/v5_P1` lineage.
 - Current privacy-safe canonical baseline before this hygiene closeout: commit `3c0a7ba4d6b7b4e9831cb7785a2644204c3b9916`.
 - Previous unrelated `main`: preserved at `archive/main-pre-v5-realignment`, privacy-rewritten commit `979936e545dd0a20d3dfc3c14f5cc409a64aef29`; it is not merged into the canonical history.
-- Routine verification: Windows/Python 3.12 Core CI runs the repository hygiene guard and complete automated pytest regression on pushes and pull requests targeting `main`; compliance and FFmpeg workflows remain separate.
+- Routine verification: Windows/Python 3.12 Core CI runs the repository hygiene guard and complete automated pytest regression on pushes and pull requests targeting `main`. Real-media tests use FFmpeg/FFprobe extracted temporarily from the checksum-pinned published Internal Beta installer; those binaries remain untracked. Compliance and FFmpeg workflows remain separate.
 - Public tracking rules: `docs/REPOSITORY_HYGIENE_POLICY.md` is the source of truth. The public repository intentionally excludes local Codex/Agent records, configuration, media, logs, caches, review packages, and build workspaces.
 
 ## Distribution policy
