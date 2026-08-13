@@ -6,6 +6,7 @@
 
 - 建立公开仓库卫生政策、tracked/candidate-file scanner 与 Core CI 门禁；本地 Codex/Agent 记录、配置、媒体、日志、缓存、审查包和构建工作区不进入 GitHub。
 - Core CI 从稳定子集升级为完整 pytest 回归，并保留独立的重量级 Compliance / FFmpeg workflows。
+- 补全封面读取与验证实际使用的 Pillow 12.2.0 运行依赖，使干净 Windows CI 环境能够收集并运行完整测试套件。
 - 第三方合规收尾工具支持显式 `--python-runtime-root`，或从当前 CPython 环境安全探测 runtime root；使用前验证 CPython 3.12.1、可执行文件与 `LICENSE.txt`，不再依赖固定 Windows 用户安装路径。
 - Windows 安装器确立为长期 Internal Beta 的主要安装与分发方式；便携 `.7z` 仅作为可选受控测试或诊断工件。
 - 建立统一 App Paths：配置、缓存、日志分别使用 `%LOCALAPPDATA%\Qonic Audio\Config`、`Cache` 与 `Logs`；源码运行可用 `QONIC_USER_DATA_ROOT` 隔离测试配置。

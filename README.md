@@ -102,6 +102,7 @@
 - `PySide6`
 - `watchdog`
 - `mutagen`
+- `Pillow`
 
 开发 / 打包附加依赖：
 
